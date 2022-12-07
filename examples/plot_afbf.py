@@ -63,7 +63,6 @@ model, w1 = FitVariogram(
     model, lags, w0, noise, None,
     multigrid, maxit, gtol, verbose)
 delta = model.noise
-w1 = w1.values[:, 0]
 
 model.DisplayParameters(1)
 
