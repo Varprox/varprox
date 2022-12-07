@@ -14,9 +14,8 @@ rng = default_rng()
 
 # Original image.
 imrep = '../data/'
-# imname = 'Mammo/Patch01.png'
-imname = 'Film/Patch011.tif'
-# imname = 'Misc/mer.tif'
+imname = 'Mammo/Patch01.png'
+
 
 # Parameters to set the lags where to compute the semi-variogram.
 N = 40  # size of the grid for the definition of the semi-variogram.
@@ -256,9 +255,7 @@ x0 = im.values.reshape(im.M)[0: simu.M[0], 0: simu.M[1]]
 x1 = (x0 - np.mean(x0)) / np.std(x0)
 x1 = simu.values.reshape(simu.M)
 x1 = (x1 - np.mean(x1)) / np.std(x1)
-# Contrast fitting
-if contrast_fitting:
-    x1 = _match_cumulative_cdf(x1, x0)
+
 
 x0f = fft2(x0)
 x1f = fft2(x1)
