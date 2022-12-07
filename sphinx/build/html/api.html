@@ -1,0 +1,487 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>API reference. &#8212; varprox 0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Variable projection method" href="varpro.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+    <p class="title logo__title">varprox 0.0 documentation</p>
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="intro.html">
+                        Introduction.
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="varpro.html">
+                        Variable projection method
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        API reference.
+                      </a>
+                    </li>
+                
+    </ul>
+</nav>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+      
+      <div class="navbar-center-item">
+        <nav class="navbar-nav">
+    <p class="sidebar-header-items__title" role="heading" aria-level="1" aria-label="Site Navigation">
+        Site Navigation
+    </p>
+    <ul id="navbar-main-elements" class="navbar-nav">
+        
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="intro.html">
+                        Introduction.
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="varpro.html">
+                        Variable projection method
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        API reference.
+                      </a>
+                    </li>
+                
+    </ul>
+</nav>
+      </div>
+      
+      </div>
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="api-reference">
+<h1>API reference.<a class="headerlink" href="#api-reference" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="varprox.main.minimize">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">varprox.main.</span></span><span class="sig-name descname"><span class="pre">minimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ffun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DFfun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-</span> <span class="pre">inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-</span> <span class="pre">inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox.main.minimize" title="Permalink to this definition">#</a></dt>
+<dd><p>This class contains methods to minimize of a separable non-linear
+least square criterion, which is of the form:</p>
+<div class="math notranslate nohighlight">
+\[h(x, y) = \frac{1}{2} \sum_{n=1}^N \left(\epsilon_n(x, y))^2
+\quad \mathrm{with} \quad \epsilon_n(x,y) = F_n(x) y - w \right.\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<span class="xref std std-ref">ndarray</span> of size (K,)) – first variable <span class="math notranslate nohighlight">\(x\)</span> of the criterion <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
+<li><p><strong>y</strong> (<span class="xref std std-ref">ndarray</span> of size (J,)) – second variable <span class="math notranslate nohighlight">\(y\)</span> of the criterion <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
+<li><p><strong>w</strong> (<span class="xref std std-ref">ndarray</span> of size (N,)) – set of observations <span class="math notranslate nohighlight">\((w_n)_n\)</span>.</p></li>
+<li><p><strong>Ffun</strong> – <p>function which computes the mappings <span class="math notranslate nohighlight">\(F_n\)</span> of
+the criterion, with the signature Ffun(x, <a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs).</p>
+<p>The argument x passed to this function F is an array of
+size (K,). It must allocate and return an array of shape
+(N, J) whose nth row F[n, :] corresponds
+to the vector <span class="math notranslate nohighlight">\(F_n(x)\)</span>.</p>
+</p></li>
+<li><p><strong>DFfun</strong> – <p>a function which defines jacobian matrices
+<span class="math notranslate nohighlight">\(DF_n(x)\)</span> of mappings <span class="math notranslate nohighlight">\(F_n\)</span>,
+with the signature DFfun(x, <a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs).</p>
+<p>The argument x passed to this function DF is an array of
+size (K,). It must allocate and return an array of shape
+(N, J, K) whose nth term DF[n] corresponds
+to the jacobian matrix <span class="math notranslate nohighlight">\(DF_n(x)\)</span>
+of <span class="math notranslate nohighlight">\(F_n(x)\)</span>. DF[n, j, k] is the partial derivative
+of the jth component <span class="math notranslate nohighlight">\(F_n(x)_j\)</span> with respect to the
+kth variable <span class="math notranslate nohighlight">\(x_k\)</span>.</p>
+</p></li>
+<li><p><strong>F</strong> (<span class="xref std std-ref">ndarray</span> of size (N, J)) – current values of <span class="math notranslate nohighlight">\(F_n\)</span>.</p></li>
+<li><p><strong>DF</strong> (<span class="xref std std-ref">ndarray</span> of size (N, J, K)) – current jacobian matrices of <span class="math notranslate nohighlight">\(F_n\)</span>.</p></li>
+<li><p><strong>eps</strong> (<span class="xref std std-ref">ndarray</span> of size (N, 1)) – residuals of Equation <a class="reference internal" href="intro.html#equation-residuals">(3)</a>.
+eps[n] correspond to <span class="math notranslate nohighlight">\(\epsilon_n(x, y)\)</span>.</p></li>
+<li><p><strong>eps_jac_x</strong> (<span class="xref std std-ref">ndarray</span> of size (N, K)) – <p>jacobian of residuals <span class="math notranslate nohighlight">\(\epsilon_n\)</span> with respect
+to <span class="math notranslate nohighlight">\(x\)</span>.</p>
+<p>eps_jac_x[n, k] is the partial derivative of <span class="math notranslate nohighlight">\(\epsilon_n\)</span>
+with respect to <span class="math notranslate nohighlight">\(x_k\)</span>.</p>
+</p></li>
+<li><p><strong>bounds_x</strong> (<em>2-tuple of array_like</em><em>, </em><em>optional</em>) – <p>Lower and upper bounds on <span class="math notranslate nohighlight">\(x\)</span>.</p>
+<p>Defaults to no bounds. Each array must match the size of x0
+or be a scalar; in the latter case a bound will be the same
+for all variables. Use np.inf with an appropriate sign to disable
+bounds on all or some variables.</p>
+</p></li>
+<li><p><strong>bounds_y</strong> (<em>2-tuple of array_like</em><em>, </em><em>optional</em>) – Lower and upper bounds on <span class="math notranslate nohighlight">\(y\)</span>.</p></li>
+<li><p><strong>kwargs</strong> (<em>args</em><em>,</em>) – Additional arguments passed to Ffun and DFfun.
+Empty by default.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>callable</p>
+</dd>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox.main.minimize.val_res">
+<span class="sig-name descname"><span class="pre">val_res</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox.main.minimize.val_res" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute the residuals <span class="math notranslate nohighlight">\(\epsilon_n\)</span> in <a class="reference internal" href="intro.html#equation-residuals">(3)</a>.
+:return: update the attribute eps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox.main.minimize.jac_res_x">
+<span class="sig-name descname"><span class="pre">jac_res_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox.main.minimize.jac_res_x" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute the jacobian of residuals with respect to <span class="math notranslate nohighlight">\(x\)</span>.
+:return: update the attribute eps_jac_x.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox.main.minimize.h_value">
+<span class="sig-name descname"><span class="pre">h_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#varprox.main.minimize.h_value" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute the value of the criterion <span class="math notranslate nohighlight">\(h\)</span> in <a class="reference internal" href="intro.html#equation-criterion">(1)</a>
+using Equation <a class="reference internal" href="intro.html#equation-criterion2">(4)</a>.
+:return: update the attributes h and eps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox.main.minimize.argmin_h_x">
+<span class="sig-name descname"><span class="pre">argmin_h_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox.main.minimize.argmin_h_x" title="Permalink to this definition">#</a></dt>
+<dd><p>Minimize <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\(x\)</span>.
+:return: update the attribute x.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox.main.minimize.argmin_h_y">
+<span class="sig-name descname"><span class="pre">argmin_h_y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox.main.minimize.argmin_h_y" title="Permalink to this definition">#</a></dt>
+<dd><p>Minimize <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\(y\)</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This operation corresponds to eq:<cite>varpro</cite>, which is the
+variable projection.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox.main.minimize.argmin_h">
+<span class="sig-name descname"><span class="pre">argmin_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox.main.minimize.argmin_h" title="Permalink to this definition">#</a></dt>
+<dd><p>Minimize <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\((x, y)\)</span>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="varpro.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Variable projection method</p>
+      </div>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="_sources/api.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2021, Paul Escande and Frédéric Richard.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.0.2.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
