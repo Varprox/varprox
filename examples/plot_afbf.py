@@ -34,8 +34,6 @@ maxit = 10000
 gtol = 0.001
 verbose = 1
 
-# Evaluation parameters.
-spatial_error = True
 
 # Import image.
 im = sdata()
@@ -123,47 +121,11 @@ x0p = np.angle(x0f)
 x1p = np.angle(x1f)
 x0a = np.absolute(x0f)
 x1a = np.absolute(x1f)
-
-
-
-if spatial_error:
-    lags2 = coordinates()
-    lags2.DefineUniformGrid(N, step, signed=True)
-    lags2.N = lags.N
-
-    evario2 = im.ComputeEmpiricalSemiVariogram(lags2)
-    model.ComputeApproximateSemiVariogram(lags2)
-    evario2.Display(8)
-    model.svario.Display(9)
-
-    evario2.values = model.svario.values - evario2.values
-    evario2.name = "Variogram difference"
-    evario2.Display(10)
-
-
-# Comparison of original and simulated images.
-
-x0 = im.values.reshape(im.M)[0: simu.M[0], 0: simu.M[1]]
-x1 = (x0 - np.mean(x0)) / np.std(x0)
-x1 = simu.values.reshape(simu.M)
-x1 = (x1 - np.mean(x1)) / np.std(x1)
-
-
-x0f = fft2(x0)
-x1f = fft2(x1)
-
-x0p = np.angle(x0f)
-x1p = np.angle(x1f)
-
-x0a = np.absolute(x0f)
-x1a = np.absolute(x1f)
-
 lx0a = np.log(x0a)
 lx1a = np.log(x1a)
 
 lxal = 0
 lxau = np.max([np.max(lx0a), np.max(lx1a)])
-
 
 f, axarr = plt.subplots(2, 3, figsize=(40, 20))
 
