@@ -17,26 +17,26 @@ class minimize:
         \quad \mathrm{with} \quad \epsilon_n(x,y) = F_n(x) y - w \right.
 
     :param x: first variable :math:`x` of the criterion :math:`h`.
-    :type x: :ref:`ndarray` of size (K,)
+    :type x: :class:`numpy.ndarray` of size (K,)
 
     :param y: second variable :math:`y` of the criterion :math:`h`.
-    :type y: :ref:`ndarray` of size (J,)
+    :type y: :class:`numpy.ndarray` of size (J,)
 
     :param w: set of observations :math:`(w_n)_n`.
-    :type w: :ref:`ndarray` of size (N,)
+    :type w: :class:`numpy.ndarray` of size (N,)
 
     :param Ffun: function which computes the mappings :math:`F_n` of
-        the criterion, with the signature Ffun(x, *args, **kwargs).
+        the criterion, with the signature ``Ffun(x, *args, **kwargs)``.
 
         The argument x passed to this function F is an array of
         size (K,). It must allocate and return an array of shape
         (N, J) whose nth row F[n, :] corresponds
         to the vector :math:`F_n(x)`.
-    :type: callable
+    :type Ffun: callable
 
     :param DFfun: a function which defines jacobian matrices
         :math:`DF_n(x)` of mappings :math:`F_n`,
-        with the signature DFfun(x, *args, **kwargs).
+        with the signature ``DFfun(x, *args, **kwargs)``.
 
         The argument x passed to this function DF is an array of
         size (K,). It must allocate and return an array of shape
@@ -45,34 +45,29 @@ class minimize:
         of :math:`F_n(x)`. DF[n, j, k] is the partial derivative
         of the jth component :math:`F_n(x)_j` with respect to the
         kth variable :math:`x_k`.
-
-    :type: callable
+    :type DFfun: callable
 
     :param F: current values of :math:`F_n`.
-    :type F: :ref:`ndarray` of size (N, J)
+    :type F: :class:`numpy.ndarray` of size (N, J)
 
     :param DF: current jacobian matrices of :math:`F_n`.
-    :type DF: :ref:`ndarray` of size (N, J, K)
+    :type DF: :class:`numpy.ndarray` of size (N, J, K)
 
     :param eps: residuals of Equation :eq:`residuals`.
         eps[n] correspond to :math:`\epsilon_n(x, y)`.
-    :type eps: :ref:`ndarray` of size (N, 1)
+    :type eps: :class:`numpy.ndarray` of size (N, 1)
 
     :param eps_jac_x: jacobian of residuals :math:`\epsilon_n` with respect
         to :math:`x`.
-
         eps_jac_x[n, k] is the partial derivative of :math:`\epsilon_n`
         with respect to :math:`x_k`.
-
-    :type eps_jac_x: :ref:`ndarray` of size (N, K)
+    :type eps_jac_x: :class:`numpy.ndarray` of size (N, K)
 
     :param bounds_x: Lower and upper bounds on :math:`x`.
-
             Defaults to no bounds. Each array must match the size of x0
             or be a scalar; in the latter case a bound will be the same
             for all variables. Use np.inf with an appropriate sign to disable
             bounds on all or some variables.
-
     :type bounds_x: 2-tuple of array_like, optional
 
     :param bounds_y: Lower and upper bounds on :math:`y`.

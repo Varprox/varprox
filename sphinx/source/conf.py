@@ -52,4 +52,17 @@ show_authors = True
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
+html_static_path = []
+
+
+# Configuration for cross-references
+intersphinx_mapping = {'python': ('http://docs.python.org/2', None),
+                       'numpy': ('http://docs.scipy.org/doc/numpy', None),
+                       'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
+                       'matplotlib': ('http://matplotlib.org/stable', None)}
+
+numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False 
+numpydoc_xref_param_type = True 
+numpydoc_attributes_as_param_list = False 
