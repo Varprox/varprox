@@ -147,12 +147,14 @@ class minimize:
 
     def val_res(self, x):
         r"""Compute the residuals :math:`\epsilon_n` in :eq:`residuals`.
+
         :return: update the attribute eps.
         """
         return(self.Ffun(x, *self.args, **self.kwargs) @ self.y - self.w)
 
     def jac_res_x(self, x):
         r"""Compute the jacobian of residuals with respect to :math:`x`.
+
         :return: update the attribute eps_jac_x.
         """
         DF = self.DFfun(x, *self.args, **self.kwargs)
@@ -164,12 +166,14 @@ class minimize:
     def h_value(self):
         r"""Compute the value of the criterion :math:`h` in :eq:`criterion`
         using Equation :eq:`criterion2`.
+
         :return: update the attributes h and eps.
         """
         return(np.sum(np.power(self.val_res(self.x), 2)) / 2)
 
     def argmin_h_x(self, x, gtol=1e-3, maxit=1000):
         r"""Minimize :math:`h` with respect to :math:`x`.
+
         :return: update the attribute x.
         """
         res = least_squares(fun=self.val_res, x0=x,
