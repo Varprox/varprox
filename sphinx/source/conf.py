@@ -57,7 +57,7 @@ html_static_path = []
 
 
 # Configuration for cross-references
-intersphinx_mapping = {'python': ('http://docs.python.org/2', None),
+intersphinx_mapping = {'python': ('http://docs.python.org/3', None),
                        'numpy': ('http://docs.scipy.org/doc/numpy', None),
                        'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
                        'matplotlib': ('http://matplotlib.org/stable', None)}
