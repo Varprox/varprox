@@ -4,6 +4,7 @@ Tools for minimizing the penalized SNLS criterion.
 """
 import numpy as np
 from scipy.optimize import lsq_linear, least_squares
+from scipy.optimize import Bounds
 
 
 class minimize:
@@ -228,3 +229,99 @@ class minimize:
                 break
         return(self.x, self.y)
 
+    def argmin_h_ADMM(self, gtol=1e-3, alpha=1, maxit=1000):
+        r"""Minimize :math:`h` with respect to :math:`(x, y)`  using ADMM.
+   
+        The ADMM uses the splitting :math:`B = F(x)`
+        and minimizes the augmented Lagrangian
+   
+        .. math::
+   
+            \mathcal{L}(x,y,B,\Lambda) = \frac{1}{2}\| B y - w\|_2^2
+            + \langle \Lambda, B - F(x) \rangle_F
+            + \frac{\alpha}{2} \| B - F(x) \|_F^2
+   
+        .. note::
+   
+            This resolution should be efficient when solving linear systems
+            involving :math:`B` is fast.
+        """
+        # self.f = self.Ffun(np.ones(self.x.shape), *self.args, **self.kwargs)
+        self.alpha = alpha
+        h = self.h_value()
+        x0 = np.zeros(self.x.shape)
+        y0 = np.zeros(self.y.shape)
+   
+        self.F = self.Ffun(self.x, *self.args, **self.kwargs)
+        self.B = self.F
+        self.lam = np.zeros(self.B.shape)
+
+        bound = Bounds(
+            self.bounds_x[0]*np.ones(self.x.shape), self.bounds_x[1]*np.ones(self.x.shape))
+   
+        for it in range(maxit):
+   
+            x0 = self.x
+            y0 = self.y
+            F0 = self.F
+   
+            # Minimizing L over y
+            res = lsq_linear(self.B, self.w, bounds=self.bounds_y)
+            self.y = res.x
+   
+            # Minimizing L over B
+            rightHS = np.tensordot(self.y, self.w, axes=0) + \
+                self.alpha*self.F.T - self.lam.T
+            matrix = np.tensordot(self.y, self.y, axes=0) + \
+                self.alpha*np.eye(self.y.shape[0])
+            
+
+            self.B =  np.linalg.solve(matrix, rightHS).T
+            # pt,res,rank,s =  np.linalg.lstsq(matrix, rightHS)
+            # self.B = pt.T
+   
+            # Minimizing L over x
+            res = least_squares(fun=self.ADMM_utils_cf, x0=self.x,
+                                jac=self.ADMM_utils_jac,
+                                bounds=self.bounds_x,
+                                method='dogbox',
+                                verbose=0,
+                                gtol=1e-10,
+                                max_nfev=maxit
+                                )
+            self.x = res.x
+   
+   
+            # dual update
+            self.F = self.Ffun(self.x, *self.args, **self.kwargs)
+            self.lam += self.alpha*(self.B - self.F)
+   
+            h0 = h
+            h = self.h_value()
+            # dh = (h0 - h) * h0 * 100
+            # dh = np.sqrt( np.sum((self.x - x0)**2) + np.sum((self.y - y0)**2) )
+            dh = np.sqrt(np.sum((self.F - F0)**2)) / np.sqrt(np.sum(F0)**2)
+            print('iter %d / %d: cost = %e improved by %5.4f percent.'
+                  % (it, maxit, h, dh))
+   
+            if dh < gtol:
+                break
+   
+        return(self.x, self.y)
+    
+    def ADMM_utils_cf(self, x):
+         F = self.Ffun(x, *self.args, **self.kwargs)
+         return np.sum((self.B-F + self.lam/self.alpha)**2)/2
+    
+    def ADMM_utils_jac(self, x):
+         grad = np.zeros(x.shape)
+         F = self.Ffun(x, *self.args, **self.kwargs)
+         DF = self.DFfun(x, *self.args, **self.kwargs)
+
+         v = F - (self.lam/self.alpha) - self.B
+         v = v[:,:,np.newaxis]
+         temp =  DF * v 
+         
+         grad[:] = np.sum(np.sum(temp, 0),0)
+         return grad
+    
