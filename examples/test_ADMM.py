@@ -8,8 +8,9 @@ Anisotropic fractional Brownian field.
 import numpy as np
 # from varprox import minimize
 from afbf import coordinates, perfunction, tbfield
-from varprox.models.model_afbf import FitVariogramADMM
+from varprox.models.model_afbf import FitVariogram,FitVariogramADMM
 import matplotlib.pyplot as plt
+import time
 
 
 N = 30  # size of the grid for the definition of the semi-variogram.
@@ -54,10 +55,19 @@ model.ComputeApproximateSemiVariogram(lags)
 w0 = np.zeros(model.svario.values.shape)
 w0[:] = model.svario.values[:]
 
+tic = time.perf_counter()
+fittedModelADMM, fittedVarioADMM = FitVariogramADMM(model, lags, w0, multigrid=True, 
+                                  maxit=500,gtol=1e-2,verbose=1,alpha=0.5)
+toc = time.perf_counter()
+timeADMM = (toc-tic)
+print("Elapsed time %0.4f s" % timeADMM)
 
-fittedModel, fittedVario = FitVariogramADMM(model, lags, w0, multigrid=True, 
-                                  maxit=500,gtol=1e-5,verbose=1,alpha=0.1)
-
+tic = time.perf_counter()
+fittedModel, fittedVario = FitVariogram(model, lags, w0, multigrid=True, 
+                                  maxit=500,gtol=1e-2,verbose=1)
+toc = time.perf_counter()
+timeVarpro = (toc-tic)
+print("Elapsed time %0.4f s" % timeVarpro)
 
 # print(tau1)
 # print(tau0)
@@ -72,14 +82,6 @@ print(np.sqrt(np.sum( (fittedModel.hurst.fparam - beta0)**2) / np.sum(beta0**2) 
 print(np.sqrt(np.sum((fittedModel.topo.fparam- tau0)**2) / np.sum(tau0**2) ))
 
 
-# import matplotlib.pyplot as plt
-# var0 = SemiVariogram(tau0, beta0, f, lf, T, B)
-# var1 = SemiVariogram(tau1, beta1, f, lf, T, B)
-
-model.ComputeApproximateSemiVariogram(lags)
-model.svario.Display(1)
-
-fittedModel.ComputeApproximateSemiVariogram(lags)
-fittedModel.svario.Display(2)
-
-
+plt.plot(range(len(w0)),w0,range(len(fittedVarioADMM)),fittedVarioADMM,range(len(fittedVario)),fittedVario)
+plt.legend(['w0','vario ADMM','vario Varprox'])
+print("Relative error between estimated variograms: %f percent" % (100*np.sqrt(np.sum((fittedVario - fittedVarioADMM)**2)) / np.sqrt(np.sum(fittedVario**2))))

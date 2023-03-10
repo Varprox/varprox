@@ -5,7 +5,7 @@ Tools for minimizing the penalized SNLS criterion.
 import numpy as np
 from scipy.optimize import lsq_linear, least_squares
 from scipy.optimize import Bounds
-
+import matplotlib.pyplot as plt
 
 class minimize:
     r"""
@@ -247,11 +247,12 @@ class minimize:
             involving :math:`B` is fast.
         """
         # self.f = self.Ffun(np.ones(self.x.shape), *self.args, **self.kwargs)
+        CF = np.zeros(maxit)
         self.alpha = alpha
         h = self.h_value()
         x0 = np.zeros(self.x.shape)
         y0 = np.zeros(self.y.shape)
-   
+        
         self.F = self.Ffun(self.x, *self.args, **self.kwargs)
         self.B = self.F
         self.lam = np.zeros(self.B.shape)
@@ -264,6 +265,7 @@ class minimize:
             x0 = self.x
             y0 = self.y
             F0 = self.F
+            V0 = F0@y0    
    
             # Minimizing L over y
             res = lsq_linear(self.B, self.w, bounds=self.bounds_y)
@@ -296,15 +298,17 @@ class minimize:
             self.F = self.Ffun(self.x, *self.args, **self.kwargs)
             self.lam += self.alpha*(self.B - self.F)
    
+        
             h0 = h
             h = self.h_value()
-            # dh = (h0 - h) * h0 * 100
-            # dh = np.sqrt( np.sum((self.x - x0)**2) + np.sum((self.y - y0)**2) )
-            dh = np.sqrt(np.sum((self.F - F0)**2)) / np.sqrt(np.sum(F0)**2)
+            V = self.F@self.y
+            # dh = np.sqrt(np.sum((V - V0)**2)) / np.sqrt(np.sum(V0**2))
+            dh = (h0 - h) / h0 * 100
+            CF[it] = h 
             print('iter %d / %d: cost = %e improved by %5.4f percent.'
-                  % (it, maxit, h, dh))
-   
-            if dh < gtol:
+                      % (it, maxit, h, dh))
+               
+            if dh >= 0 and dh < gtol:
                 break
    
         return(self.x, self.y)
