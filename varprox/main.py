@@ -6,6 +6,7 @@ import numpy as np
 from scipy.optimize import lsq_linear, least_squares
 from scipy.optimize import Bounds
 import matplotlib.pyplot as plt
+import prox_tv as ptv
 
 class minimize:
     r"""
@@ -219,8 +220,8 @@ class minimize:
             else:
                 dh = 0
             if verbose > 0:
-                print('iter %d / %d: cost = %e improved by %5.4f percent.'
-                      % (it, maxit, h, dh))
+                print('iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'\
+                      .format(it, maxit, h, dh))
 
             if dh < gtol:
                 if dh < 0:
@@ -229,7 +230,7 @@ class minimize:
                 break
         return(self.x, self.y)
 
-    def argmin_h_ADMM(self, gtol=1e-3, alpha=1, maxit=1000):
+    def argmin_h_ADMM(self, gtol=1e-3, alpha=1, maxit=1000, reg=None,reg_param=0):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`  using ADMM.
    
         The ADMM uses the splitting :math:`B = F(x)`
@@ -246,7 +247,6 @@ class minimize:
             This resolution should be efficient when solving linear systems
             involving :math:`B` is fast.
         """
-        # self.f = self.Ffun(np.ones(self.x.shape), *self.args, **self.kwargs)
         CF = np.zeros(maxit)
         self.alpha = alpha
         h = self.h_value()
@@ -259,6 +259,10 @@ class minimize:
 
         bound = Bounds(
             self.bounds_x[0]*np.ones(self.x.shape), self.bounds_x[1]*np.ones(self.x.shape))
+
+        # Number of iterations in the forward-backward algorithm used to
+        # minimize the augmented Lagrangian over x
+        MAX_SUBITER = 10000
    
         for it in range(maxit):
    
@@ -283,18 +287,25 @@ class minimize:
             # self.B = pt.T
    
             # Minimizing L over x
-            res = least_squares(fun=self.ADMM_utils_cf, x0=self.x,
-                                jac=self.ADMM_utils_jac,
-                                bounds=self.bounds_x,
-                                method='dogbox',
-                                verbose=0,
-                                gtol=1e-10,
-                                max_nfev=maxit
-                                )
-            self.x = res.x
+            if reg == None:
+                res = least_squares(fun=self.ADMM_utils_cf, x0=self.x,
+                                    jac=self.ADMM_utils_jac,
+                                    bounds=self.bounds_x,
+                                    method='dogbox',
+                                    verbose=0,
+                                    gtol=1e-10,
+                                    max_nfev=maxit
+                                    )
+                self.x = res.x
+            elif reg == 'tv-1d':
+                for n in range(MAX_SUBITER):
+                    tmp = self.x - reg_param*self.ADMM_utils_cf(self.x)
+                    self.x = ptv.tv1_1d(tmp, reg_param)
+            else:
+                raise ValueError('The value of the parameter "reg" is unknown.')
    
    
-            # dual update
+            # Dual update
             self.F = self.Ffun(self.x, *self.args, **self.kwargs)
             self.lam += self.alpha*(self.B - self.F)
    
@@ -305,8 +316,8 @@ class minimize:
             # dh = np.sqrt(np.sum((V - V0)**2)) / np.sqrt(np.sum(V0**2))
             dh = (h0 - h) / h0 * 100
             CF[it] = h 
-            print('iter %d / %d: cost = %e improved by %5.4f percent.'
-                      % (it, maxit, h, dh))
+            print('iter {:3d} / {}: cost = {:.6e} improved by {:3.6f} percent.'\
+                  .format(it, maxit, h, dh))
                
             if dh >= 0 and dh < gtol:
                 break
