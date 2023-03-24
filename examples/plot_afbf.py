@@ -16,7 +16,6 @@ rng = default_rng()
 imrep = '../data/'
 imname = 'Mammo/Patch01.png'
 
-
 # Parameters to set the lags where to compute the semi-variogram.
 N = 40  # size of the grid for the definition of the semi-variogram.
 step = 2  # step for grid definition

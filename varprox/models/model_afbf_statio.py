@@ -4,7 +4,7 @@ Tools for computing the semi-variogram of an anisotropic fractional
 Brownian field and applying the fitting method.
 """
 import numpy as np
-from afbf import perfunction, tbfield
+from afbfstatio import perfunction, tbfield
 from varprox import minimize
 
 
@@ -79,7 +79,7 @@ def DFfun_AFBF(beta, f, lf, T, B, noise=1):
     return DF
 
 
-def FitVariogram(model, lags, w, noise=1, k=None,
+def FitVariogram(model, lags, w, noise=1,
                  multigrid=True, maxit=1000, gtol=1e-6, verbose=1):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
@@ -95,21 +95,30 @@ def FitVariogram(model, lags, w, noise=1, k=None,
     # Turning-band angles.
     phi = np.zeros(model.tb.Kangle.shape)
     phi[:] = model.tb.Kangle[:]
-    dphi = np.diff(phi)
+    # dphi = np.diff(phi)
     phi = phi[1:]
     phi = np.expand_dims(phi, axis=0)
-    dphi = np.expand_dims(dphi, axis=1)
+    # dphi = np.expand_dims(dphi, axis=1)
     # Coordinates where variograms are computed.
     xy = lags.xy
-    N = lags.N
+    # N = lags.N
 
+    increm = model.kappa.fparam[0, 0]
     csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
+
+    # K = model.tb.Qangle.size - 1
+    # csphi = np.concatenate((model.tb.Qangle[1:].reshape((1, K)),
+    #                         model.tb.Pangle[1:].reshape((1, K))), axis=0)
     cxy = xy @ csphi
-    f = [np.power(cxy, 2) / N**2]
-    if k is not None:
-        f.append(np.power(k * np.ones(cxy.shape), 2) / N**2)
-        f.append(np.power(cxy - k, 2) / N**2)
-        f.append(np.power(cxy + k, 2) / N**2)
+    # f = [np.power(cxy, 2) / N**2]
+    f = [np.power(cxy, 2)]
+    if increm is not None:
+        # f.append(np.power(increm * np.ones(cxy.shape), 2) / N**2)
+        # f.append(np.power(cxy - increm, 2) / N**2)
+        # f.append(np.power(cxy + increm, 2) / N**2)
+        f.append(np.power(increm * np.ones(cxy.shape), 2))
+        f.append(np.power(cxy - increm, 2))
+        f.append(np.power(cxy + increm, 2))
 
     lf = []
     for j in range(len(f)):
@@ -125,7 +134,7 @@ def FitVariogram(model, lags, w, noise=1, k=None,
         hurst = perfunction(model.hurst.ftype, param=1)
         topo = perfunction(model.topo.ftype, param=1)
         B = BasisFunctions(hurst, phi)
-        T = BasisFunctions(topo, phi) * dphi
+        T = BasisFunctions(topo, phi)  # * dphi
         h = np.inf
         beta = np.array([0.5])
         tau = np.ones((noise + 1,))
@@ -171,7 +180,7 @@ def FitVariogram(model, lags, w, noise=1, k=None,
             topo.finter[:] = model.topo.finter[:]
 
         B = BasisFunctions(hurst, phi)
-        T = BasisFunctions(topo, phi) * dphi
+        T = BasisFunctions(topo, phi)  # * dphi
 
         beta = beta2
         tau = tau2
@@ -208,9 +217,11 @@ def FitVariogram(model, lags, w, noise=1, k=None,
                     k2 = 2 * k
                     beta2[k2: k2 + 2] = beta[k]
 
+        print(tau)
         hurst.fparam[0, :] = beta[:]
         topo.fparam[0, :] = tau[noise:]
-        emodel = tbfield("Estimated model", topo, hurst, model.tb)
+        emodel = tbfield("Estimated model", topo, hurst, None, model.tb)
+        emodel.kappa.fparam[:] = increm
         if noise == 1:
             emodel.noise = tau[0]
         else:
