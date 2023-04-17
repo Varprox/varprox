@@ -110,7 +110,7 @@ ind = np.argsort(err)[::-1]
 errp = np.concatenate(
     (lags.xy[ind, :], np.expand_dims(sc[ind], 1),
      np.expand_dims(err[ind], 1)),
-    axis=1
+     axis=1
 )
 print(errp[0:5, :])
 

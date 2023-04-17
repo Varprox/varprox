@@ -79,7 +79,7 @@ def DFfun_AFBF(beta, f, lf, T, B, noise=1):
     return DF
 
 def FitVariogramADMM(model, lags, w, noise=1, k=None,
-                 multigrid=True, maxit=1000, gtol=1e-6, alpha=1, verbose=1):
+                     multigrid=True, maxit=1000, gtol=1e-6, alpha=1, verbose=True):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
@@ -175,13 +175,13 @@ def FitVariogramADMM(model, lags, w, noise=1, k=None,
         beta = beta2
         tau = tau2
 
-        if verbose > 0:
+        if verbose:
             print("Nb param: Hurst=%d, Topo=%d" %
                   (hurst.fparam.size, topo.fparam.size))
             print("Tol = %e, Nepochs = %d" % (gtol, maxit))
         pb = minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, noise)
-        beta, tau = pb.argmin_h_ADMM(gtol, alpha,maxit)
+        beta, tau = pb.argmin_h_ADMM(gtol, alpha, maxit)
 
         stop = True
         if multigrid:
@@ -220,7 +220,7 @@ def FitVariogramADMM(model, lags, w, noise=1, k=None,
 
 
 def FitVariogram(model, lags, w, noise=1, k=None,
-                 multigrid=True, maxit=1000, gtol=1e-6, verbose=1):
+                 multigrid=True, maxit=1000, gtol=1e-6, verbose=True):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
@@ -316,13 +316,16 @@ def FitVariogram(model, lags, w, noise=1, k=None,
         beta = beta2
         tau = tau2
 
-        if verbose > 0:
+        if verbose:
             print("Nb param: Hurst=%d, Topo=%d" %
                   (hurst.fparam.size, topo.fparam.size))
             print("Tol = %e, Nepochs = %d" % (gtol, maxit))
         pb = minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, noise)
-        beta, tau = pb.argmin_h(gtol, maxit, verbose)
+        if beta.size == 8:
+            beta, tau = pb.argmin_h_ADMM(gtol, 1, maxit, reg="tv-1d", reg_param=0.00015)
+        else:
+            beta, tau = pb.argmin_h(gtol, maxit, verbose)
 
         stop = True
         if multigrid:

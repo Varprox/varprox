@@ -200,7 +200,7 @@ class minimize:
         self.y = res.x
         return(res.x)
 
-    def argmin_h(self, gtol=1e-3, maxit=1000, verbose=1):
+    def argmin_h(self, gtol=1e-3, maxit=1000, verbose=True):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
         """
         h = self.h_value()
@@ -219,7 +219,7 @@ class minimize:
                 dh = (h0 - h) / h0 * 100
             else:
                 dh = 0
-            if verbose > 0:
+            if verbose:
                 print('iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'\
                       .format(it, maxit, h, dh))
 
@@ -298,9 +298,21 @@ class minimize:
                                     )
                 self.x = res.x
             elif reg == 'tv-1d':
+                tau = 1
+                sigma = 1
+                L = generate_discrete_grad_mat(self.x.shape[0])
                 for n in range(MAX_SUBITER):
-                    tmp = self.x - reg_param*self.ADMM_utils_cf(self.x)
-                    self.x = ptv.tv1_1d(tmp, reg_param)
+                    # Primal update
+                    p = self.x - tau*self.ADMM_utils_jac(self.x) - sigma*L.transpose()@v
+                    # Projection on [0,1]
+                    p[p<0] = 1e-30
+                    p[p>1] = 0.99999
+                    # Dual update
+                    q = v + sigma*L@(2*p-self.x) - ptv.tv1_1d(v + sigma*L@(2*p-x), reg_param/sigma)
+                    # Inertial update
+                    lamb = 1
+                    x_p = x + lamb(p-x)
+                    v_p = v + lamb(q-v)
             else:
                 raise ValueError('The value of the parameter "reg" is unknown.')
    
@@ -339,4 +351,11 @@ class minimize:
          
          grad[:] = np.sum(np.sum(temp, 0),0)
          return grad
+
+    def generate_discrete_grad_mat(n):
+        D = np.zeros([n,n])
+        i,j = np.indices(D.shape)
+        D[i==j] = 1
+        D[i==j+1] = -1
+        return D
     
