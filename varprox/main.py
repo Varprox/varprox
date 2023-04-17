@@ -300,7 +300,10 @@ class minimize:
             elif reg == 'tv-1d':
                 tau = 1
                 sigma = 1
-                L = generate_discrete_grad_mat(self.x.shape[0])
+                n = self.x.shape[0]
+                v = np.zeros(self.x.shape)
+                L = self.generate_discrete_grad_mat(n)
+                #L = self.generate_discrete_grad_mat(8)
                 for n in range(MAX_SUBITER):
                     # Primal update
                     p = self.x - tau*self.ADMM_utils_jac(self.x) - sigma*L.transpose()@v
@@ -308,11 +311,11 @@ class minimize:
                     p[p<0] = 1e-30
                     p[p>1] = 0.99999
                     # Dual update
-                    q = v + sigma*L@(2*p-self.x) - ptv.tv1_1d(v + sigma*L@(2*p-x), reg_param/sigma)
+                    q = v + sigma*L@(2*p-self.x) - ptv.tv1_1d(v + sigma*L@(2*p-self.x), reg_param/sigma)
                     # Inertial update
                     lamb = 1
-                    x_p = x + lamb(p-x)
-                    v_p = v + lamb(q-v)
+                    x_p = self.x + lamb*(p-self.x)
+                    v_p = v + lamb*(q-v)
             else:
                 raise ValueError('The value of the parameter "reg" is unknown.')
    
@@ -352,7 +355,7 @@ class minimize:
          grad[:] = np.sum(np.sum(temp, 0),0)
          return grad
 
-    def generate_discrete_grad_mat(n):
+    def generate_discrete_grad_mat(self, n):
         D = np.zeros([n,n])
         i,j = np.indices(D.shape)
         D[i==j] = 1
