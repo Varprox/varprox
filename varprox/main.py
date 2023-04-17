@@ -298,24 +298,38 @@ class minimize:
                                     )
                 self.x = res.x
             elif reg == 'tv-1d':
-                tau = 1
-                sigma = 1
+                # Apply a primal-dual Forward-Backward algorithm to solve the
+                # minimization with a regularization
+
+                # Define constants for the primal-dual Forward-Backward algorithm
+                TAU = 1
+                SIGMA = 1
+                TOL = 1e-3
+
+                # Initialization
                 n = self.x.shape[0]
                 v = np.zeros(self.x.shape)
                 L = self.generate_discrete_grad_mat(n)
-                #L = self.generate_discrete_grad_mat(8)
+                crit = np.Inf
+
+                # Primal-dual Forward-backward algorithm (rescaled version)
                 for n in range(MAX_SUBITER):
                     # Primal update
-                    p = self.x - tau*self.ADMM_utils_jac(self.x) - sigma*L.transpose()@v
+                    p = self.x - TAU*self.ADMM_utils_jac(self.x) - SIGMA*L.transpose()@v
                     # Projection on [0,1]
                     p[p<0] = 1e-30
                     p[p>1] = 0.99999
                     # Dual update
-                    q = v + sigma*L@(2*p-self.x) - ptv.tv1_1d(v + sigma*L@(2*p-self.x), reg_param/sigma)
+                    q = v + SIGMA*L@(2*p-self.x) - ptv.tv1_1d(v + SIGMA*L@(2*p-self.x), reg_param/SIGMA)
                     # Inertial update
-                    lamb = 1
-                    x_p = self.x + lamb*(p-self.x)
-                    v_p = v + lamb*(q-v)
+                    LAMB = 1
+                    x_p = self.x + LAMB*(p-self.x)
+                    v_p = v + LAMB*(q-v)
+                    # Check stopping criterion (convergence in term objective function)
+                    crit_old = crit
+                    crit = self.ADMM_utils_cf(self.x)
+                    if crit_old - crit < TOL*crit:
+                        break
             else:
                 raise ValueError('The value of the parameter "reg" is unknown.')
    
@@ -324,7 +338,6 @@ class minimize:
             self.F = self.Ffun(self.x, *self.args, **self.kwargs)
             self.lam += self.alpha*(self.B - self.F)
    
-        
             h0 = h
             h = self.h_value()
             V = self.F@self.y
