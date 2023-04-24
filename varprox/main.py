@@ -7,6 +7,7 @@ from scipy.optimize import lsq_linear, least_squares
 from scipy.optimize import Bounds
 import matplotlib.pyplot as plt
 import prox_tv as ptv
+from dataclasses import dataclass
 
 class minimize:
     r"""
@@ -97,7 +98,6 @@ class minimize:
         :type bounds_x: 2-tuple of array_like, optional
         :param bounds_y: Lower and upper bounds on :math:`y`.
         :type bounds_y: 2-tuple of array_like, optional
-
         :param args, kwargs: Additional arguments passed to Ffun and DFfun.
             Empty by default.
         :type args, kwargs: tuple and dict, optional
@@ -259,13 +259,8 @@ class minimize:
 
         bound = Bounds(
             self.bounds_x[0]*np.ones(self.x.shape), self.bounds_x[1]*np.ones(self.x.shape))
-
-        # Number of iterations in the forward-backward algorithm used to
-        # minimize the augmented Lagrangian over x
-        MAX_SUBITER = 10000
    
         for it in range(maxit):
-   
             x0 = self.x
             y0 = self.y
             F0 = self.F
@@ -298,38 +293,8 @@ class minimize:
                                     )
                 self.x = res.x
             elif reg == 'tv-1d':
-                # Apply a primal-dual Forward-Backward algorithm to solve the
-                # minimization with a regularization
-
-                # Define constants for the primal-dual Forward-Backward algorithm
-                TAU = 1
-                SIGMA = 1
-                TOL = 1e-3
-
-                # Initialization
-                n = self.x.shape[0]
-                v = np.zeros(self.x.shape)
-                L = self.generate_discrete_grad_mat(n)
-                crit = np.Inf
-
-                # Primal-dual Forward-backward algorithm (rescaled version)
-                for n in range(MAX_SUBITER):
-                    # Primal update
-                    p = self.x - TAU*self.ADMM_utils_jac(self.x) - SIGMA*L.transpose()@v
-                    # Projection on [0,1]
-                    p[p<0] = 1e-30
-                    p[p>1] = 0.99999
-                    # Dual update
-                    q = v + SIGMA*L@(2*p-self.x) - ptv.tv1_1d(v + SIGMA*L@(2*p-self.x), reg_param/SIGMA)
-                    # Inertial update
-                    LAMB = 1
-                    x_p = self.x + LAMB*(p-self.x)
-                    v_p = v + LAMB*(q-v)
-                    # Check stopping criterion (convergence in term objective function)
-                    crit_old = crit
-                    crit = self.ADMM_utils_cf(self.x)
-                    if crit_old - crit < TOL*crit:
-                        break
+                myparams = FBPD_Param(reg_param)
+                self.x = self.rfbpd(self.x, myparams)
             else:
                 raise ValueError('The value of the parameter "reg" is unknown.')
    
@@ -369,9 +334,73 @@ class minimize:
          return grad
 
     def generate_discrete_grad_mat(self, n):
+        r"""Generate the discrete gradient matrix, i.e. the matrix with 1 on its
+        diagonal and -1 on its first sub-diagonal.
+
+        :param n: Dimension of the generated matrix.
+        :type n: int
+
+        :return: The discrete gradient matrix.     
+        """
         D = np.zeros([n,n])
         i,j = np.indices(D.shape)
         D[i==j] = 1
         D[i==j+1] = -1
         return D
-    
+
+    def rfbpd(self, x0, param):
+        r"""Implementation of the Primal-dual Forward-backward algorithm
+        (rescaled version).
+        
+        :param x0: Initial value of the primal variable.
+        :type x0: :class:`numpy.ndarray` (1-dimensional)
+
+        :param param: Parameters of the algorithm.
+        :type param: :class:`RFBPD_Param`
+
+        :return: Final value of the primal variable.
+        """
+        # Define constants for the primal-dual Forward-Backward algorithm
+        #TAU = 1
+        #SIGMA = 1
+        #TOL = 1e-3
+        EPS = 1e-30
+
+        # Initialization
+        n = x0.shape[0]
+        x = x0
+        v = np.zeros(x0.shape)
+        L = self.generate_discrete_grad_mat(n)
+        crit = np.Inf
+
+        # Main loop
+        for n in range(param.max_iter):
+            # 1) Primal update
+            p = x - param.tau*self.ADMM_utils_jac(x) - \
+                param.sigma*L.transpose()@v
+            # Projection on [0,1]
+            p[p<0] = EPS
+            p[p>1] = 1-EPS
+            # 2) Dual update
+            q = v + param.sigma*L@(2*p-x) - \
+                ptv.tv1_1d(v + param.sigma*L@(2*p-x),
+                           param.reg_param/param.sigma)
+            # 3) Inertial update
+            LAMB = 1
+            x = x + LAMB*(p-x)
+            v = v + LAMB*(q-v)
+            # 4) Check stopping criterion (convergence in term objective function)
+            crit_old = crit
+            crit = self.ADMM_utils_cf(x)
+            if crit_old - crit < param.tol*crit:
+                break
+        return x
+
+
+@dataclass
+class FBPD_Param:
+    reg_param: float
+    max_iter: int = 10000
+    tol: float = 1e-3
+    sigma: float = 1
+    tau: float = 1
