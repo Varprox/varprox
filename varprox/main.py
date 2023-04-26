@@ -8,6 +8,7 @@ from scipy.optimize import Bounds
 import matplotlib.pyplot as plt
 import prox_tv as ptv
 from dataclasses import dataclass
+from numpy import linalg as LA
 
 class minimize:
     r"""
@@ -293,7 +294,7 @@ class minimize:
                                     )
                 self.x = res.x
             elif reg == 'tv-1d':
-                myparams = FBPD_Param(reg_param)
+                myparams = RFBPD_Param(reg_param)
                 self.x = self.rfbpd(self.x, myparams)
             else:
                 raise ValueError('The value of the parameter "reg" is unknown.')
@@ -361,10 +362,7 @@ class minimize:
         :return: Final value of the primal variable.
         """
         # Define constants for the primal-dual Forward-Backward algorithm
-        #TAU = 1
-        #SIGMA = 1
-        #TOL = 1e-3
-        EPS = 1e-30
+        EPS = 1e-8
 
         # Initialization
         n = x0.shape[0]
@@ -373,17 +371,19 @@ class minimize:
         L = self.generate_discrete_grad_mat(n)
         crit = np.Inf
 
+        #param.sigma = sigma=LA.norm(L)**(-2)
+
         # Main loop
         for n in range(param.max_iter):
             # 1) Primal update
             p = x - param.tau*self.ADMM_utils_jac(x) - \
                 param.sigma*L.transpose()@v
             # Projection on [0,1]
-            p[p<0] = EPS
-            p[p>1] = 1-EPS
+            p[p<=0] = EPS
+            p[p>=1] = 1-EPS
             # 2) Dual update
-            q = v + param.sigma*L@(2*p-x) - \
-                ptv.tv1_1d(v + param.sigma*L@(2*p-x),
+            q = v + L@(2*p-x) - \
+                ptv.tv1_1d(v + L@(2*p-x),
                            param.reg_param/param.sigma)
             # 3) Inertial update
             LAMB = 1
@@ -398,7 +398,7 @@ class minimize:
 
 
 @dataclass
-class FBPD_Param:
+class RFBPD_Param:
     reg_param: float
     max_iter: int = 10000
     tol: float = 1e-3
