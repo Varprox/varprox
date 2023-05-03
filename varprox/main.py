@@ -397,6 +397,19 @@ class minimize:
         return x
 
 def tv(x):
+    r"""
+    This function compute the 1-dimensional discrete total variation of its
+    input vector
+
+    .. math::
+
+        TV(x) = \sum_{n=1}^{N-1} x_{n+1} - x_{n}.
+
+    :param x: input vector of length :math:`N`.
+    :type x: :class:`numpy.ndarray` of size (N,)
+
+    :return: 1-dimensional discrete total variation of the vector :math:`x`.
+    """
     return np.sum(np.abs(np.diff(x)))
 
 @dataclass
