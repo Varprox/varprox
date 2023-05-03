@@ -391,11 +391,13 @@ class minimize:
             v = v + LAMB*(q-v)
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = self.ADMM_utils_cf(x)
+            crit = self.ADMM_utils_cf(x) + tv(x)
             if crit_old - crit < param.tol*crit:
                 break
         return x
 
+def tv(x):
+    return np.sum(np.abs(np.diff(x)))
 
 @dataclass
 class RFBPD_Param:
