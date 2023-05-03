@@ -392,7 +392,7 @@ class minimize:
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
             crit = self.ADMM_utils_cf(x) + tv(x)
-            if crit_old - crit < param.tol*crit:
+            if np.abs(crit_old - crit) < param.tol*crit:
                 break
         return x
 
