@@ -182,8 +182,8 @@ def FitVariogram(model, lags, w, noise=1, k=None,
         pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, noise)
         if beta.size == 16:
-            #beta, tau = pb.argmin_h(gtol, maxit, verbose)
-            beta, tau = pb.argmin_h(gtol, maxit, verbose, reg="tv-1d", reg_param=0.15)
+            beta, tau = pb.argmin_h(gtol, maxit, verbose)
+            #beta, tau = pb.argmin_h(gtol, maxit, verbose, reg="tv-1d", reg_param=0.15)
         else:
             beta, tau = pb.argmin_h(gtol, maxit, verbose)
 
