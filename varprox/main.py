@@ -151,48 +151,60 @@ class Minimize:
     def val_res(self, x):
         r"""Compute the residuals :math:`\epsilon_n` in :eq:`residuals`.
 
-        :return: update the attribute eps.
+        :param x: Point where to compute the residuals
+        :type x: :class:`numpy.ndarray` of size (N,)
+
+        :return: Value of the residuals at the point given in argument
         """
-        return(self.Ffun(x, *self.args, **self.kwargs) @ self.y - self.w)
+        return self.Ffun(x, *self.args, **self.kwargs) @ self.y - self.w
 
     def jac_res_x(self, x):
-        r"""Compute the jacobian of residuals with respect to :math:`x`.
+        r"""Compute the Jacobian of residuals with respect to :math:`x`.
 
-        :return: update the attribute eps_jac_x.
+        :param x: Point where to compute the Jacobian of the residuals
+        :type x: :class:`numpy.ndarray` of size (N,)
+
+        :return: Value of the Jacobian of residuals at the current point :math:`x`.
         """
         DF = self.DFfun(x, *self.args, **self.kwargs)
         eps_jac_x = np.zeros((DF.shape[0], x.size))
         for n in range(DF.shape[0]):
             eps_jac_x[n, :] = DF[n].T @ self.y
-        return(eps_jac_x)
+        return eps_jac_x
 
     def h_value(self):
         r"""Compute the value of the criterion :math:`h` in :eq:`criterion`
         using Equation :eq:`criterion2`.
 
-        :return: update the attributes h and eps.
+        :return: Value of :math:`h` at the current point :math:`x`.
         """
-        return(np.sum(np.power(self.val_res(self.x), 2)) / 2)
+        return np.sum(np.power(self.val_res(self.x), 2)) / 2
 
-    def argmin_h_x(self, x, gtol=1e-3, maxit=1000, reg=None, reg_param=0):
+    def argmin_h_x(self, x_init, param):
         r"""Minimize :math:`h` with respect to :math:`x`.
 
-        :return: update the attribute x.
+        :param x_init: Initial point for the minimization algorithm
+        :type x_init: :class:`numpy.ndarray` of size (N,)
+
+        :param param: Parameter for the algorithm
+        :type param: :class:RFBPD_Param
+
+        :return: Minimizer of :math:`h` with respect to :math:`x`
         """
         ret_x = None
-        # Minimizing L over x
-        if reg == None:
-            res = least_squares(fun=self.val_res, x0=x,
+        # Minimizing h over x
+        if param.reg == None:
+            res = least_squares(fun=self.val_res, x0=x_init,
                             jac=self.jac_res_x,
                             bounds=self.bounds_x,
                             method='trf',
                             verbose=0,
-                            gtol=gtol,
-                            max_nfev=maxit
+                            gtol=param.gtol,
+                            max_nfev=param.maxit
                             )
             ret_x = res.x
-        elif reg == 'tv-1d':
-            myparams = RFBPD_Param(reg_param)
+        elif param.reg == 'tv-1d':
+            myparams = RFBPD_Param(param.reg_param)
             ret_x = self.rfbpd(x, myparams)
         else:
             raise ValueError('The value of the parameter <reg> is unknown.')
@@ -201,6 +213,11 @@ class Minimize:
     def argmin_h_y(self, x):
         r"""Minimize :math:`h` with respect to :math:`y`.
 
+        :param x_init: Point where to evaluate :math:`F`
+        :type x_init: :class:`numpy.ndarray` of size (N,)
+
+        :return: Minimizer of :math:`h` with respect to :math:`y`
+
         .. note::
             This operation corresponds to eq:`varpro`, which is the
             variable projection.
@@ -208,19 +225,23 @@ class Minimize:
         res = lsq_linear(self.Ffun(x, *self.args, **self.kwargs), self.w,
                          bounds=self.bounds_y)
         self.y = res.x
-        return(res.x)
+        return res.x
 
-    def argmin_h(self, gtol=1e-3, maxit=1000, verbose=True, reg=None, reg_param=0):
+    def argmin_h(self, param):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
+
+        :param param: Parameter for the algorithm
+        :type param: :class:Varprox_Param
+
+        :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
         h = self.h_value()
         x0 = np.zeros(self.x.shape)
         y0 = np.zeros(self.y.shape)
-        for it in range(maxit):
-
+        for it in range(param.maxit):
             x0[:] = self.x[:]
             y0[:] = self.y[:]
-            self.x = self.argmin_h_x(self.x, gtol, maxit, reg, reg_param)
+            self.x = self.argmin_h_x(self.x, param)
             self.y = self.argmin_h_y(self.x)
 
             h0 = h
@@ -229,16 +250,16 @@ class Minimize:
                 dh = abs(h0 - h) / h0 * 100
             else:
                 dh = 0
-            if verbose:
+            if param.verbose:
                 print('iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'\
-                      .format(it, maxit, h, dh))
+                      .format(it, param.maxit, h, dh))
 
-            if dh < gtol:
+            if dh < param.gtol:
                 if dh < 0:
                     self.x[:] = x0[:]
                     self.y[:] = y0[:]
                 break
-        return(self.x, self.y)
+        return (self.x, self.y)
 
     def generate_discrete_grad_mat(self, n):
         r"""Generate the discrete gradient matrix, i.e. the matrix with 1 on its
@@ -432,6 +453,7 @@ def tv(x):
     """
     return np.sum(np.abs(np.diff(x)))
 
+
 def prox_l1(data, reg_param):
     r"""
     This function implements the proximal operator of the l1-norm
@@ -443,13 +465,23 @@ def prox_l1(data, reg_param):
     :param reg_param: parameter of the operator (strictly positive).
     :type reg_param: float
 
-    :return: the proximal operator (here a 1-dimensional vector) of the l1-norm
-    evaluated at point data 
+    :return: The proximal operator (here a 1-dimensional vector) of the l1-norm
+    evaluated at the given point
     """
     tmp = abs(data) - reg_param
     tmp = (tmp + abs(tmp)) / 2
     y = np.sign(data) * tmp
     return y
+
+
+@dataclass
+class Varprox_Param:
+    gtol: float = 1e-3
+    maxit: int = 1000
+    verbose: bool = True
+    reg: str = None
+    reg_param: float = 0
+
 
 @dataclass
 class RFBPD_Param:
@@ -458,6 +490,7 @@ class RFBPD_Param:
     tol: float = 1e-3
     sigma: float = 1
     tau: float = 1
+
 
 @dataclass
 class ADMM_Param:

@@ -7,7 +7,7 @@ from afbf import sdata, coordinates, perfunction, tbfield
 from matplotlib import pyplot as plt
 from numpy.fft import fft2, fftshift
 from numpy.random import default_rng
-from varprox.models.model_afbf import FitVariogram
+from varprox.models.model_afbf import FitVariogram, Fit_Param
 
 
 # ============================ Plotting Functions ============================ #
@@ -23,6 +23,7 @@ def plot_comp_vario(handle, img_semivario, fit_semivario, sim_semivario):
     plt.xlabel("lag module")
     plt.show()
 
+
 def plot_comp_vario_2(handle, img_semivario, fit_semivario, sim_semivario):
     plt.figure(handle)
     xmin = np.amin([img_semivario, fit_semivario])
@@ -32,6 +33,7 @@ def plot_comp_vario_2(handle, img_semivario, fit_semivario, sim_semivario):
     plt.xlabel("Semi-variogram of the original image")
     plt.ylabel("Semi-variogram of the simulated image")
     plt.axis([xmin, xmax, xmin, xmax])
+
 
 def plot_comp_fft(x0, x1):
     FONTSIZE = 50
@@ -104,6 +106,7 @@ if __name__ == "__main__":
     maxit = 10000
     gtol = 0.001
     verbose = 1
+    myparam = Fit_Param(noise_lvl, None, multigrid, maxit, gtol, verbose)
 
     # Import image.
     im = sdata()
@@ -129,9 +132,7 @@ if __name__ == "__main__":
     model = tbfield("Fitted model", topo, hurst)
     
     # Fitting of the semi-variogram.
-    model, w1 = FitVariogram(
-        model, lags, w0, noise_lvl, None,
-        multigrid, maxit, gtol, verbose)
+    model, w1 = FitVariogram(model, lags, w0, myparam)
     delta = model.noise
     
     model.DisplayParameters(1)

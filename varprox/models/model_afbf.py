@@ -5,7 +5,8 @@ Brownian field and applying the fitting method.
 """
 import numpy as np
 from afbf import perfunction, tbfield
-from varprox import Minimize
+from varprox import Minimize, Varprox_Param
+from dataclasses import dataclass
 
 
 def BasisFunctions(fun, t):
@@ -24,10 +25,10 @@ def SemiVariogram(tau, beta, f, T, B, noise=1):
     """Compute the semi-variogram of an AFBF or its increment field.
     """
     if len(f) == 1:
-        # Semi-variogram of the field.
+        # Semi-variogram of the field
         return(SemiVariogram_AFBF(tau, beta, f[0], T, B, noise))
     else:
-        # Semi-variogram of increment field.
+        # Semi-variogram of increment field
         return(2 * (SemiVariogram_AFBF(tau, beta, f[0], T, B, noise)
                     + SemiVariogram_AFBF(tau, beta, f[1], T, B, noise))
                - SemiVariogram_AFBF(tau, beta, f[2], T, B, noise)
@@ -36,10 +37,10 @@ def SemiVariogram(tau, beta, f, T, B, noise=1):
 
 def Ffun(beta, f, lf, T, B, noise=1):
     if len(f) == 1:
-        # Semi-variogram of the field.
+        # Semi-variogram of the field
         return(Ffun_AFBF(beta, f[0], T, B, noise))
     else:
-        # Semi-variogram of increment field.
+        # Semi-variogram of increment field
         return(2 * (Ffun_AFBF(beta, f[0], T, B, noise)
                     + Ffun_AFBF(beta, f[1], T, B, noise))
                - Ffun_AFBF(beta, f[2], T, B, noise)
@@ -47,12 +48,11 @@ def Ffun(beta, f, lf, T, B, noise=1):
 
 
 def DFfun(beta, f, lf, T, B, noise=1):
-
     if len(f) == 1:
-        # Semi-variogram of the field.
+        # Semi-variogram of the field
         return(DFfun_AFBF(beta, f[0], lf[0], T, B, noise))
     else:
-        # Semi-variogram of increment field.
+        # Semi-variogram of increment field
         return(2 * (DFfun_AFBF(beta, f[0], lf[0], T, B, noise)
                     + DFfun_AFBF(beta, f[1], lf[1], T, B, noise))
                - DFfun_AFBF(beta, f[2], lf[2], T, B, noise)
@@ -78,34 +78,34 @@ def DFfun_AFBF(beta, f, lf, T, B, noise=1):
             DF[:, j, k] = v @ (T[:, j - noise] * B[:, k])
     return DF
 
-def FitVariogram(model, lags, w, noise=1, k=None,
-                 multigrid=True, maxit=1000, gtol=1e-6, verbose=True):
+
+def FitVariogram(model, lags, w, param):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         print("FitVariogram: only runs for step functions.")
         return(0)
 
-    # Number of model parameters.
+    # Number of model parameters
     npar0_tau = model.topo.fparam.size
     npar0_beta = model.hurst.fparam.size
 
-    # Ffun and Dfun parameters.
-    # Turning-band angles.
+    # Ffun and Dfun parameters
+    # Turning-band angles
     phi = np.zeros(model.tb.Kangle.shape)
     phi[:] = model.tb.Kangle[:]
     dphi = np.diff(phi)
     phi = phi[1:]
     phi = np.expand_dims(phi, axis=0)
     dphi = np.expand_dims(dphi, axis=1)
-    # Coordinates where variograms are computed.
+    # Coordinates where variograms are computed
     xy = lags.xy
     N = lags.N
 
     csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
     f = [np.power(xy @ csphi, 2) / N**2]
-    if k is not None:
-        k = np.matlib.repmat(np.reshape(k, (1, 2)), xy.shape[0], 1)
+    if param.k is not None:
+        param.k = np.matlib.repmat(np.reshape(k, (1, 2)), xy.shape[0], 1)
         f.append(np.power(k @ csphi, 2) / N**2)
         f.append(np.power((xy - k) @ csphi, 2) / N**2)
         f.append(np.power((xy + k) @ csphi, 2) / N**2)
@@ -119,17 +119,17 @@ def FitVariogram(model, lags, w, noise=1, k=None,
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
 
-    if multigrid:
-        # Initialization.
+    if param.multigrid:
+        # Initialization
         hurst = perfunction(model.hurst.ftype, param=1)
         topo = perfunction(model.topo.ftype, param=1)
         B = BasisFunctions(hurst, phi)
         T = BasisFunctions(topo, phi) * dphi
         h = np.inf
         beta = np.array([0.5])
-        tau = np.ones((noise + 1,))
+        tau = np.ones((param.noise + 1,))
         pb = Minimize(beta, tau, w, Ffun, DFfun,
-                      bounds_beta, bounds_tau, f, lf, T, B, noise)
+                      bounds_beta, bounds_tau, f, lf, T, B, param.noise)
         for i in range(1, 9):
             beta = np.array([i / 10])
             tau = pb.argmin_h_y(beta)
@@ -154,12 +154,12 @@ def FitVariogram(model, lags, w, noise=1, k=None,
     while stop is False:
         hurst = perfunction(model.hurst.ftype, param=npar_beta)
         topo = perfunction(model.topo.ftype, param=npar_tau)
-        if multigrid:
-            # Definition of the interval bounds for a step function.
+        if param.multigrid:
+            # Definition of the interval bounds for a step function (Hurst)
             ninter = hurst.finter.size
             Iv = np.linspace(-np.pi / 2, np.pi / 2, ninter + 1, True)[1:]
             hurst.ChangeParameters(hurst.fparam, Iv)
-            # Definition of the interval bounds for a step function.
+            # Definition of the interval bounds for a step function (topothesy)
             ninter = topo.finter.size
             Iv = np.linspace(-np.pi / 2, np.pi / 2, ninter + 1, True)[1:]
             topo.ChangeParameters(topo.fparam, Iv)
@@ -175,20 +175,27 @@ def FitVariogram(model, lags, w, noise=1, k=None,
         beta = beta2
         tau = tau2
 
-        if verbose:
+        if param.verbose:
             print("Nb param: Hurst=%d, Topo=%d" %
                   (hurst.fparam.size, topo.fparam.size))
-            print("Tol = %e, Nepochs = %d" % (gtol, maxit))
+            print("Tol = %e, Nepochs = %d" % (param.gtol, param.maxit))
         pb = Minimize(beta, tau, w, Ffun, DFfun,
-                      bounds_beta, bounds_tau, f, lf, T, B, noise)
+                      bounds_beta, bounds_tau, f, lf, T, B, param.noise)
         if beta.size == 16:
-            beta, tau = pb.argmin_h(gtol, maxit, verbose)
-            #beta, tau = pb.argmin_h(gtol, maxit, verbose, reg="tv-1d", reg_param=0.15)
+            myoptim_param = Varprox_Param(param.gtol, param.maxit,
+                                          param.verbose)
+            beta, tau = pb.argmin_h(myoptim_param)
+            #myoptim_param = Varprox_Param(param.gtol, param.maxit,
+            #                              param.verbose, reg="tv-1d",
+            #                              reg_param=0.15)
+            #beta, tau = pb.argmin_h(myoptimparam)
         else:
-            beta, tau = pb.argmin_h(gtol, maxit, verbose)
+            myoptim_param = Varprox_Param(param.gtol, param.maxit,
+                                          param.verbose)
+            beta, tau = pb.argmin_h(myoptim_param)
 
         stop = True
-        if multigrid:
+        if param.multigrid:
             npar0 = npar_tau
             npar = npar_tau * 2
             if npar <= npar0_tau:
@@ -197,8 +204,8 @@ def FitVariogram(model, lags, w, noise=1, k=None,
                 tau2 = np.zeros(npar)
                 for k in range(npar0):
                     k2 = 2 * k
-                    tau2[k2:k2 + 2] = tau[noise + k]
-                if noise == 1:
+                    tau2[k2:k2 + 2] = tau[param.noise + k]
+                if param.noise == 1:
                     tau2 = np.insert(tau2, 0, tau[0])
 
             npar0 = npar_beta
@@ -212,11 +219,21 @@ def FitVariogram(model, lags, w, noise=1, k=None,
                     beta2[k2: k2 + 2] = beta[k]
 
         hurst.fparam[0, :] = beta[:]
-        topo.fparam[0, :] = tau[noise:]
+        topo.fparam[0, :] = tau[param.noise:]
         emodel = tbfield("Estimated model", topo, hurst, model.tb)
-        if noise == 1:
+        if param.noise == 1:
             emodel.noise = tau[0]
         else:
             emodel.noise = 0
 
-    return (emodel, SemiVariogram(tau, beta, f, T, B, noise))
+    return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
+
+
+@dataclass
+class Fit_Param:
+    noise: int = 1
+    k: np.ndarray = None
+    multigrid: bool = True
+    maxit: int = 1000
+    gtol: float = 1e-6
+    verbose: bool = True
