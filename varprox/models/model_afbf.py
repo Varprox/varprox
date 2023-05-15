@@ -182,13 +182,13 @@ def FitVariogram(model, lags, w, param):
         pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, param.noise)
         if beta.size == 16:
-            myoptim_param = Varprox_Param(param.gtol, param.maxit,
-                                          param.verbose)
-            beta, tau = pb.argmin_h(myoptim_param)
             #myoptim_param = Varprox_Param(param.gtol, param.maxit,
-            #                              param.verbose, reg="tv-1d",
-            #                              reg_param=0.15)
-            #beta, tau = pb.argmin_h(myoptimparam)
+            #                              param.verbose)
+            #beta, tau = pb.argmin_h(myoptim_param)
+            myoptim_param = Varprox_Param(param.gtol, param.maxit,
+                                          param.verbose, reg="tv-1d",
+                                          reg_param=0.15)
+            beta, tau = pb.argmin_h(myoptim_param)
         else:
             myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                           param.verbose)

@@ -352,9 +352,8 @@ class Minimize:
             p[p<=0] = EPS
             p[p>=1] = 1-EPS
             # 2) Dual update
-            q = v + L@(2*p-x) - \
-                prox_l1(v + L@(2*p-x),
-                        param.reg_param/param.sigma)
+            q = v + L@(2*p-x) - prox_l1(v + L@(2*p-x),
+                                        param.reg_param/param.sigma)
             # 3) Inertial update
             LAMB = 1
             x = x + LAMB*(p-x)
@@ -465,8 +464,7 @@ def prox_l1(data, reg_param):
     :param reg_param: parameter of the operator (strictly positive).
     :type reg_param: float
 
-    :return: The proximal operator (here a 1-dimensional vector) of the l1-norm
-    evaluated at the given point
+    :return: The proximal operator of the l1-norm evaluated at the given point.
     """
     tmp = abs(data) - reg_param
     tmp = (tmp + abs(tmp)) / 2
