@@ -273,12 +273,11 @@ class Minimize:
 
         .. math::
             
-
             p_{n} &= \textrm{prox}_{\rho f} (x_{n}-\rho(\nabla h(x_{n})+\sigma L^{\top}x_{n}))\\
             q_{n} &= (\mathrm{Id}-\textrm{prox}_{\sigma g/\sigma}) (v_{n}+L(2p_{n}-x_{n})\\
             (x_{n+1},v_{n+1}) &= (x_{n},v_{n}) + \lambda_{n}((p_{n},q_{n})-(x_{n},v_{n}))
         
-        where :math:`\rho` and :math:`\sigma` are step sizes (strictly postiive)
+        where :math:`\rho` and :math:`\sigma` are step sizes (strictly positive)
         on the primal and the dual problem respectively, :math:`\lambda_{n}` are
         inertial parameters, and :math:`v_{n}` is the rescaled dual variable.
 
@@ -288,7 +287,7 @@ class Minimize:
         is the discrete gradient operator, and :math:`h` is the nonlinear
         least-squares.
 
-        Note that :math:`\rho` and :math:`\sigma` needs to satisfy the following
+        Note that :math:`\rho` and :math:`\sigma` need to satisfy the following
         inequality in order to guarantee the convergence of the sequence
         :math:`(x_{n})` to a solution to the optimization:
         :math:`\rho^{-1}-\sigma\|L\|_{*}^{2} \geq \gamma/2`.
