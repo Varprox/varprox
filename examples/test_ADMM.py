@@ -6,7 +6,6 @@ Anisotropic fractional Brownian field.
 
 """
 import numpy as np
-# from varprox import minimize
 from afbf import coordinates, perfunction, tbfield
 from varprox.models.model_afbf import FitVariogram,FitVariogramADMM
 import matplotlib.pyplot as plt

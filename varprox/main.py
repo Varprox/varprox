@@ -6,11 +6,11 @@ import numpy as np
 from scipy.optimize import lsq_linear, least_squares
 from scipy.optimize import Bounds
 import matplotlib.pyplot as plt
-import prox_tv as ptv
 from dataclasses import dataclass
 from numpy import linalg as LA
 
-class minimize:
+# ============================== CLASS MINIMIZE ============================== #
+class Minimize:
     r"""
     This class contains methods to minimize of a separable non-linear
     least square criterion, which is of the form:
@@ -256,9 +256,43 @@ class minimize:
         return D
 
     def rfbpd(self, x0, param):
-        r"""Implementation of the Primal-dual Forward-backward algorithm
-        (rescaled version).
+        r"""Implementation of the rescaled Primal-dual Forward-backward
+        algorithm (RFBPD)  to minimize the following optimization problem:
+
+        .. math::
+            :label: uncons_pb
+
+            \min_{x\in\mathbb{R}^{n}} f(x) + g(Lx) + h(x) \, ,
+
+        where :math:`f`, :math:`g`, and :math:`h` are proper, lower
+        semi-continuous, and convex functions, :math:`h` is gradient
+        :math:`\gamma`-Lipschitz, and :math:`L` is a linear operator from
+        :math:`\mathbb{R}^{k}` to :math:`\mathbb{R}^{n}`.
+
+        RFBPD iteration then reads:
+
+        .. math::
+            
+
+            p_{n} &= \textrm{prox}_{\rho f} (x_{n}-\rho(\nabla h(x_{n})+\sigma L^{\top}x_{n}))\\
+            q_{n} &= (\mathrm{Id}-\textrm{prox}_{\sigma g/\sigma}) (v_{n}+L(2p_{n}-x_{n})\\
+            (x_{n+1},v_{n+1}) &= (x_{n},v_{n}) + \lambda_{n}((p_{n},q_{n})-(x_{n},v_{n}))
         
+        where :math:`\rho` and :math:`\sigma` are step sizes (strictly postiive)
+        on the primal and the dual problem respectively, :math:`\lambda_{n}` are
+        inertial parameters, and :math:`v_{n}` is the rescaled dual variable.
+
+        In this implementation, :math:`f` is the indicator function of the set
+        :math:`[\epsilon,1-\epsilon]^n`, :math:`g` is the :math:`\ell_{1}`-norm
+        multiplied by a (strictly positive) regularization parameter, :math:`L`
+        is the discrete gradient operator, and :math:`h` is the nonlinear
+        least-squares.
+
+        Note that :math:`\rho` and :math:`\sigma` needs to satisfy the following
+        inequality in order to guarantee the convergence of the sequence
+        :math:`(x_{n})` to a solution to the optimization:
+        :math:`\rho^{-1}-\sigma\|L\|_{*}^{2} \geq \gamma/2`.
+
         :param x0: Initial value of the primal variable.
         :type x0: :class:`numpy.ndarray` (1-dimensional)
 
@@ -267,18 +301,28 @@ class minimize:
 
         :return: Final value of the primal variable.
         """
-        # Define constants for the primal-dual Forward-Backward algorithm
-        EPS = 1e-8
+        # Constant for the projection on [EPS,1-EPS] corresponding to the
+        # constraint that beta belongs to the open set ]0,1[
+        EPS = 1e-8 
 
         # Initialization
-        n = x0.shape[0]
-        x = x0
-        v = np.zeros(x0.shape)
-        L = self.generate_discrete_grad_mat(n)
-        crit = np.Inf
+        n = x0.shape[0]        # Dimension of the ambient space
+        x = x0                 # Primal variable
+        v = np.zeros(x0.shape) # Dual variable
+        L = self.generate_discrete_grad_mat(n) # Linear operator
+        crit = np.Inf          # Initial value of the objective function
 
-        #param.sigma = sigma=LA.norm(L)**(-2)
+        param.sigma = LA.norm(L)**(-2)
 
+        # Check the input parameters tau and sigma
+        # beta = ??? # Value of the Lipschitz constant for the gradient of h
+        # if 1/param.tau-param.sigma*LA.norm(L)**2 < beta/2:
+        #     raise Exception("Input values for parameters tau and sigma are not valid.")
+        # delta = 2-beta/(1/param.tau-param.sigma*LA.norm(L)**2)
+        # if (delta < 1) or (delta >= 2):
+        #     raise Exception("Input values for parameters tau and sigma are not valid.")
+        
+        
         # Main loop
         for n in range(param.max_iter):
             # 1) Primal update
@@ -289,8 +333,8 @@ class minimize:
             p[p>=1] = 1-EPS
             # 2) Dual update
             q = v + L@(2*p-x) - \
-                ptv.tv1_1d(v + L@(2*p-x),
-                           param.reg_param/param.sigma)
+                prox_l1(v + L@(2*p-x),
+                        param.reg_param/param.sigma)
             # 3) Inertial update
             LAMB = 1
             x = x + LAMB*(p-x)
@@ -300,11 +344,82 @@ class minimize:
             crit = 0.5*LA.norm(self.val_res(x))**2 + tv(x)
             if np.abs(crit_old - crit) < param.tol*crit:
                 break
+
         return x
 
+    def admm(self, x0, param):
+        r"""Implementation of ADMM to minimize the optimization problem
+        :eq:`uncons_pb`.
+
+        ADMM iteration then reads:
+
+        .. math::
+
+            x_{n} &= \textrm{argmin}_{x \in \mathbb{R}^{n}} \frac{1}{2}\|Lx-y_{n}+z_{n}\|^{2} + \frac{1}{\gamma}(f(x)+h(x))\\
+            s_{n} &= L x_{n}\\
+            y_{n+1} &= \textrm{prox}_{g/\sigma} (z_{n}+s_{n})\\
+            z_{n+1} &= z_{n}+s_{n}-y_{n+1}
+        
+        where :math:`\gamma` is the (strictly positive) parameter of the augmented
+        Lagrangian, :math:`\gamma z_{n}` is the dual variable, and :math:`x_{n}`
+        is the primal variable.
+
+        In this implementation, :math:`f` is the indicator function of the set
+        :math:`[\epsilon,1-\epsilon]^n`, :math:`g` is the :math:`\ell_{1}`-norm
+        multiplied by a (strictly positive) regularization parameter, :math:`L`
+        is the discrete gradient operator, and :math:`h` is the nonlinear
+        least-squares.
+
+        :param x0: Initial value of the primal variable.
+        :type x0: :class:`numpy.ndarray` (1-dimensional)
+
+        :param param: Parameters of the algorithm.
+        :type param: :class:`ADMM_Param`
+
+        :return: Final value of the primal variable.
+        """
+        # Constant for the projection on [EPS,1-EPS] corresponding to the
+        # constraint that beta belongs to the open set ]0,1[
+        EPS = 1e-8 
+
+        # Initialization
+        n = x0.shape[0]        # Dimension of the ambient space
+        x = x0                 # Primal variable
+        y = np.zeros(x0.shape) # Second primal variable
+        z = np.zeros(x0.shape) # Dual variable
+        L = self.generate_discrete_grad_mat(n) # Linear operator
+        crit = np.Inf          # Initial value of the objective function
+        
+        # Main loop
+        for n in range(param.max_iter):
+            # 1) Minimize the augmented Lagrangian in x using a Forward-Backward
+            #    subroutine
+            for m in range(10000):
+                # a) Forward step (gradient descent)
+                x = x - L.transpose()@(L@x-y+z)\
+                    - param.gamma*self.jac_res_x(x).transpose()@self.val_res(x)
+                # b) Backward step (projection on [EPS,1-EPS])
+                x[p<=0] = EPS
+                x[p>=1] = 1-EPS
+            # 2) Update temporary variable s
+            s = L@x
+            # 3) Minimize the augmented Lagrangian in y
+            y = prox_l1(z + s, param.reg_param/param.gamma)
+            # 4) Update the dual variable using a gradient ascent
+            z = z + s - y
+            # 5) Check stopping criterion (convergence in term objective function)
+            crit_old = crit
+            crit = 0.5*LA.norm(self.val_res(x))**2 + tv(x)
+            if np.abs(crit_old - crit) < param.tol*crit:
+                break
+
+        return x
+# ============================ END CLASS MINIMIZE  =========================== #
+
+# ========================= Helping Functions/Classes ======================== #
 def tv(x):
     r"""
-    This function compute the 1-dimensional discrete total variation of its
+    This function computes the 1-dimensional discrete total variation of its
     input vector
 
     .. math::
@@ -318,6 +433,25 @@ def tv(x):
     """
     return np.sum(np.abs(np.diff(x)))
 
+def prox_l1(data, reg_param):
+    r"""
+    This function implements the proximal operator of the l1-norm
+    (a.k.a. soft thresholding).
+
+    :param data: input vector of length :math:`N`.
+    :type data: :class:`numpy.ndarray` of size (N,)
+
+    :param reg_param: parameter of the operator (strictly positive).
+    :type reg_param: float
+
+    :return: the proximal operator (here a 1-dimensional vector) of the l1-norm
+    evaluated at point data 
+    """
+    tmp = abs(data) - reg_param
+    tmp = (tmp + abs(tmp)) / 2
+    y = np.sign(data) * tmp
+    return y
+
 @dataclass
 class RFBPD_Param:
     reg_param: float
@@ -325,3 +459,11 @@ class RFBPD_Param:
     tol: float = 1e-3
     sigma: float = 1
     tau: float = 1
+
+@dataclass
+class ADMM_Param:
+    reg_param: float
+    max_iter: int = 10000
+    tol: float = 1e-3
+    gamma: float = 1
+# ============================================================================ #

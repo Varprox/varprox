@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 r"""
 Fit an AFBF model to mammograms.
 """
@@ -29,7 +28,11 @@ scalemin = 0  # minimal scale for grid definition of the semi-variogram.
 K = 16  # Number of parameters for the Hurst function.
 J = K  # Number of parameters for the topothesy function.
 ftype = "step"  # Type of representation for Hurst and topothesy functions.
-noise = 1  # 1 if model with additive noise, 0 otherwise.
+noise = True    # True if model with additive noise, False otherwise.
+if noise:
+    noise_lvl = 1
+else:
+    noise_lvl = 0
 
 # Optimization parameters
 multigrid = True
@@ -63,7 +66,7 @@ model = tbfield("Fitted model", topo, hurst)
 
 # Fitting of the semi-variogram.
 model, w1 = FitVariogram(
-    model, lags, w0, noise, None,
+    model, lags, w0, noise_lvl, None,
     multigrid, maxit, gtol, verbose)
 delta = model.noise
 
@@ -75,7 +78,7 @@ coord = coordinates()
 coord.DefineUniformGrid(im.coord.N)
 simu = model.Simulate(coord)
 simu.name = "Simulation"
-if noise == 1:
+if noise:
     simu.values = simu.values +\
         np.sqrt(delta) * rng.standard_normal(simu.values.shape)
 

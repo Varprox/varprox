@@ -5,12 +5,11 @@ Requirements
     * Numpy
     * Matplotlib
     * PyAFBF
-    * Prox-TV
     * imagio
    They can be installed for instance with the following command
 
    ```
-   $ pip3 install numpy matplotlib PyAFBF install prox-tv imageio
+   $ pip3 install numpy matplotlib PyAFBF imageio
    ```
 
 #. The documentation generator relies on Sphinx. It can be installed as follows:

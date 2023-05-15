@@ -1,5 +1,5 @@
 API reference.
 ==============
 
-.. autoclass:: varprox.main.minimize
+.. autoclass:: varprox.main.Minimize
    :members:

@@ -5,7 +5,7 @@ Brownian field and applying the fitting method.
 """
 import numpy as np
 from afbf import perfunction, tbfield
-from varprox import minimize
+from varprox import Minimize
 
 
 def BasisFunctions(fun, t):
@@ -129,7 +129,7 @@ def FitVariogram(model, lags, w, noise=1, k=None,
         h = np.inf
         beta = np.array([0.5])
         tau = np.ones((noise + 1,))
-        pb = minimize(beta, tau, w, Ffun, DFfun,
+        pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, noise)
         for i in range(1, 9):
             beta = np.array([i / 10])
@@ -180,7 +180,7 @@ def FitVariogram(model, lags, w, noise=1, k=None,
             print("Nb param: Hurst=%d, Topo=%d" %
                   (hurst.fparam.size, topo.fparam.size))
             print("Tol = %e, Nepochs = %d" % (gtol, maxit))
-        pb = minimize(beta, tau, w, Ffun, DFfun,
+        pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, noise)
         beta, tau = pb.argmin_h(gtol, maxit, verbose)
 
