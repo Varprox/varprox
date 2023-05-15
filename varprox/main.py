@@ -107,8 +107,7 @@ class Minimize:
         if (not isinstance(w, np.ndarray)
            or not isinstance(x0, np.ndarray)
            or not isinstance(y0, np.ndarray)):
-            print('Problem with variable type.')
-            return(None)
+            raise TypeError("Problem with variable type.")
 
         # Define input variables as row vectors.
         N = w.size
@@ -121,19 +120,15 @@ class Minimize:
         # Test input variable consistency.
         aux = Ffun(self.x0, *args, **kwargs)
         if not isinstance(aux, np.ndarray):
-            print('Problem with variable type of F output.')
-            return(None)
+            raise TypeError("Problem with variable type of F output.")
         if aux.shape[0] != N or aux.shape[1] != J:
-            print('Problem with the definition of F.')
-            return(None)
+            raise ValueError("Problem with the definition of F.")
 
         aux = DFfun(self.x0, *args, **kwargs)
         if not isinstance(aux, np.ndarray):
-            print('Problem with variable type of DF output.')
-            return(None)
+            raise TypeError("Problem with variable type of DF output.")
         if (aux.shape[0] != N or aux.shape[1] != J or aux.shape[2] != K):
-            print('Problem with the definition of DF.')
-            return(None)
+            raise ValueError("Problem with the definition of DF.")
 
         self.Ffun = Ffun
         self.DFfun = DFfun
@@ -205,7 +200,7 @@ class Minimize:
             ret_x = res.x
         elif param.reg == 'tv-1d':
             myparams = RFBPD_Param(param.reg_param)
-            ret_x = self.rfbpd(x, myparams)
+            ret_x = self.rfbpd(x_init, myparams)
         else:
             raise ValueError('The value of the parameter <reg> is unknown.')
         return ret_x
