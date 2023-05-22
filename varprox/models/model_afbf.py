@@ -105,10 +105,10 @@ def FitVariogram(model, lags, w, param):
     csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
     f = [np.power(xy @ csphi, 2) / N**2]
     if param.k is not None:
-        param.k = np.matlib.repmat(np.reshape(k, (1, 2)), xy.shape[0], 1)
-        f.append(np.power(k @ csphi, 2) / N**2)
-        f.append(np.power((xy - k) @ csphi, 2) / N**2)
-        f.append(np.power((xy + k) @ csphi, 2) / N**2)
+        param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
+        f.append(np.power(param.k @ csphi, 2) / N**2)
+        f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
+        f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
 
     lf = []
     for j in range(len(f)):
@@ -147,7 +147,7 @@ def FitVariogram(model, lags, w, param):
         beta2[:] = model.hurst.fparam[0, :]
         tau2 = np.zeros((model.topo.fparam.size,))
         tau2[:] = model.topo.fparam[0, :]
-        if noise == 1:
+        if param.noise == 1:
             tau2 = np.insert(tau2, 0, 0)
 
     stop = False
@@ -181,10 +181,10 @@ def FitVariogram(model, lags, w, param):
             print("Tol = %e, Nepochs = %d" % (param.gtol, param.maxit))
         pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, param.noise)
-        if beta.size == 16:
-            #myoptim_param = Varprox_Param(param.gtol, param.maxit,
+        if False:  # beta.size == 16:
+            # myoptim_param = Varprox_Param(param.gtol, param.maxit,
             #                              param.verbose)
-            #beta, tau = pb.argmin_h(myoptim_param)
+            # beta, tau = pb.argmin_h(myoptim_param)
             myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                           param.verbose, reg="tv-1d",
                                           reg_param=0.15)
@@ -225,6 +225,89 @@ def FitVariogram(model, lags, w, param):
             emodel.noise = tau[0]
         else:
             emodel.noise = 0
+
+    return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
+
+
+def FitVariogram_ADMM(model, lags, w, param):
+    """Fit the field variogram using a coarse-to-fine multigrid strategy.
+    """
+    if model.hurst.ftype != "step" or model.topo.ftype != "step":
+        print("FitVariogram: only runs for step functions.")
+        return(0)
+
+    # Number of model parameters
+    npar0_tau = model.topo.fparam.size
+    npar0_beta = model.hurst.fparam.size
+
+    # Ffun and Dfun parameters
+    # Turning-band angles
+    phi = np.zeros(model.tb.Kangle.shape)
+    phi[:] = model.tb.Kangle[:]
+    dphi = np.diff(phi)
+    phi = phi[1:]
+    phi = np.expand_dims(phi, axis=0)
+    dphi = np.expand_dims(dphi, axis=1)
+    # Coordinates where variograms are computed
+    xy = lags.xy
+    N = lags.N
+
+    csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
+    f = [np.power(xy @ csphi, 2) / N**2]
+    if param.k is not None:
+        param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
+        f.append(np.power(param.k @ csphi, 2) / N**2)
+        f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
+        f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
+
+    lf = []
+    for j in range(len(f)):
+        lf.append(np.zeros(f[j].shape))
+        ind = np.nonzero(f[j] > 0)
+        lf[j][ind] = np.log(f[j][ind])
+
+    bounds_beta = (0, 1)
+    bounds_tau = (0, np.inf)
+
+    npar_tau = npar0_tau
+    npar_beta = npar0_beta
+    beta = np.zeros((model.hurst.fparam.size,))
+    beta[:] = model.hurst.fparam[0, :]
+    tau = np.zeros((model.topo.fparam.size,))
+    tau[:] = model.topo.fparam[0, :]
+    if param.noise == 1:
+        tau = np.insert(tau, 0, 0)
+
+    hurst = perfunction(model.hurst.ftype, param=npar_beta)
+    topo = perfunction(model.topo.ftype, param=npar_tau)
+    hurst.fparam[:] = model.hurst.fparam[:]
+    hurst.finter[:] = model.hurst.finter[:]
+    topo.fparam[:] = model.topo.fparam[:]
+    topo.finter[:] = model.topo.finter[:]
+
+    B = BasisFunctions(hurst, phi)
+    T = BasisFunctions(topo, phi) * dphi
+
+    if param.verbose:
+        print("Proximal Dual.")
+        print("Nb param: Hurst=%d, Topo=%d" %
+              (hurst.fparam.size, topo.fparam.size))
+        print("Tol = %e, Nepochs = %d" % (param.gtol, param.maxit))
+    pb = Minimize(beta, tau, w, Ffun, DFfun,
+                  bounds_beta, bounds_tau, f, lf, T, B, param.noise)
+
+    myoptim_param = Varprox_Param(param.gtol, param.maxit,
+                                  param.verbose, reg="tv-1d",
+                                  reg_param=0.15)
+    beta, tau = pb.argmin_h(myoptim_param)
+
+    hurst.fparam[0, :] = beta[:]
+    topo.fparam[0, :] = tau[param.noise:]
+    emodel = tbfield("Estimated model", topo, hurst, model.tb)
+    if param.noise == 1:
+        emodel.noise = tau[0]
+    else:
+        emodel.noise = 0
 
     return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
 

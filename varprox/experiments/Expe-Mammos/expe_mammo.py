@@ -7,10 +7,11 @@ from afbf import sdata, coordinates, perfunction, tbfield
 from matplotlib import pyplot as plt
 from numpy.fft import fft2, fftshift
 from numpy.random import default_rng
-from varprox.models.model_afbf import FitVariogram, Fit_Param
+from varprox.models.model_afbf import FitVariogram, FitVariogram_ADMM
+from varprox.models.model_afbf import Fit_Param
 
 
-# ============================ Plotting Functions ============================ #
+# ============================ Plotting Functions =========================== #
 def plot_comp_vario(handle, img_semivario, fit_semivario, sim_semivario):
     plt.figure(handle)
     plt.plot(sc, img_semivario, "r+",
@@ -37,7 +38,7 @@ def plot_comp_vario_2(handle, img_semivario, fit_semivario, sim_semivario):
 
 def plot_comp_fft(x0, x1):
     FONTSIZE = 50
-    
+
     x0f = fft2(x0)
     x1f = fft2(x1)
     x0p = np.angle(x0f)
@@ -49,7 +50,7 @@ def plot_comp_fft(x0, x1):
 
     lxal = 0
     lxau = np.amax([lx0a, lx1a])
-    
+
     f, axarr = plt.subplots(2, 3, figsize=(40, 20))
 
     axarr[0, 0].imshow(x0, cmap="gray")
@@ -77,8 +78,10 @@ def plot_comp_fft(x0, x1):
     axarr[1, 2].axis("off")
 
     plt.show()
-# ============================================================================ #
-    
+
+# =========================================================================== #
+
+
 if __name__ == "__main__":
     rng = default_rng()
 
@@ -100,7 +103,7 @@ if __name__ == "__main__":
         noise_lvl = 1
     else:
         noise_lvl = 0
-        
+
     # Optimization parameters
     multigrid = True
     maxit = 10000
@@ -121,22 +124,22 @@ if __name__ == "__main__":
     lags.xy = lags.xy[ind[0], :]
     sc = sc[ind[0]]
     lags.N = im.coord.N
-    
+
     # Empirical semi-variogram of the image.
     w0 = im.ComputeEmpiricalSemiVariogram(lags).values[:, 0]
-    
+
     # Definition of the reference model.
     print('Fitting a model with %d + %d parameters' % (J, K))
     topo = perfunction('step', J)
     hurst = perfunction('step', K)
     model = tbfield("Fitted model", topo, hurst)
-    
+
     # Fitting of the semi-variogram.
     model, w1 = FitVariogram(model, lags, w0, myparam)
     delta = model.noise
-    
+
     model.DisplayParameters(1)
-    
+
     # Sampling from the estimated field.
     # Coordinates where to simulate an image.
     coord = coordinates()
@@ -146,7 +149,7 @@ if __name__ == "__main__":
     if noise:
         simu.values = simu.values +\
             np.sqrt(delta) * rng.standard_normal(simu.values.shape)
-    
+
     # Empirical variogram of the simulation.
     w11 = simu.ComputeEmpiricalSemiVariogram(lags).values[:, 0]
 
@@ -163,13 +166,12 @@ if __name__ == "__main__":
         axis=1
     )
     print(errp[0:5, :])
-    
+
     # Plot variogram comparison
     plot_comp_vario(3, w0, w1, w11)
     plot_comp_vario_2(4, w0, w1, w11)
-    
-    # Plot comparison of original and simulated images
-    x0 = im.values.reshape(im.M)[0: simu.M[0], 0: simu.M[1]]
-    x1 = simu.values.reshape(simu.M)
-    plot_comp_fft(x0,x1)
 
+    # Plot comparison of original and simulated images
+    x0 = im.values.reshape(im.M)[0:simu.M[0], 0:simu.M[1]]
+    x1 = simu.values.reshape(simu.M)
+    plot_comp_fft(x0, x1)

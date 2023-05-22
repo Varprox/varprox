@@ -4,12 +4,12 @@ Tools for minimizing the penalized SNLS criterion.
 """
 import numpy as np
 from scipy.optimize import lsq_linear, least_squares
-from scipy.optimize import Bounds
-import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from numpy import linalg as LA
 
-# ============================== CLASS MINIMIZE ============================== #
+# ============================== CLASS MINIMIZE ============================= #
+
+
 class Minimize:
     r"""
     This class contains methods to minimize of a separable non-linear
@@ -166,6 +166,11 @@ class Minimize:
         for n in range(DF.shape[0]):
             eps_jac_x[n, :] = DF[n].T @ self.y
         return eps_jac_x
+    
+    def gradient_g(self, x):
+        r"""Compute the gradient of the function :math:`g`.
+        """
+        return self.jac_res_x(x).transpose() @ self.val_res(x) 
 
     def h_value(self):
         r"""Compute the value of the criterion :math:`h` in :eq:`criterion`
@@ -188,15 +193,15 @@ class Minimize:
         """
         ret_x = None
         # Minimizing h over x
-        if param.reg == None:
+        if param.reg is None:
             res = least_squares(fun=self.val_res, x0=x_init,
-                            jac=self.jac_res_x,
-                            bounds=self.bounds_x,
-                            method='trf',
-                            verbose=0,
-                            gtol=param.gtol,
-                            max_nfev=param.maxit
-                            )
+                                jac=self.jac_res_x,
+                                bounds=self.bounds_x,
+                                method='trf',
+                                verbose=0,
+                                gtol=param.gtol,
+                                max_nfev=param.maxit
+                                )
             ret_x = res.x
         elif param.reg == 'tv-1d':
             myparams = RFBPD_Param(param.reg_param)
@@ -263,12 +268,12 @@ class Minimize:
         :param n: Dimension of the generated matrix.
         :type n: int
 
-        :return: The discrete gradient matrix.     
+        :return: The discrete gradient matrix.
         """
-        D = np.zeros([n,n])
-        i,j = np.indices(D.shape)
-        D[i==j] = 1
-        D[i==j+1] = -1
+        D = np.zeros([n, n])
+        i, j = np.indices(D.shape)
+        D[i == j] = 1
+        D[i == j + 1] = -1
         return D
 
     def rfbpd(self, x0, param):
@@ -290,9 +295,9 @@ class Minimize:
         .. math::
             
             p_{n} &= \textrm{prox}_{\rho f} (x_{n}-\rho(\nabla h(x_{n})+\sigma L^{\top}x_{n}))\\
-            q_{n} &= (\mathrm{Id}-\textrm{prox}_{\sigma g/\sigma}) (v_{n}+L(2p_{n}-x_{n})\\
+            q_{n} &= (\mathrm{Id}-\textrm{prox}_{\lambda g/\sigma}) (v_{n}+L(2p_{n}-x_{n})\\
             (x_{n+1},v_{n+1}) &= (x_{n},v_{n}) + \lambda_{n}((p_{n},q_{n})-(x_{n},v_{n}))
-        
+
         where :math:`\rho` and :math:`\sigma` are step sizes (strictly positive)
         on the primal and the dual problem respectively, :math:`\lambda_{n}` are
         inertial parameters, and :math:`v_{n}` is the rescaled dual variable.
@@ -318,16 +323,17 @@ class Minimize:
         """
         # Constant for the projection on [EPS,1-EPS] corresponding to the
         # constraint that beta belongs to the open set ]0,1[
-        EPS = 1e-8 
+        EPS = 1e-8
 
         # Initialization
-        n = x0.shape[0]        # Dimension of the ambient space
-        x = x0                 # Primal variable
-        v = np.zeros(x0.shape) # Dual variable
-        L = self.generate_discrete_grad_mat(n) # Linear operator
+        n = x0.shape[0]         # Dimension of the ambient space
+        x = x0                  # Primal variable
+        v = np.zeros(x0.shape)  # Dual variable
+        L = self.generate_discrete_grad_mat(n)  # Linear operator
         crit = np.Inf          # Initial value of the objective function
 
-        param.sigma = LA.norm(L)**(-2)
+        param.tau = 10e-4 / LA.norm(self.gradient_g(x)) # LA.norm(L)**(-2)*1e-14
+        param.sigma = 1 / LA.norm(L)**2
 
         # Check the input parameters tau and sigma
         # beta = ??? # Value of the Lipschitz constant for the gradient of h
@@ -336,28 +342,35 @@ class Minimize:
         # delta = 2-beta/(1/param.tau-param.sigma*LA.norm(L)**2)
         # if (delta < 1) or (delta >= 2):
         #     raise Exception("Input values for parameters tau and sigma are not valid.")
-        
-        
+
         # Main loop
-        for n in range(param.max_iter):
+        for n in range(3): #param.max_iter):
             # 1) Primal update
-            p = x - param.tau*self.jac_res_x(x).transpose()@self.val_res(x) - \
-                param.sigma*L.transpose()@v
+            
+            p = x - param.tau * self.gradient_g(x) -\
+                param.sigma * L.transpose() @ v
+            # p = x - param.tau * self.jac_res_x(x).transpose() @ self.val_res(x) - \
+            #     param.sigma * L.transpose() @ v
+            print(p)
             # Projection on [EPS,1-EPS]
-            p[p<=0] = EPS
-            p[p>=1] = 1-EPS
+            p[p <= 0] = EPS
+            p[p >= 1] = 1 - EPS
             # 2) Dual update
-            q = v + L@(2*p-x) - prox_l1(v + L@(2*p-x),
-                                        param.reg_param/param.sigma)
+            q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
+                                              param.reg_param / param.sigma)
             # 3) Inertial update
             LAMB = 1
-            x = x + LAMB*(p-x)
-            v = v + LAMB*(q-v)
+            x = x + LAMB * (p - x)
+            v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5*LA.norm(self.val_res(x))**2 + tv(x)
-            if np.abs(crit_old - crit) < param.tol*crit:
+            crit = 0.5 * LA.norm(self.val_res(x))**2 + tv(x)
+            dh = (crit_old - crit) / crit
+            if np.abs(dh) < param.tol:
                 break
+            else:
+                print('sub iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
+                      .format(n, param.max_iter, crit, dh))
 
         return x
 
@@ -373,7 +386,7 @@ class Minimize:
             s_{n} &= L x_{n}\\
             y_{n+1} &= \textrm{prox}_{g/\sigma} (z_{n}+s_{n})\\
             z_{n+1} &= z_{n}+s_{n}-y_{n+1}
-        
+
         where :math:`\gamma` is the (strictly positive) parameter of the augmented
         Lagrangian, :math:`\gamma z_{n}` is the dual variable, and :math:`x_{n}`
         is the primal variable.
@@ -394,16 +407,16 @@ class Minimize:
         """
         # Constant for the projection on [EPS,1-EPS] corresponding to the
         # constraint that beta belongs to the open set ]0,1[
-        EPS = 1e-8 
+        EPS = 1e-8
 
         # Initialization
-        n = x0.shape[0]        # Dimension of the ambient space
-        x = x0                 # Primal variable
-        y = np.zeros(x0.shape) # Second primal variable
-        z = np.zeros(x0.shape) # Dual variable
-        L = self.generate_discrete_grad_mat(n) # Linear operator
-        crit = np.Inf          # Initial value of the objective function
-        
+        n = x0.shape[0]         # Dimension of the ambient space
+        x = x0                  # Primal variable
+        y = np.zeros(x0.shape)  # Second primal variable
+        z = np.zeros(x0.shape)  # Dual variable
+        L = self.generate_discrete_grad_mat(n)  # Linear operator
+        crit = np.Inf           # Initial value of the objective function
+
         # Main loop
         for n in range(param.max_iter):
             # 1) Minimize the augmented Lagrangian in x using a Forward-Backward
@@ -413,24 +426,25 @@ class Minimize:
                 x = x - L.transpose()@(L@x-y+z)\
                     - param.gamma*self.jac_res_x(x).transpose()@self.val_res(x)
                 # b) Backward step (projection on [EPS,1-EPS])
-                x[p<=0] = EPS
-                x[p>=1] = 1-EPS
+                x[x <= 0] = EPS
+                x[x >= 1] = 1-EPS
             # 2) Update temporary variable s
             s = L@x
             # 3) Minimize the augmented Lagrangian in y
-            y = prox_l1(z + s, param.reg_param/param.gamma)
+            y = prox_l1(z + s, param.reg_param / param.gamma)
             # 4) Update the dual variable using a gradient ascent
             z = z + s - y
             # 5) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5*LA.norm(self.val_res(x))**2 + tv(x)
+            crit = 0.5 * LA.norm(self.val_res(x))**2 + tv(x)
             if np.abs(crit_old - crit) < param.tol*crit:
                 break
 
         return x
-# ============================ END CLASS MINIMIZE  =========================== #
+# ============================ END CLASS MINIMIZE  ========================== #
+# ========================= Helping Functions/Classes ======================= #
 
-# ========================= Helping Functions/Classes ======================== #
+
 def tv(x):
     r"""
     This function computes the 1-dimensional discrete total variation of its
