@@ -1,24 +1,20 @@
 # -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
 r"""
-Fit an AFBF model to mammograms.
+Fit an AFBF model to an image to sample realistic textures.
 """
 import numpy as np
 from afbf import sdata, coordinates, perfunction, tbfield
 from matplotlib import pyplot as plt
+from varprox.models.model_afbf import FitVariogram
 from numpy.fft import fft2, fftshift
 from numpy.random import default_rng
-
-Algo = "Varpro"
-if Algo == "Varpro":
-    from varprox.models.model_afbf import FitVariogram
-
 
 rng = default_rng()
 
 # Original image.
-imrep = '../../../data/'
-imname = 'Mammo/Patch03.png'
+imrep = '../data/'
+imname = 'Mammo/Patch01.png'
 
 # Parameters to set the lags where to compute the semi-variogram.
 N = 40  # size of the grid for the definition of the semi-variogram.

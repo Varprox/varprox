@@ -21,64 +21,6 @@ def BasisFunctions(fun, t):
     return fun.basis.T
 
 
-def SemiVariogram(tau, beta, f, T, B, noise=1):
-    """Compute the semi-variogram of an AFBF or its increment field.
-    """
-    if len(f) == 1:
-        # Semi-variogram of the field.
-        return(SemiVariogram_AFBF(tau, beta, f[0], T, B, noise))
-    else:
-        # Semi-variogram of increment field.
-        return(2 * (SemiVariogram_AFBF(tau, beta, f[0], T, B, noise)
-                    + SemiVariogram_AFBF(tau, beta, f[1], T, B, noise))
-               - SemiVariogram_AFBF(tau, beta, f[2], T, B, noise)
-               - SemiVariogram_AFBF(tau, beta, f[3], T, B, noise))
-
-
-def Ffun(beta, f, lf, T, B, noise=1):
-    if len(f) == 1:
-        # Semi-variogram of the field.
-        return(Ffun_AFBF(beta, f[0], T, B, noise))
-    else:
-        # Semi-variogram of increment field.
-        return(2 * (Ffun_AFBF(beta, f[0], T, B, noise)
-                    + Ffun_AFBF(beta, f[1], T, B, noise))
-               - Ffun_AFBF(beta, f[2], T, B, noise)
-               - Ffun_AFBF(beta, f[3], T, B, noise))
-
-
-def DFfun(beta, f, lf, T, B, noise=1):
-    if len(f) == 1:
-        # Semi-variogram of the field.
-        return(DFfun_AFBF(beta, f[0], lf[0], T, B, noise))
-    else:
-        # Semi-variogram of increment field.
-        return(2 * (DFfun_AFBF(beta, f[0], lf[0], T, B, noise)
-                    + DFfun_AFBF(beta, f[1], lf[1], T, B, noise))
-               - DFfun_AFBF(beta, f[2], lf[2], T, B, noise)
-               - DFfun_AFBF(beta, f[3], lf[3], T, B, noise))
-
-
-def SemiVariogram_AFBF(tau, beta, f, T, B, noise=1):
-    """Compute the semi-variogram of an AFBF.
-    """
-    return Ffun_AFBF(beta, f, T, B, noise) @ tau
-
-
-def Ffun_AFBF(beta, f, T, B, noise=1):
-    return 0.5 * np.concatenate((np.ones((f.shape[0], noise)),
-                                 np.power(f, B @ beta) @ T), axis=1)
-
-
-def DFfun_AFBF(beta, f, lf, T, B, noise=1):
-    DF = np.zeros((f.shape[0], T.shape[1] + noise, B.shape[1]))
-    v = 0.5 * lf * np.power(f, B @ beta)
-    for j in range(noise, DF.shape[1]):
-        for k in range(DF.shape[2]):
-            DF[:, j, k] = v @ (T[:, j - noise] * B[:, k])
-    return DF
-
-
 def CoordinateProjection(cxy, increm, log=False):
     f = [np.power(cxy, 2)]
     f.append(np.power(increm * np.ones(cxy.shape), 2))
@@ -95,7 +37,56 @@ def CoordinateProjection(cxy, increm, log=False):
     return(f, lf)
 
 
-def FitVariogram(model, lags, w, noise=1, incremax=30,
+def SemiVariogram(tau, beta, cxy, T, B, noise=1):
+    """Compute the semi-variogram of an AFBF or its increment field.
+    """
+    f = CoordinateProjection(cxy, beta[0])
+    # Semi-variogram of increment field.
+    return(2 * (SemiVariogram_AFBF(tau, beta, f[0], T, B, noise)
+                + SemiVariogram_AFBF(tau, beta, f[1], T, B, noise))
+           - SemiVariogram_AFBF(tau, beta, f[2], T, B, noise)
+           - SemiVariogram_AFBF(tau, beta, f[3], T, B, noise))
+
+
+def Ffun(beta, cxy, T, B, noise=1):
+    f = CoordinateProjection(cxy, beta[0])
+    return(2 * (Ffun_AFBF(beta[1:], f[0], T, B, noise)
+                + Ffun_AFBF(beta[1:], f[1], T, B, noise))
+           - Ffun_AFBF(beta[1:], f[2], T, B, noise)
+           - Ffun_AFBF(beta[1:], f[3], T, B, noise))
+
+
+def DFfun(beta, cxy, T, B, noise=1):
+    f, lf = CoordinateProjection(cxy, beta[0], True)
+
+    # Semi-variogram of increment field.
+    return(2 * (DFfun_AFBF(beta[1:], f[0], lf[0], T, B, noise)
+                + DFfun_AFBF(beta[1:], f[1], lf[1], T, B, noise))
+           - DFfun_AFBF(beta[1:], f[2], lf[2], T, B, noise)
+           - DFfun_AFBF(beta[1:], f[3], lf[3], T, B, noise))
+
+
+def SemiVariogram_AFBF(tau, beta, f, T, B, noise=1):
+    """Compute the semi-variogram of an AFBF.
+    """
+    return Ffun_AFBF(beta, f, T, B, noise) @ tau
+
+
+def Ffun_AFBF(beta, f, T, B, noise=1):
+    return np.concatenate((np.ones((f.shape[0], noise)),
+                           0.5 * np.power(f, B @ beta) @ T), axis=1)
+
+
+def DFfun_AFBF(beta, f, lf, T, B, noise=1):
+    DF = np.zeros((f.shape[0], T.shape[1] + noise, B.shape[1]))
+    v = 0.5 * lf * np.power(f, B @ beta)
+    for j in range(noise, DF.shape[1]):
+        for k in range(DF.shape[2]):
+            DF[:, j, k] = v @ (T[:, j - noise] * B[:, k])
+    return DF
+
+
+def FitVariogram(model, lags, w, noise=1,
                  multigrid=True, maxit=1000, gtol=1e-6, verbose=1):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
@@ -111,38 +102,40 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
     # Turning-band angles.
     phi = np.zeros(model.tb.Kangle.shape)
     phi[:] = model.tb.Kangle[:]
+    phi = phi[1:]
     phi = np.expand_dims(phi, axis=0)
-    csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
     # Coordinates where variograms are computed.
     xy = lags.xy
+
+    csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
+
     cxy = xy @ csphi
 
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
+
     if multigrid:
         # Initialization.
         hurst = perfunction(model.hurst.ftype, param=1)
         topo = perfunction(model.topo.ftype, param=1)
         B = BasisFunctions(hurst, phi)
         T = BasisFunctions(topo, phi)
-        h0 = np.inf
-        beta = np.array([0.5])
+        h = np.inf
+        beta = np.array([1, 0.5])
         tau = np.ones((noise + 1,))
-        for k in range(incremax):
-            f, lf = CoordinateProjection(cxy, k, True)
-            pb = minimize(beta, tau, w, Ffun, DFfun,
-                          bounds_beta, bounds_tau, f, lf, T, B, noise)
-            for i in range(1, 9):
-                beta = np.array([i / 10])
-                tau = pb.argmin_h_y(beta)
-                h = pb.h_value()
-                if h < h0:
-                    h0 = h
-                    beta2 = beta
-                    tau2 = tau
-                    increm = k
-                npar_tau = 1
-                npar_beta = 1
+        pb = minimize(beta, tau, w, Ffun, DFfun,
+                      bounds_beta, bounds_tau, cxy, T, B, noise)
+        for i in range(1, 9):
+            beta = np.array([1, i / 10])
+            tau = pb.argmin_h_y(beta)
+            h0 = pb.h_value()
+            if h0 < h:
+                h = h0
+                beta2 = beta[1:]
+                tau2 = tau
+                increm =  beta[0]
+            npar_tau = 1
+            npar_beta = 1
     else:
         npar_tau = npar0_tau
         npar_beta = npar0_beta
@@ -150,11 +143,9 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
         beta2[:] = model.hurst.fparam[0, :]
         tau2 = np.zeros((model.topo.fparam.size,))
         tau2[:] = model.topo.fparam[0, :]
-        increm = model.kappa.fparam[0, 0]
         if noise == 1:
             tau2 = np.insert(tau2, 0, 0)
 
-    f, lf = CoordinateProjection(cxy, increm, True)
     stop = False
     while stop is False:
         hurst = perfunction(model.hurst.ftype, param=npar_beta)
@@ -179,12 +170,13 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
 
         beta = beta2
         tau = tau2
+
         if verbose > 0:
             print("Nb param: Hurst=%d, Topo=%d" %
                   (hurst.fparam.size, topo.fparam.size))
             print("Tol = %e, Nepochs = %d" % (gtol, maxit))
         pb = minimize(beta, tau, w, Ffun, DFfun,
-                      bounds_beta, bounds_tau, f, lf, T, B, noise)
+                      bounds_beta, bounds_tau, cxy, T, B, noise)
         beta, tau = pb.argmin_h(gtol, maxit, verbose)
 
         stop = True
@@ -211,14 +203,15 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
                     k2 = 2 * k
                     beta2[k2: k2 + 2] = beta[k]
 
-        hurst.fparam[0, :] = beta[:]
+        print(tau)
+        hurst.fparam[0, :] = beta[1:]
         topo.fparam[0, :] = tau[noise:]
-        kappa = perfunction('step-constant', fname="Increment step")
-        kappa.fparam[:] = increm
+        kappa = perfunction("step-constant", fname='Increment step')
+        kappa.fparam[:] = beta[0]
         emodel = field("Estimated model", topo, hurst, kappa, model.tb)
         if noise == 1:
-            emodel.noise = np.sqrt(tau[0])
+            emodel.noise = tau[0]
         else:
             emodel.noise = 0
 
-    return (emodel, SemiVariogram(tau, beta, f, T, B, noise))
+    return (emodel, SemiVariogram(tau, beta, cxy, T, B, noise))

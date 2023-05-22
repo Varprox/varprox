@@ -1,0 +1,17 @@
+AUTHORS.rst
+README.rst
+setup.py
+examples/__init__.py
+examples/plot_afbf.py
+examples/plot_perceptron.py
+varprox/__init__.py
+varprox/main.py
+varprox.egg-info/PKG-INFO
+varprox.egg-info/SOURCES.txt
+varprox.egg-info/dependency_links.txt
+varprox.egg-info/entry_points.txt
+varprox.egg-info/requires.txt
+varprox.egg-info/top_level.txt
+varprox/models/__init__.py
+varprox/models/model_afbf.py
+varprox/models/model_afbf_statio.py

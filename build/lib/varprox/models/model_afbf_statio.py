@@ -4,8 +4,7 @@ Tools for computing the semi-variogram of an anisotropic fractional
 Brownian field and applying the fitting method.
 """
 import numpy as np
-from afbfstatio import field
-from afbf import perfunction
+from afbfstatio import perfunction, tbfield
 from varprox import minimize
 
 
@@ -48,6 +47,7 @@ def Ffun(beta, f, lf, T, B, noise=1):
 
 
 def DFfun(beta, f, lf, T, B, noise=1):
+
     if len(f) == 1:
         # Semi-variogram of the field.
         return(DFfun_AFBF(beta, f[0], lf[0], T, B, noise))
@@ -66,8 +66,8 @@ def SemiVariogram_AFBF(tau, beta, f, T, B, noise=1):
 
 
 def Ffun_AFBF(beta, f, T, B, noise=1):
-    return 0.5 * np.concatenate((np.ones((f.shape[0], noise)),
-                                 np.power(f, B @ beta) @ T), axis=1)
+    return np.concatenate((np.ones((f.shape[0], noise)),
+                           0.5 * np.power(f, B @ beta) @ T), axis=1)
 
 
 def DFfun_AFBF(beta, f, lf, T, B, noise=1):
@@ -79,23 +79,7 @@ def DFfun_AFBF(beta, f, lf, T, B, noise=1):
     return DF
 
 
-def CoordinateProjection(cxy, increm, log=False):
-    f = [np.power(cxy, 2)]
-    f.append(np.power(increm * np.ones(cxy.shape), 2))
-    f.append(np.power(cxy - increm, 2))
-    f.append(np.power(cxy + increm, 2))
-
-    if log:
-        lf = []
-        for j in range(len(f)):
-            lf.append(np.zeros(f[j].shape))
-            ind = np.nonzero(f[j] > 0)
-            lf[j][ind] = np.log(f[j][ind])
-
-    return(f, lf)
-
-
-def FitVariogram(model, lags, w, noise=1, incremax=30,
+def FitVariogram(model, lags, w, noise=1,
                  multigrid=True, maxit=1000, gtol=1e-6, verbose=1):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
@@ -111,38 +95,61 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
     # Turning-band angles.
     phi = np.zeros(model.tb.Kangle.shape)
     phi[:] = model.tb.Kangle[:]
+    # dphi = np.diff(phi)
+    phi = phi[1:]
     phi = np.expand_dims(phi, axis=0)
-    csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
+    # dphi = np.expand_dims(dphi, axis=1)
     # Coordinates where variograms are computed.
     xy = lags.xy
+    # N = lags.N
+
+    increm = model.kappa.fparam[0, 0]
+    csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
+
+    # K = model.tb.Qangle.size - 1
+    # csphi = np.concatenate((model.tb.Qangle[1:].reshape((1, K)),
+    #                         model.tb.Pangle[1:].reshape((1, K))), axis=0)
     cxy = xy @ csphi
+    # f = [np.power(cxy, 2) / N**2]
+    f = [np.power(cxy, 2)]
+    if increm is not None:
+        # f.append(np.power(increm * np.ones(cxy.shape), 2) / N**2)
+        # f.append(np.power(cxy - increm, 2) / N**2)
+        # f.append(np.power(cxy + increm, 2) / N**2)
+        f.append(np.power(increm * np.ones(cxy.shape), 2))
+        f.append(np.power(cxy - increm, 2))
+        f.append(np.power(cxy + increm, 2))
+
+    lf = []
+    for j in range(len(f)):
+        lf.append(np.zeros(f[j].shape))
+        ind = np.nonzero(f[j] > 0)
+        lf[j][ind] = np.log(f[j][ind])
 
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
+
     if multigrid:
         # Initialization.
         hurst = perfunction(model.hurst.ftype, param=1)
         topo = perfunction(model.topo.ftype, param=1)
         B = BasisFunctions(hurst, phi)
-        T = BasisFunctions(topo, phi)
-        h0 = np.inf
+        T = BasisFunctions(topo, phi)  # * dphi
+        h = np.inf
         beta = np.array([0.5])
         tau = np.ones((noise + 1,))
-        for k in range(incremax):
-            f, lf = CoordinateProjection(cxy, k, True)
-            pb = minimize(beta, tau, w, Ffun, DFfun,
-                          bounds_beta, bounds_tau, f, lf, T, B, noise)
-            for i in range(1, 9):
-                beta = np.array([i / 10])
-                tau = pb.argmin_h_y(beta)
-                h = pb.h_value()
-                if h < h0:
-                    h0 = h
-                    beta2 = beta
-                    tau2 = tau
-                    increm = k
-                npar_tau = 1
-                npar_beta = 1
+        pb = minimize(beta, tau, w, Ffun, DFfun,
+                      bounds_beta, bounds_tau, f, lf, T, B, noise)
+        for i in range(1, 9):
+            beta = np.array([i / 10])
+            tau = pb.argmin_h_y(beta)
+            h0 = pb.h_value()
+            if h0 < h:
+                h = h0
+                beta2 = beta
+                tau2 = tau
+            npar_tau = 1
+            npar_beta = 1
     else:
         npar_tau = npar0_tau
         npar_beta = npar0_beta
@@ -150,11 +157,9 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
         beta2[:] = model.hurst.fparam[0, :]
         tau2 = np.zeros((model.topo.fparam.size,))
         tau2[:] = model.topo.fparam[0, :]
-        increm = model.kappa.fparam[0, 0]
         if noise == 1:
             tau2 = np.insert(tau2, 0, 0)
 
-    f, lf = CoordinateProjection(cxy, increm, True)
     stop = False
     while stop is False:
         hurst = perfunction(model.hurst.ftype, param=npar_beta)
@@ -175,10 +180,11 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
             topo.finter[:] = model.topo.finter[:]
 
         B = BasisFunctions(hurst, phi)
-        T = BasisFunctions(topo, phi)
+        T = BasisFunctions(topo, phi)  # * dphi
 
         beta = beta2
         tau = tau2
+
         if verbose > 0:
             print("Nb param: Hurst=%d, Topo=%d" %
                   (hurst.fparam.size, topo.fparam.size))
@@ -211,13 +217,13 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
                     k2 = 2 * k
                     beta2[k2: k2 + 2] = beta[k]
 
+        print(tau)
         hurst.fparam[0, :] = beta[:]
         topo.fparam[0, :] = tau[noise:]
-        kappa = perfunction('step-constant', fname="Increment step")
-        kappa.fparam[:] = increm
-        emodel = field("Estimated model", topo, hurst, kappa, model.tb)
+        emodel = tbfield("Estimated model", topo, hurst, None, model.tb)
+        emodel.kappa.fparam[:] = increm
         if noise == 1:
-            emodel.noise = np.sqrt(tau[0])
+            emodel.noise = tau[0]
         else:
             emodel.noise = 0
 

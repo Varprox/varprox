@@ -227,3 +227,4 @@ class minimize:
                     self.y[:] = y0[:]
                 break
         return(self.x, self.y)
+
