@@ -104,9 +104,9 @@ class Minimize:
         :type args, kwargs: tuple and dict, optional
         """
         # Test the variable types.
-        if (not isinstance(w, np.ndarray)
-           or not isinstance(x0, np.ndarray)
-           or not isinstance(y0, np.ndarray)):
+        if (not isinstance(w, np.ndarray) or not
+            isinstance(x0, np.ndarray) or not
+            isinstance(y0, np.ndarray)):
             raise TypeError("Problem with variable type.")
 
         # Define input variables as row vectors.

@@ -5,7 +5,7 @@ Brownian field and applying the fitting method.
 """
 import numpy as np
 from afbf import perfunction, tbfield
-from varprox import Minimize
+from varprox import Minimize, Varprox_Param
 
 
 def BasisFunctions(fun, t):
@@ -86,6 +86,9 @@ def FitVariogram(model, lags, w, noise=1, k=None,
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         print("FitVariogram: only runs for step functions.")
         return(0)
+  
+    # Optimisation parameters
+    optim_param = Varprox_Param(gtol, maxit, verbose)
 
     # Number of model parameters.
     npar0_tau = model.topo.fparam.size
@@ -182,7 +185,7 @@ def FitVariogram(model, lags, w, noise=1, k=None,
             print("Tol = %e, Nepochs = %d" % (gtol, maxit))
         pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, noise)
-        beta, tau = pb.argmin_h(gtol, maxit, verbose)
+        beta, tau = pb.argmin_h(optim_param)
 
         stop = True
         if multigrid:
