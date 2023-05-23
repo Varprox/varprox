@@ -166,11 +166,11 @@ class Minimize:
         for n in range(DF.shape[0]):
             eps_jac_x[n, :] = DF[n].T @ self.y
         return eps_jac_x
-    
+
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
         """
-        return self.jac_res_x(x).transpose() @ self.val_res(x) 
+        return self.jac_res_x(x).transpose() @ self.val_res(x)
 
     def h_value(self):
         r"""Compute the value of the criterion :math:`h` in :eq:`criterion`
@@ -293,7 +293,7 @@ class Minimize:
         RFBPD iteration then reads:
 
         .. math::
-            
+
             p_{n} &= \textrm{prox}_{\rho f} (x_{n}-\rho(\nabla h(x_{n})+\sigma L^{\top}x_{n}))\\
             q_{n} &= (\mathrm{Id}-\textrm{prox}_{\lambda g/\sigma}) (v_{n}+L(2p_{n}-x_{n})\\
             (x_{n+1},v_{n+1}) &= (x_{n},v_{n}) + \lambda_{n}((p_{n},q_{n})-(x_{n},v_{n}))
@@ -344,7 +344,7 @@ class Minimize:
         #     raise Exception("Input values for parameters tau and sigma are not valid.")
 
         # Main loop
-        for n in range(3): #param.max_iter):
+        for n in range(3): # param.max_iter):
             # 1) Primal update
             
             p = x - param.tau * self.gradient_g(x) -\
