@@ -9,6 +9,8 @@ from numpy.fft import fft2, fftshift
 from numpy.random import default_rng
 from varprox.models.model_afbf import FitVariogram, FitVariogram_ADMM
 from varprox.models.model_afbf import Fit_Param
+import pickle
+import time
 
 
 # ============================ Plotting Functions =========================== #
@@ -135,8 +137,16 @@ if __name__ == "__main__":
     model = tbfield("Fitted model", topo, hurst)
 
     # Fitting of the semi-variogram.
-    model, w1 = FitVariogram(model, lags, w0, myparam)
-    delta = model.noise
+    #model, w1 = FitVariogram(model, lags, w0, myparam)
+    #delta = model.noise
+    with open('model_file', 'rb') as model_file:
+        model = pickle.load(model_file)
+        delta = model.noise
+
+    start_time = time.process_time()
+    model, w1 = FitVariogram_ADMM(model, lags, w0, myparam)
+    end_time = time.process_time()
+    print("CPU Execution time: {} seconds".format(end_time-start_time))
 
     model.DisplayParameters(1)
 

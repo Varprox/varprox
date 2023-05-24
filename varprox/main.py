@@ -8,8 +8,6 @@ from dataclasses import dataclass
 from numpy import linalg as LA
 
 # ============================== CLASS MINIMIZE ============================= #
-
-
 class Minimize:
     r"""
     This class contains methods to minimize of a separable non-linear
@@ -332,7 +330,7 @@ class Minimize:
         L = self.generate_discrete_grad_mat(n)  # Linear operator
         crit = np.Inf          # Initial value of the objective function
 
-        param.tau = 10e-4 / LA.norm(self.gradient_g(x)) # LA.norm(L)**(-2)*1e-14
+        param.tau = 1 / LA.norm(self.jac_res_x(x).transpose() @ self.jac_res_x(x))
         param.sigma = 1 / LA.norm(L)**2
 
         # Check the input parameters tau and sigma
@@ -344,13 +342,10 @@ class Minimize:
         #     raise Exception("Input values for parameters tau and sigma are not valid.")
 
         # Main loop
-        for n in range(3): # param.max_iter):
+        for n in range(param.max_iter):
             # 1) Primal update
-            
             p = x - param.tau * self.gradient_g(x) -\
                 param.sigma * L.transpose() @ v
-            # p = x - param.tau * self.jac_res_x(x).transpose() @ self.val_res(x) - \
-            #     param.sigma * L.transpose() @ v
             print(p)
             # Projection on [EPS,1-EPS]
             p[p <= 0] = EPS
@@ -359,18 +354,20 @@ class Minimize:
             q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
                                               param.reg_param / param.sigma)
             # 3) Inertial update
-            LAMB = 1
+            LAMB = 1.2
             x = x + LAMB * (p - x)
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
             crit = 0.5 * LA.norm(self.val_res(x))**2 + tv(x)
-            dh = (crit_old - crit) / crit
-            if np.abs(dh) < param.tol:
+            if np.abs(crit_old - crit) < param.tol*crit:
                 break
-            else:
-                print('sub iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
-                      .format(n, param.max_iter, crit, dh))
+            # dh = (crit_old - crit) / crit
+            # if np.abs(dh) < param.tol:
+            #     break
+            # else:
+            #     print('sub iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
+            #           .format(n, param.max_iter, crit, dh))
 
         return x
 
@@ -423,11 +420,11 @@ class Minimize:
             #    subroutine
             for m in range(10000):
                 # a) Forward step (gradient descent)
-                x = x - L.transpose()@(L@x-y+z)\
-                    - param.gamma*self.jac_res_x(x).transpose()@self.val_res(x)
+                x = x - L.transpose() @ (L @ x - y + z)\
+                    - param.gamma * self.jac_res_x(x).transpose() @ self.val_res(x)
                 # b) Backward step (projection on [EPS,1-EPS])
                 x[x <= 0] = EPS
-                x[x >= 1] = 1-EPS
+                x[x >= 1] = 1 - EPS
             # 2) Update temporary variable s
             s = L@x
             # 3) Minimize the augmented Lagrangian in y
@@ -442,9 +439,9 @@ class Minimize:
 
         return x
 # ============================ END CLASS MINIMIZE  ========================== #
+
+
 # ========================= Helping Functions/Classes ======================= #
-
-
 def tv(x):
     r"""
     This function computes the 1-dimensional discrete total variation of its
