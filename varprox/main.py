@@ -202,8 +202,7 @@ class Minimize:
                                 )
             ret_x = res.x
         elif param.reg == 'tv-1d':
-            myparams = RFBPD_Param(param.reg_param)
-            ret_x = self.rfbpd(x_init, myparams)
+            ret_x = self.rfbpd(x_init, param)
         else:
             raise ValueError('The value of the parameter <reg> is unknown.')
         return ret_x
@@ -342,11 +341,10 @@ class Minimize:
         #     raise Exception("Input values for parameters tau and sigma are not valid.")
 
         # Main loop
-        for n in range(param.max_iter):
+        for n in range(param.maxit):
             # 1) Primal update
             p = x - param.tau * self.gradient_g(x) -\
                 param.sigma * L.transpose() @ v
-            print(p)
             # Projection on [EPS,1-EPS]
             p[p <= 0] = EPS
             p[p >= 1] = 1 - EPS
@@ -354,20 +352,21 @@ class Minimize:
             q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
                                               param.reg_param / param.sigma)
             # 3) Inertial update
-            LAMB = 1.2
+            LAMB = 1.1
             x = x + LAMB * (p - x)
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5 * LA.norm(self.val_res(x))**2 + tv(x)
-            if np.abs(crit_old - crit) < param.tol*crit:
+            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param*tv(x)
+            if np.abs(crit_old - crit) < param.gtol*crit:
                 break
             # dh = (crit_old - crit) / crit
-            # if np.abs(dh) < param.tol:
+            # if np.abs(dh) < param.gtol:
             #     break
             # else:
             #     print('sub iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
             #           .format(n, param.max_iter, crit, dh))
+        print("Nb subiter : {}".format(n))
 
         return x
 
@@ -413,27 +412,28 @@ class Minimize:
         z = np.zeros(x0.shape)  # Dual variable
         L = self.generate_discrete_grad_mat(n)  # Linear operator
         crit = np.Inf           # Initial value of the objective function
+        gamma = 1               # Augmented Lagrangian parameter
 
         # Main loop
-        for n in range(param.max_iter):
+        for n in range(param.maxit):
             # 1) Minimize the augmented Lagrangian in x using a Forward-Backward
             #    subroutine
             for m in range(10000):
                 # a) Forward step (gradient descent)
                 x = x - L.transpose() @ (L @ x - y + z)\
-                    - param.gamma * self.jac_res_x(x).transpose() @ self.val_res(x)
+                    - gamma * self.jac_res_x(x).transpose() @ self.val_res(x)
                 # b) Backward step (projection on [EPS,1-EPS])
                 x[x <= 0] = EPS
                 x[x >= 1] = 1 - EPS
             # 2) Update temporary variable s
             s = L@x
             # 3) Minimize the augmented Lagrangian in y
-            y = prox_l1(z + s, param.reg_param / param.gamma)
+            y = prox_l1(z + s, param.reg_param / gamma)
             # 4) Update the dual variable using a gradient ascent
             z = z + s - y
             # 5) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5 * LA.norm(self.val_res(x))**2 + tv(x)
+            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param*tv(x)
             if np.abs(crit_old - crit) < param.tol*crit:
                 break
 
@@ -480,26 +480,9 @@ def prox_l1(data, reg_param):
 
 @dataclass
 class Varprox_Param:
-    gtol: float = 1e-3
+    gtol: float = 1e-4
     maxit: int = 1000
     verbose: bool = True
     reg: str = None
     reg_param: float = 0
-
-
-@dataclass
-class RFBPD_Param:
-    reg_param: float
-    max_iter: int = 10000
-    tol: float = 1e-3
-    sigma: float = 1
-    tau: float = 1
-
-
-@dataclass
-class ADMM_Param:
-    reg_param: float
-    max_iter: int = 10000
-    tol: float = 1e-3
-    gamma: float = 1
 # ============================================================================ #

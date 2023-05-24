@@ -298,7 +298,7 @@ def FitVariogram_ADMM(model, lags, w, param):
 
     myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                   param.verbose, reg="tv-1d",
-                                  reg_param=0.00015)
+                                  reg_param=0.01)
     beta, tau = pb.argmin_h(myoptim_param)
 
     hurst.fparam[0, :] = beta[:]
