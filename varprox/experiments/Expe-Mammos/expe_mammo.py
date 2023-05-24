@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     # Optimization parameters
     multigrid = True
-    maxit = 10000
+    maxit = 5000
     gtol = 0.001
     verbose = 1
     myparam = Fit_Param(noise_lvl, None, multigrid, maxit, gtol, verbose)
@@ -143,9 +143,9 @@ if __name__ == "__main__":
         model = pickle.load(model_file)
         delta = model.noise
 
-    start_time = time.process_time()
+    start_time = time.perf_counter()
     model, w1 = FitVariogram_ADMM(model, lags, w0, myparam)
-    end_time = time.process_time()
+    end_time = time.perf_counter()
     print("CPU Execution time: {} seconds".format(end_time-start_time))
 
     model.DisplayParameters(1)
