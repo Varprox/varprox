@@ -7,6 +7,7 @@ from scipy.optimize import lsq_linear, least_squares
 from dataclasses import dataclass
 from numpy import linalg as LA
 
+
 # ============================== CLASS MINIMIZE ============================= #
 class Minimize:
     r"""
@@ -248,7 +249,7 @@ class Minimize:
             else:
                 dh = 0
             if param.verbose:
-                print('iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'\
+                print('iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
                       .format(it, param.maxit, h, dh))
 
             if dh < param.gtol:
@@ -357,8 +358,8 @@ class Minimize:
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param*tv(x)
-            if np.abs(crit_old - crit) < param.gtol*crit:
+            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param * tv(x)
+            if np.abs(crit_old - crit) < param.gtol * crit:
                 break
             # dh = (crit_old - crit) / crit
             # if np.abs(dh) < param.gtol:
@@ -426,15 +427,15 @@ class Minimize:
                 x[x <= 0] = EPS
                 x[x >= 1] = 1 - EPS
             # 2) Update temporary variable s
-            s = L@x
+            s = L @ x
             # 3) Minimize the augmented Lagrangian in y
             y = prox_l1(z + s, param.reg_param / gamma)
             # 4) Update the dual variable using a gradient ascent
             z = z + s - y
             # 5) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param*tv(x)
-            if np.abs(crit_old - crit) < param.tol*crit:
+            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param * tv(x)
+            if np.abs(crit_old - crit) < param.tol * crit:
                 break
 
         return x
