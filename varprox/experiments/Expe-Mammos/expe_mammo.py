@@ -7,7 +7,7 @@ from afbf import sdata, coordinates, perfunction, tbfield
 from matplotlib import pyplot as plt
 from numpy.fft import fft2, fftshift
 from numpy.random import default_rng
-from varprox.models.model_afbf import FitVariogram, FitVariogram_ADMM
+from varprox.models.model_afbf import FitVariogram, FitVariogram_ADMM, FitVariogramMixed
 from varprox.models.model_afbf import Fit_Param
 import pickle
 import time
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     scalemin = 0  # Minimal scale for grid definition of the semi-variogram.
 
     # Model parameters.
-    K = 16          # Number of parameters for the Hurst function.
+    K = 512         # Number of parameters for the Hurst function.
     J = K           # Number of parameters for the topothesy function.
     ftype = "step"  # Type of representation for Hurst and topothesy functions.
     noise = True    # True if model with additive noise, False otherwise.
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     # Optimization parameters
     multigrid = True
-    maxit = 5000
+    maxit = 10000
     gtol = 0.001
     verbose = 1
     myparam = Fit_Param(noise_lvl, None, multigrid, maxit, gtol, verbose)
@@ -132,21 +132,50 @@ if __name__ == "__main__":
 
     # Definition of the reference model.
     print('Fitting a model with %d + %d parameters' % (J, K))
-    topo = perfunction('step', J)
-    hurst = perfunction('step', K)
+    topo = perfunction(ftype, J)
+    hurst = perfunction(ftype, K)
     model = tbfield("Fitted model", topo, hurst)
 
     # Fitting of the semi-variogram.
-    #model, w1 = FitVariogram(model, lags, w0, myparam)
-    #delta = model.noise
-    with open('model_file', 'rb') as model_file:
-        model = pickle.load(model_file)
-        delta = model.noise
-
     start_time = time.perf_counter()
-    model, w1 = FitVariogram_ADMM(model, lags, w0, myparam)
+    model, w1 = FitVariogramMixed(model, lags, w0, myparam)
     end_time = time.perf_counter()
     print("CPU Execution time: {} seconds".format(end_time-start_time))
+    delta = model.noise
+    with open('model_file_N=512', 'wb') as model_file:
+        pickle.dump(model, model_file)
+
+    #with open('model_file_N=32', 'rb') as model_file:
+    #   model = pickle.load(model_file)
+    #   delta = model.noise
+    #model.DisplayParameters(1)
+    
+
+    # Code snippet from Frederic
+    # topo2 =  perfunction('step', model.tb.Kangle.size - 1)
+    # hurst2 =  perfunction('step', model.tb.Kangle.size - 1)
+
+    # angles = model.tb.Kangle[1:]
+    # topo.Evaluate(angles)
+    # topo2.finter[0, :] = angles[:]
+    # topo2.fparam[0, :] = topo.values[0, :]
+
+    # hurst.Evaluate(angles)
+    # hurst2.finter[0, :] = angles[:]
+    # hurst2.fparam[0, :] = hurst.values[0, :]
+
+    # model2 = tbfield("max precision", topo2, hurst2, model.tb)
+    #model2.DisplayParameters()
+
+    # topo = perfunction(ftype, 64)
+    # hurst = perfunction(ftype, 64)
+    # model = tbfield("Fitted model", topo, hurst)
+    
+    
+    #start_time = time.perf_counter()
+    #model, w1 = FitVariogram_ADMM(model, lags, w0, myparam)
+    #end_time = time.perf_counter()
+    #print("CPU Execution time: {} seconds".format(end_time-start_time))
 
     model.DisplayParameters(1)
 

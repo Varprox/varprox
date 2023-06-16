@@ -186,7 +186,7 @@ class Minimize:
         :type x_init: :class:`numpy.ndarray` of size (N,)
 
         :param param: Parameter for the algorithm
-        :type param: :class:RFBPD_Param
+        :type param: :class:Varprox_Param
 
         :return: Minimizer of :math:`h` with respect to :math:`x`
         """
@@ -249,7 +249,7 @@ class Minimize:
             else:
                 dh = 0
             if param.verbose:
-                print('iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
+                print('iter {:4d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
                       .format(it, param.maxit, h, dh))
 
             if dh < param.gtol:
@@ -276,7 +276,7 @@ class Minimize:
 
     def rfbpd(self, x0, param):
         r"""Implementation of the rescaled Primal-dual Forward-backward
-        algorithm (RFBPD)  to minimize the following optimization problem:
+        algorithm (RFBPD) to minimize the following optimization problem:
 
         .. math::
             :label: uncons_pb
@@ -315,7 +315,7 @@ class Minimize:
         :type x0: :class:`numpy.ndarray` (1-dimensional)
 
         :param param: Parameters of the algorithm.
-        :type param: :class:`RFBPD_Param`
+        :type param: :class:`Varprox_Param`
 
         :return: Final value of the primal variable.
         """
