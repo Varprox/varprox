@@ -165,6 +165,7 @@ for expe in range(Nbexpe):
     # Variogram fitting with varprox.
     t0 = time.perf_counter()
     emodel2, w1 = FitVariogram_ADMM(emodel1, lags, w0, myparam)
+    # emodel2, w1 = FitVariogram(emodel1, lags, w0, myparam, alpha)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
     Tau2[expe, :] = emodel2.topo.fparam[0, :]
