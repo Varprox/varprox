@@ -245,7 +245,10 @@ class Minimize:
             h0 = h
             h = self.h_value()
             if h0 != 0:
-                dh = abs(h0 - h) / h0 * 100
+                if param.reg is None:
+                    dh = (h0 - h) / h0 * 100
+                else:
+                    dh = abs(h0 - h) / h0 * 100
             else:
                 dh = 0
             if param.verbose:
