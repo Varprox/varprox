@@ -20,8 +20,8 @@ Tvario = False  # True if the the theoretical semi-variogram is fitted.
 noise = 1  # 1 if model with noise and 0 otherwise.
 display = False  # Display results of each experiment.
 save = False  # Save the results.
-stepK = 2  # Subsampling factor for selecting turning bands.
-K = 32  # Number of parameters to estimate with varpro.
+stepK = 1  # Subsampling factor for selecting turning bands.
+K = 128  # Number of parameters to estimate with varpro.
 alpha = 10  # Weight for tau regularization.
 
 # Optimisation parameters.
@@ -36,7 +36,7 @@ myparam = Fit_Param(noise, None, multigrid, maxit, gtol, verbose)
 # Model parameters.
 N = 40  # size of the grid for the definition of the semi-variogram.
 step = 2
-M = 256  # size of field realization.
+M = 512  # size of field realization.
 # Number of parameters for the Hurst function.
 J = 500
 
@@ -162,13 +162,13 @@ for expe in range(Nbexpe):
     Tau1[expe, :] = emodel1.topo.fparam[0, :]
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
 
-    # # Variogram fitting with varprox.
-    # t0 = time.perf_counter()
-    # emodel2, w1 = FitVariogram_ADMM(emodel1, lags, w0, myparam)
-    # t1 = time.perf_counter()
-    # time_c2 += t1 - t0
-    # Tau2[expe, :] = emodel2.topo.fparam[0, :]
-    # Beta2[expe, :] = emodel2.hurst.fparam[0, :]
+    # Variogram fitting with varprox.
+    t0 = time.perf_counter()
+    emodel2, w1 = FitVariogram_ADMM(emodel1, lags, w0, myparam)
+    t1 = time.perf_counter()
+    time_c2 += t1 - t0
+    Tau2[expe, :] = emodel2.topo.fparam[0, :]
+    Beta2[expe, :] = emodel2.hurst.fparam[0, :]
 
     print('expe %d / %d.' % (expe + 1, Nbexpe))
 
