@@ -8,21 +8,21 @@ import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
 from afbf.Simulation.TurningBands import tbparameters
 from varprox.models.model_afbf_2 import FitVariogram, FitVariogram_ADMM
-from varprox.models.model_afbf import Fit_Param
+from varprox.models.model_afbf_2 import Fit_Param
 from numpy.random import default_rng, rand
 import pickle
 
 rng = default_rng()
 
 # Experiment parameters
-Nbexpe = 3  # Number of experiments.
-Tvario = True  # True if the the theoretical semi-variogram is fitted.
+Nbexpe = 1  # Number of experiments.
+Tvario = False  # True if the the theoretical semi-variogram is fitted.
 noise = 1  # 1 if model with noise and 0 otherwise.
 display = False  # Display results of each experiment.
 save = False  # Save the results.
 stepK = 2  # Subsampling factor for selecting turning bands.
 K = 32  # Number of parameters to estimate with varpro.
-
+alpha = 10  # Weight for tau regularization.
 
 # Optimisation parameters.
 multigrid = True  # If true, use a multigrid approach.
@@ -151,7 +151,7 @@ for expe in range(Nbexpe):
 
     # Initial variogram fitting with varpro.
     t0 = time.perf_counter()
-    emodel0, wt = FitVariogram(model0, lags, w, myparam, alpha=0.1)
+    emodel0, wt = FitVariogram(model0, lags, w, myparam, alpha)
     t1 = time.perf_counter()
     time_c1 += t1 - t0
 

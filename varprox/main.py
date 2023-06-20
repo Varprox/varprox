@@ -118,14 +118,13 @@ class Minimize:
 
         # Test input variable consistency.
         aux = Ffun(self.x0, *args, **kwargs)
-        print(aux.shape)
-        print(w.shape)
         if not isinstance(aux, np.ndarray):
             raise TypeError("Problem with variable type of F output.")
         if aux.shape[0] != N or aux.shape[1] != J:
             raise ValueError("Problem with the definition of F.")
 
         aux = DFfun(self.x0, *args, **kwargs)
+        
         if not isinstance(aux, np.ndarray):
             raise TypeError("Problem with variable type of DF output.")
         if (aux.shape[0] != N or aux.shape[1] != J or aux.shape[2] != K):
