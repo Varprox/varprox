@@ -47,32 +47,32 @@ myparam = myreader.get_optim_param()
 # Initialization a new random generator
 rng = default_rng()
 
-# Definition of turning-band parameters.
+# Definition of turning-band parameters
 tb = tbparameters(J)
 kangle = tb.Kangle[0::stepK]
 fintermid = kangle[0:-1]
 finter = (kangle[1:] + kangle[0:-1]) / 2
 J = finter.size
 
-# Definition of the reference model.
+# Definition of the reference model
 topo = perfunction('step', finter.size)
 hurst = perfunction('step', finter.size)
 topo.finter[0, :] = finter[:]
 hurst.finter[0, :] = finter[:]
 model = tbfield('reference', topo, hurst, tb)
 
-# Definition of a fbm to sample the Hurst function.
+# Definition of a fbm to sample the Hurst function
 fbm = process()
 fbm.param = 0.9
 
-# Definition of the estimated model (using varprox).
+# Definition of the estimated model (using varprox)
 etopo = perfunction('step', finter.size)
 ehurst = perfunction('step', finter.size)
 etopo.finter[0, :] = finter[:]
 ehurst.finter[0, :] = finter[:]
 emodel1 = tbfield('reference', etopo, ehurst, tb)
 
-# Definition of the initial estimated model (using varpro).
+# Definition of the initial estimated model (using varproj)
 topo0 = perfunction('step', J)
 hurst0 = perfunction('step', J)
 finter0 = np.linspace(- np.pi / 2, np.pi / 2, J + 1, True)[1:]
@@ -80,12 +80,12 @@ topo0.finter[0, :] = finter0[:]
 hurst0.finter[0, :] = finter0[:]
 model0 = tbfield('reference', topo0, hurst0)
 
-# Grid where to simulate images.
+# Grid where to simulate images
 if not Tvario:
     coord = coordinates(M)
     coord.N = N
 
-# Lags where to compute the semi-variogram.
+# Lags where to compute the semi-variogram
 lags = coordinates()
 lags.DefineSparseSemiBall(N)
 sc = np.sqrt(np.power(lags.xy[:, 0], 2) + np.power(lags.xy[:, 1], 2))
@@ -100,7 +100,7 @@ err_fit = err_est = err_tes = 0
 time_c1 = 0
 time_c2 = 0
 for expe in range(Nbexpe):
-    # Change model parameters.
+    # Change model parameters
     np.random.seed(expe)
     fbm.Simulate(J)
     fparam = fbm.y[:, 0]
@@ -123,37 +123,36 @@ for expe in range(Nbexpe):
     Tau0[expe, :] = topo.fparam[0, :]
     Beta0[expe, :] = hurst.fparam[0, :]
 
-    # Computation of the theoretical semi-variogram.
+    # Computation of the theoretical semi-variogram
     model.ComputeApproximateSemiVariogram(lags)
     w0 = np.zeros(model.svario.values.size)
     w0[:] = model.svario.values[:, 0]
 
     if noise == 1:
-        # Noise variance.
-        s0 = np.random.rand() * np.min(w0)
+        s0 = np.random.rand() * np.min(w0) # Noise variance
     else:
         s0 = 0
 
-    # Semivariogram to be fitted (theoretical / empirical, noise / no noise).
+    # Semivariogram to be fitted (theoretical / empirical, noise / no noise)
     if Tvario:
         w = np.zeros(w0.shape)
         w[:] = w0[:]
         if noise == 1:
             w = w + s0
     else:
-        # Simulate a field realization.
+        # Simulate a field realization
         z = model.Simulate(coord)
         if noise == 1:
             z.values = z.values +\
                 np.sqrt(s0) * rng.standard_normal(z.values.shape)
 
-        # Compute the empirical semi-variogram.
+        # Compute the empirical semi-variogram
         evario = z.ComputeEmpiricalSemiVariogram(lags)
         w = evario.values[:, 0]
-        # Evaluate the estimation error.
+        # Evaluate the estimation error
         err_est += np.mean(np.abs(w0 + s0 - w))
 
-    # Initial variogram fitting with varpro.
+    # Initial variogram fitting with varproj
     t0 = time.perf_counter()
     emodel0, wt = FitVariogram(model0, lags, w, myparam, alpha)
     t1 = time.perf_counter()
@@ -166,14 +165,14 @@ for expe in range(Nbexpe):
     Tau1[expe, :] = emodel1.topo.fparam[0, :]
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
 
-    # Variogram fitting with varprox.
+    # Variogram fitting with varprox
     t0 = time.perf_counter()
-    # emodel2, w1 = FitVariogram_ADMM(emodel1, lags, w0, myparam)
-    # emodel2, w1 = FitVariogram(emodel1, lags, w0, myparam, alpha)
+    emodel2, w1 = FitVariogramMixed(emodel1, lags, w0, myparam)
+    #emodel2, w1 = FitVariogram(emodel1, lags, w0, myparam, alpha)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
-    # Tau2[expe, :] = emodel2.topo.fparam[0, :]
-    # Beta2[expe, :] = emodel2.hurst.fparam[0, :]
+    Tau2[expe, :] = emodel2.topo.fparam[0, :]
+    Beta2[expe, :] = emodel2.hurst.fparam[0, :]
 
     print('Running experiments = {:3d} / {:3d}.'.format(expe + 1, Nbexpe))
 
