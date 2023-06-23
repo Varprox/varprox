@@ -62,8 +62,7 @@ def FitVariogram(model, lags, w, param, alpha=0):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
-        print("FitVariogram: only runs for step functions.")
-        return(0)
+        raise ValueError("FitVariogram: only runs for step functions.")
 
     # Number of model parameters
     npar0_tau = model.topo.fparam.size
@@ -198,8 +197,7 @@ def FitVariogramMixed(model, lags, w, param, alpha=0):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
-        print("FitVariogram: only runs for step functions.")
-        return(0)
+        raise ValueError("FitVariogram: only runs for step functions.")
 
     # Number of model parameters
     npar0_tau = model.topo.fparam.size
@@ -218,18 +216,22 @@ def FitVariogramMixed(model, lags, w, param, alpha=0):
     N = lags.N
 
     csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
-    f = [np.power(xy @ csphi, 2) / N**2]
-    if param.k is not None:
-        param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
-        f.append(np.power(param.k @ csphi, 2) / N**2)
-        f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
-        f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
+    f = np.power(xy @ csphi, 2) / N**2
+    lf = np.zeros(f.shape)
+    ind = np.nonzero(f > 0)
+    lf[ind] = np.log(f[ind])
+    # f = [np.power(xy @ csphi, 2) / N**2]
+    # if param.k is not None:
+    #     param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
+    #     f.append(np.power(param.k @ csphi, 2) / N**2)
+    #     f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
+    #     f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
 
-    lf = []
-    for j in range(len(f)):
-        lf.append(np.zeros(f[j].shape))
-        ind = np.nonzero(f[j] > 0)
-        lf[j][ind] = np.log(f[j][ind])
+    # lf = []
+    # for j in range(len(f)):
+    #     lf.append(np.zeros(f[j].shape))
+    #     ind = np.nonzero(f[j] > 0)
+    #     lf[j][ind] = np.log(f[j][ind])
 
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
@@ -370,18 +372,22 @@ def FitVariogram_ADMM(model, lags, w, param, aplha=0):
     N = lags.N
 
     csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
-    f = [np.power(xy @ csphi, 2) / N**2]
-    if param.k is not None:
-        param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
-        f.append(np.power(param.k @ csphi, 2) / N**2)
-        f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
-        f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
+    f = np.power(xy @ csphi, 2) / N**2
+    lf = np.zeros(f.shape)
+    ind = np.nonzero(f > 0)
+    lf[ind] = np.log(f[ind])
+    # f = [np.power(xy @ csphi, 2) / N**2]
+    # if param.k is not None:
+    #     param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
+    #     f.append(np.power(param.k @ csphi, 2) / N**2)
+    #     f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
+    #     f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
 
-    lf = []
-    for j in range(len(f)):
-        lf.append(np.zeros(f[j].shape))
-        ind = np.nonzero(f[j] > 0)
-        lf[j][ind] = np.log(f[j][ind])
+    # lf = []
+    # for j in range(len(f)):
+    #     lf.append(np.zeros(f[j].shape))
+    #     ind = np.nonzero(f[j] > 0)
+    #     lf[j][ind] = np.log(f[j][ind])
 
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
