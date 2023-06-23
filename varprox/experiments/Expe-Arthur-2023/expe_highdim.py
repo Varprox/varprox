@@ -21,7 +21,6 @@ noise = 1  # 1 if model with noise and 0 otherwise.
 display = False  # Display results of each experiment.
 save = False  # Save the results.
 stepK = 1  # Subsampling factor for selecting turning bands.
-K = 128  # Number of parameters to estimate with varpro.
 alpha = 10  # Weight for tau regularization.
 
 # Optimisation parameters.
@@ -46,6 +45,7 @@ kangle = tb.Kangle[0::stepK]
 fintermid = kangle[0:-1]
 finter = (kangle[1:] + kangle[0:-1]) / 2
 J = finter.size
+K = J
 
 # Definition of the reference model.
 topo = perfunction('step', finter.size)
@@ -82,7 +82,6 @@ if not Tvario:
 lags = coordinates()
 lags.DefineSparseSemiBall(N)
 sc = np.sqrt(np.power(lags.xy[:, 0], 2) + np.power(lags.xy[:, 1], 2))
-
 
 Tau0 = np.zeros((Nbexpe, J))
 Beta0 = np.zeros((Nbexpe, J))
@@ -164,12 +163,12 @@ for expe in range(Nbexpe):
 
     # Variogram fitting with varprox.
     t0 = time.perf_counter()
-    emodel2, w1 = FitVariogram_ADMM(emodel1, lags, w0, myparam)
+    # emodel2, w1 = FitVariogram_ADMM(emodel1, lags, w0, myparam)
     # emodel2, w1 = FitVariogram(emodel1, lags, w0, myparam, alpha)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
-    Tau2[expe, :] = emodel2.topo.fparam[0, :]
-    Beta2[expe, :] = emodel2.hurst.fparam[0, :]
+    # Tau2[expe, :] = emodel2.topo.fparam[0, :]
+    # Beta2[expe, :] = emodel2.hurst.fparam[0, :]
 
     print('expe %d / %d.' % (expe + 1, Nbexpe))
 
