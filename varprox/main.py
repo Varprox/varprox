@@ -357,7 +357,7 @@ class Minimize:
             q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
                                               param.reg_param / param.sigma)
             # 3) Inertial update
-            LAMB = 1.1
+            LAMB = 1.3
             x = x + LAMB * (p - x)
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
