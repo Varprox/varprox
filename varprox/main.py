@@ -254,7 +254,7 @@ class Minimize:
                 dh = 0
             if param.verbose:
                 print('Varpro | iter {:4d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
-                      .format(it, param.maxit, h, dh))
+                      .format(it, param.maxit, h, 100 * (h0-h) / h0))
 
             if dh < param.gtol:
                 if dh < 0:

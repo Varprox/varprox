@@ -164,7 +164,6 @@ for expe in range(Nbexpe):
     emodel1.hurst.fparam[0, :] = emodel0.hurst.values[0, :]
     Tau1[expe, :] = emodel1.topo.fparam[0, :]
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
-    print("BREAK")
     # Variogram fitting with varprox
     t0 = time.perf_counter()
     emodel2, w1 = FitVariogramMixed(emodel1, lags, w, myparam)
