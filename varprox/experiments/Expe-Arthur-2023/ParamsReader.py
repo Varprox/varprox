@@ -30,5 +30,6 @@ class ParamsReader(object):
         maxit = self.config.getint('optim-param', 'maxit')
         gtol = self.config.getfloat('optim-param', 'gtol')
         verbose = self.config.getboolean('optim-param', 'verbose')
-        return Fit_Param(noise, None, multigrid, maxit, gtol, verbose)
+        reg_param = self.config.getfloat('optim-param', 'reg_param')
+        return Fit_Param(noise, None, multigrid, maxit, gtol, verbose, reg_param)
 
