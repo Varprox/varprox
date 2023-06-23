@@ -475,3 +475,4 @@ class Fit_Param:
     maxit: int = 1000
     gtol: float = 1e-6
     verbose: bool = True
+    reg_param: float = 1

@@ -111,7 +111,8 @@ if __name__ == "__main__":
     maxit = 10000
     gtol = 0.001
     verbose = 1
-    myparam = Fit_Param(noise_lvl, None, multigrid, maxit, gtol, verbose)
+    reg_param = 0.05
+    myparam = Fit_Param(noise_lvl, None, multigrid, maxit, gtol, verbose, reg_param)
 
     # Import image.
     im = sdata()
