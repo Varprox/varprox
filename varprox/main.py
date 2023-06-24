@@ -253,8 +253,8 @@ class Minimize:
             else:
                 dh = 0
             if param.verbose:
-                print('iter {:4d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
-                      .format(it, param.maxit, h, dh))
+                print('Varpro | iter {:4d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
+                      .format(it, param.maxit, h, 100 * (h0-h) / h0))
 
             if dh < param.gtol:
                 if dh < 0:
@@ -357,7 +357,7 @@ class Minimize:
             q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
                                               param.reg_param / param.sigma)
             # 3) Inertial update
-            LAMB = 1.1
+            LAMB = 1.3
             x = x + LAMB * (p - x)
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
@@ -371,7 +371,7 @@ class Minimize:
             # else:
             #     print('sub iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
             #           .format(n, param.max_iter, crit, dh))
-        print("Nb subiter : {}".format(n))
+        print(" - RFBPD | Nb subiter : {}".format(n))
 
         return x
 

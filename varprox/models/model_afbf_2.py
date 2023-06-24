@@ -62,8 +62,7 @@ def FitVariogram(model, lags, w, param, alpha=0):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
-        print("FitVariogram: only runs for step functions.")
-        return(0)
+        raise ValueError("FitVariogram: only runs for step functions.")
 
     # Number of model parameters
     npar0_tau = model.topo.fparam.size
@@ -148,9 +147,9 @@ def FitVariogram(model, lags, w, param, alpha=0):
         tau = tau2
 
         if param.verbose:
-            print("Nb param: Hurst=%d, Topo=%d" %
-                  (hurst.fparam.size, topo.fparam.size))
-            print("Tol = %e, Nepochs = %d" % (param.gtol, param.maxit))
+            print("Nb param: Hurst={:d}, Topo={:d}".format(
+                hurst.fparam.size, topo.fparam.size))
+            print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol, param.maxit))
         if alpha > 0 and T.shape[1] > 1:
             w1 = np.concatenate((w, np.zeros((T.shape[1],))), axis=0)
         pb = Minimize(beta, tau, w1, Ffun, DFfun,
@@ -194,15 +193,11 @@ def FitVariogram(model, lags, w, param, alpha=0):
 
     return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
 
-
-
-
-def FitVariogramMixed(model, lags, w, param):
+def FitVariogramMixed(model, lags, w, param, alpha=0):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
-        print("FitVariogram: only runs for step functions.")
-        return(0)
+        raise ValueError("FitVariogram: only runs for step functions.")
 
     # Number of model parameters
     npar0_tau = model.topo.fparam.size
@@ -221,22 +216,27 @@ def FitVariogramMixed(model, lags, w, param):
     N = lags.N
 
     csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
-    f = [np.power(xy @ csphi, 2) / N**2]
-    if param.k is not None:
-        param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
-        f.append(np.power(param.k @ csphi, 2) / N**2)
-        f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
-        f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
+    f = np.power(xy @ csphi, 2) / N**2
+    lf = np.zeros(f.shape)
+    ind = np.nonzero(f > 0)
+    lf[ind] = np.log(f[ind])
+    # f = [np.power(xy @ csphi, 2) / N**2]
+    # if param.k is not None:
+    #     param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
+    #     f.append(np.power(param.k @ csphi, 2) / N**2)
+    #     f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
+    #     f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
 
-    lf = []
-    for j in range(len(f)):
-        lf.append(np.zeros(f[j].shape))
-        ind = np.nonzero(f[j] > 0)
-        lf[j][ind] = np.log(f[j][ind])
+    # lf = []
+    # for j in range(len(f)):
+    #     lf.append(np.zeros(f[j].shape))
+    #     ind = np.nonzero(f[j] > 0)
+    #     lf[j][ind] = np.log(f[j][ind])
 
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
 
+    w1 = w
     if param.multigrid:
         # Initialization
         hurst = perfunction(model.hurst.ftype, param=1)
@@ -246,7 +246,7 @@ def FitVariogramMixed(model, lags, w, param):
         h = np.inf
         beta = np.array([0.5])
         tau = np.ones((param.noise + 1,))
-        pb = Minimize(beta, tau, w, Ffun, DFfun,
+        pb = Minimize(beta, tau, w1, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, param.noise)
         for i in range(1, 9):
             beta = np.array([i / 10])
@@ -294,11 +294,13 @@ def FitVariogramMixed(model, lags, w, param):
         tau = tau2
 
         if param.verbose:
-            print("Nb param: Hurst=%d, Topo=%d" %
-                  (hurst.fparam.size, topo.fparam.size))
-            print("Tol = %e, Nepochs = %d" % (param.gtol, param.maxit))
-        pb = Minimize(beta, tau, w, Ffun, DFfun,
-                      bounds_beta, bounds_tau, f, lf, T, B, param.noise)
+            print("Nb param: Hurst={:d}, Topo={:d}".format(
+                hurst.fparam.size, topo.fparam.size))
+            print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol, param.maxit))
+        if alpha > 0 and T.shape[1] > 1:
+            w1 = np.concatenate((w, np.zeros((T.shape[1],))), axis=0)
+        pb = Minimize(beta, tau, w1, Ffun, DFfun,
+                      bounds_beta, bounds_tau, f, lf, T, B, param.noise, alpha)
         if beta.size > 32:
             # myoptim_param = Varprox_Param(param.gtol, param.maxit,
             #                              param.verbose)
@@ -346,11 +348,7 @@ def FitVariogramMixed(model, lags, w, param):
 
     return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
 
-
-
-
-
-def FitVariogram_ADMM(model, lags, w, param):
+def FitVariogram_ADMM(model, lags, w, param, aplha=0):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
@@ -374,18 +372,22 @@ def FitVariogram_ADMM(model, lags, w, param):
     N = lags.N
 
     csphi = np.concatenate((np.cos(phi), np.sin(phi)), axis=0)
-    f = [np.power(xy @ csphi, 2) / N**2]
-    if param.k is not None:
-        param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
-        f.append(np.power(param.k @ csphi, 2) / N**2)
-        f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
-        f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
+    f = np.power(xy @ csphi, 2) / N**2
+    lf = np.zeros(f.shape)
+    ind = np.nonzero(f > 0)
+    lf[ind] = np.log(f[ind])
+    # f = [np.power(xy @ csphi, 2) / N**2]
+    # if param.k is not None:
+    #     param.k = np.matlib.repmat(np.reshape(param.k, (1, 2)), xy.shape[0], 1)
+    #     f.append(np.power(param.k @ csphi, 2) / N**2)
+    #     f.append(np.power((xy - param.k) @ csphi, 2) / N**2)
+    #     f.append(np.power((xy + param.k) @ csphi, 2) / N**2)
 
-    lf = []
-    for j in range(len(f)):
-        lf.append(np.zeros(f[j].shape))
-        ind = np.nonzero(f[j] > 0)
-        lf[j][ind] = np.log(f[j][ind])
+    # lf = []
+    # for j in range(len(f)):
+    #     lf.append(np.zeros(f[j].shape))
+    #     ind = np.nonzero(f[j] > 0)
+    #     lf[j][ind] = np.log(f[j][ind])
 
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
@@ -408,18 +410,21 @@ def FitVariogram_ADMM(model, lags, w, param):
 
     B = BasisFunctions(hurst, phi)
     T = BasisFunctions(topo, phi) * dphi
-
+    
+    w1 = w
     if param.verbose:
         print("Proximal Dual.")
-        print("Nb param: Hurst=%d, Topo=%d" %
-              (hurst.fparam.size, topo.fparam.size))
-        print("Tol = %e, Nepochs = %d" % (param.gtol, param.maxit))
-    pb = Minimize(beta, tau, w, Ffun, DFfun,
-                  bounds_beta, bounds_tau, f, lf, T, B, param.noise)
+        print("Nb param: Hurst={:d}, Topo={:d}".format(
+            hurst.fparam.size, topo.fparam.size))
+        print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol, param.maxit))
+    if alpha > 0 and T.shape[1] > 1:
+        w1 = np.concatenate((w, np.zeros((T.shape[1],))), axis=0)
+    pb = Minimize(beta, tau, w1, Ffun, DFfun,
+                  bounds_beta, bounds_tau, f, lf, T, B, param.noise, alpha)
 
     myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                   param.verbose, reg="tv-1d",
-                                  reg_param=0.05)
+                                  reg_param=param.reg_param)
     beta, tau = pb.argmin_h(myoptim_param)
 
     hurst.fparam[0, :] = beta[:]
@@ -441,3 +446,4 @@ class Fit_Param:
     maxit: int = 1000
     gtol: float = 1e-6
     verbose: bool = True
+    reg_param: float = 1
