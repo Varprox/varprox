@@ -86,7 +86,7 @@ def FitVariogram(model, lags, w, noise=1, k=None,
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         print("FitVariogram: only runs for step functions.")
         return(0)
-  
+
     # Optimisation parameters
     optim_param = Varprox_Param(gtol, maxit, verbose)
 
