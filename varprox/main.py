@@ -276,6 +276,7 @@ class Minimize:
         i, j = np.indices(D.shape)
         D[i == j] = 1
         D[i == j + 1] = -1
+        D[0, n-1] = -1
         return D
 
     def rfbpd(self, x0, param):

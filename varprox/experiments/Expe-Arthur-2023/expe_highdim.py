@@ -166,10 +166,15 @@ for expe in range(Nbexpe):
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
     # Variogram fitting with varprox
     t0 = time.perf_counter()
-    emodel2, w1 = FitVariogramMixed(emodel1, lags, w, myparam)
+    emodel2, w1 = FitVariogramMixed(model0, lags, w, myparam)
     #emodel2, w1 = FitVariogram(emodel1, lags, w, myparam, alpha)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
+
+    emodel0.topo.Evaluate(fintermid)
+    emodel0.hurst.Evaluate(fintermid)
+    emodel2.topo.fparam[0, :] = emodel0.topo.values[0, :]
+    emodel2.hurst.fparam[0, :] = emodel0.hurst.values[0, :]
     Tau2[expe, :] = emodel2.topo.fparam[0, :]
     Beta2[expe, :] = emodel2.hurst.fparam[0, :]
 
