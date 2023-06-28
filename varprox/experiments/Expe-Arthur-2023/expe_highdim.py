@@ -71,6 +71,7 @@ ehurst = perfunction('step', finter.size)
 etopo.finter[0, :] = finter[:]
 ehurst.finter[0, :] = finter[:]
 emodel1 = tbfield('reference', etopo, ehurst, tb)
+emodel01 = tbfield('reference', etopo, ehurst, tb)
 
 # Definition of the initial estimated model (using varproj)
 topo0 = perfunction('step', J)
@@ -161,22 +162,20 @@ for expe in range(Nbexpe):
     emodel0.topo.Evaluate(fintermid)
     emodel0.hurst.Evaluate(fintermid)
     emodel1.topo.fparam[0, :] = emodel0.topo.values[0, :]
-    emodel1.hurst.fparam[0, :] = emodel0.hurst.values[0, :]
     Tau1[expe, :] = emodel1.topo.fparam[0, :]
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
     # Variogram fitting with varprox
     t0 = time.perf_counter()
-    emodel2, w1 = FitVariogramMixed(model0, lags, w, myparam)
-    #emodel2, w1 = FitVariogram(emodel1, lags, w, myparam, alpha)
+    #emodel2, w1 = FitVariogramMixed(model0, lags, w, myparam, alpha)
+    emodel02, w1 = FitVariogram(model0, lags, w, myparam, alpha)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
 
-    emodel0.topo.Evaluate(fintermid)
-    emodel0.hurst.Evaluate(fintermid)
-    emodel2.topo.fparam[0, :] = emodel0.topo.values[0, :]
-    emodel2.hurst.fparam[0, :] = emodel0.hurst.values[0, :]
-    Tau2[expe, :] = emodel2.topo.fparam[0, :]
-    Beta2[expe, :] = emodel2.hurst.fparam[0, :]
+    emodel02.topo.Evaluate(fintermid)
+    emodel02.hurst.Evaluate(fintermid)
+    emodel01.topo.fparam[0, :] = emodel02.topo.values[0, :]
+    Tau2[expe, :] = emodel01.topo.fparam[0, :]
+    Beta2[expe, :] = emodel01.hurst.fparam[0, :]
 
     print('Running experiments = {:3d} / {:3d}.'.format(expe + 1, Nbexpe))
 
