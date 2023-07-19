@@ -19,8 +19,9 @@ import pickle
 def print_report(title, beta_est, tau_est, beta_grd, tau_grd, time, nbexpe):
     diff_beta = beta_est - beta_grd
     diff_tau = tau_est-tau_grd
+    (h, minu, sec) = convert_time(time)
 
-    print(' ' + 'title')
+    print(' ' + title)
     print('    Error on coefficients:')
     print('    L1 : beta={:e}, tau={:e}'.format(
         np.mean(np.absolute(diff_beta), axis=None),
@@ -31,7 +32,13 @@ def print_report(title, beta_est, tau_est, beta_grd, tau_grd, time, nbexpe):
     print('    RMSE: beta={:e}, tau={:e}'.format(
         np.sqrt(np.mean(np.power(diff_beta, 2), axis=None)),
         np.sqrt(np.mean(np.power(diff_tau, 2), axis=None))))
-    print('    Mean execution time (varprox): {:e} (sec)'.format(time / nbexpe))
+    print('    Mean execution time (' + title + '): {:e} (sec) / {:d}h {:d}min {:d}s'\
+          .format(time / nbexpe, h, minu, sec))
+
+def convert_time(time):
+    minu, sec = divmod(round(time), 60)
+    h, minu = divmod(minu, 60)
+    return (h, minu, sec)
 
 # ============================================================================ #
 
@@ -71,7 +78,7 @@ ehurst = perfunction('step', finter.size)
 etopo.finter[0, :] = finter[:]
 ehurst.finter[0, :] = finter[:]
 emodel1 = tbfield('reference', etopo, ehurst, tb)
-emodel01 = tbfield('reference', etopo, ehurst, tb)
+emodel3 = tbfield('reference', etopo, ehurst, tb)
 
 # Definition of the initial estimated model (using varproj)
 topo0 = perfunction('step', J)
@@ -164,18 +171,19 @@ for expe in range(Nbexpe):
     emodel1.topo.fparam[0, :] = emodel0.topo.values[0, :]
     Tau1[expe, :] = emodel1.topo.fparam[0, :]
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
+
     # Variogram fitting with varprox
     t0 = time.perf_counter()
-    #emodel2, w1 = FitVariogramMixed(model0, lags, w, myparam, alpha)
-    emodel02, w1 = FitVariogram(model0, lags, w, myparam, alpha)
+    emodel2, w1 = FitVariogram_ADMM(model0, lags, w, myparam, alpha)
+    #emodel02, w1 = FitVariogram(model0, lags, w, myparam, alpha)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
 
-    emodel02.topo.Evaluate(fintermid)
-    emodel02.hurst.Evaluate(fintermid)
-    emodel01.topo.fparam[0, :] = emodel02.topo.values[0, :]
-    Tau2[expe, :] = emodel01.topo.fparam[0, :]
-    Beta2[expe, :] = emodel01.hurst.fparam[0, :]
+    emodel2.topo.Evaluate(fintermid)
+    emodel2.hurst.Evaluate(fintermid)
+    emodel3.topo.fparam[0, :] = emodel2.topo.values[0, :]
+    Tau2[expe, :] = emodel3.topo.fparam[0, :]
+    Beta2[expe, :] = emodel3.hurst.fparam[0, :]
 
     print('Running experiments = {:3d} / {:3d}.'.format(expe + 1, Nbexpe))
 
@@ -184,6 +192,8 @@ print('\nExperiment report:')
 print(' - Number of coefficients (beta={:d}, tau={:d})'.format(J, J))
 print(' - Radial precision: {:e}'.format(np.pi / J))
 print(' - Theoretical variogram: {}'.format(Tvario))
+print(" - Reg param (beta) = {:.3E}".format(myparam.reg_param))
+print(" - Reg param (tau) =  {:.3E}".format(alpha))
 print_report("1) Varproj", Beta1, Tau1, Beta0, Tau0, time_c1, Nbexpe)
 print_report("2) Varprox", Beta2, Tau2, Beta0, Tau0, time_c2, Nbexpe)
 
