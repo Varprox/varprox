@@ -32,7 +32,7 @@ def print_report(title, beta_est, tau_est, beta_grd, tau_grd, time, nbexpe):
     print('    RMSE: beta={:e}, tau={:e}'.format(
         np.sqrt(np.mean(np.power(diff_beta, 2), axis=None)),
         np.sqrt(np.mean(np.power(diff_tau, 2), axis=None))))
-    print('    Mean execution time (' + title + '): {:e} (sec) / {:d}h {:d}min {:d}s'\
+    print('    Mean execution time : {:e} (sec) / {:d}h {:d}min {:d}s'\
           .format(time / nbexpe, h, minu, sec))
 
 def convert_time(time):
