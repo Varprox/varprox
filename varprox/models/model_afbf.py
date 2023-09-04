@@ -79,12 +79,12 @@ def DFfun_AFBF(beta, f, lf, T, B, noise=1):
     return DF
 
 
+
 def FitVariogram(model, lags, w, param):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
-        print("FitVariogram: only runs for step functions.")
-        return(0)
+        raise ValueError("FitVariogram: only runs for step functions.")
 
     # Number of model parameters
     npar0_tau = model.topo.fparam.size
@@ -118,7 +118,7 @@ def FitVariogram(model, lags, w, param):
 
     bounds_beta = (0, 1)
     bounds_tau = (0, np.inf)
-
+    
     if param.multigrid:
         # Initialization
         hurst = perfunction(model.hurst.ftype, param=1)
@@ -187,7 +187,7 @@ def FitVariogram(model, lags, w, param):
             # beta, tau = pb.argmin_h(myoptim_param)
             myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                           param.verbose, reg="tv-1d",
-                                          reg_param=0.0001)
+                                          reg_param=param.reg_param)
             beta, tau = pb.argmin_h(myoptim_param)
         else:
             myoptim_param = Varprox_Param(param.gtol, param.maxit,
@@ -229,14 +229,11 @@ def FitVariogram(model, lags, w, param):
     return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
 
 
-
-
 def FitVariogramMixed(model, lags, w, param):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
-        print("FitVariogram: only runs for step functions.")
-        return(0)
+        raise ValueError("FitVariogram: only runs for step functions.")
 
     # Number of model parameters
     npar0_tau = model.topo.fparam.size
@@ -333,13 +330,13 @@ def FitVariogramMixed(model, lags, w, param):
             print("Tol = %e, Nepochs = %d" % (param.gtol, param.maxit))
         pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, param.noise)
-        if beta.size > 32:
+        if beta.size > 16:
             # myoptim_param = Varprox_Param(param.gtol, param.maxit,
             #                              param.verbose)
             # beta, tau = pb.argmin_h(myoptim_param)
             myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                           param.verbose, reg="tv-1d",
-                                          reg_param=0.0001)
+                                          reg_param=param.reg_param)
             beta, tau = pb.argmin_h(myoptim_param)
         else:
             myoptim_param = Varprox_Param(param.gtol, param.maxit,
@@ -381,15 +378,11 @@ def FitVariogramMixed(model, lags, w, param):
     return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
 
 
-
-
-
 def FitVariogram_ADMM(model, lags, w, param):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
-        print("FitVariogram: only runs for step functions.")
-        return(0)
+        raise ValueError("FitVariogram: only runs for step functions.")
 
     # Number of model parameters
     npar0_tau = model.topo.fparam.size
@@ -453,7 +446,7 @@ def FitVariogram_ADMM(model, lags, w, param):
 
     myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                   param.verbose, reg="tv-1d",
-                                  reg_param=0.05)
+                                  reg_param=param.reg_param)
     beta, tau = pb.argmin_h(myoptim_param)
 
     hurst.fparam[0, :] = beta[:]
