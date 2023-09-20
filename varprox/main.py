@@ -166,7 +166,7 @@ class Minimize:
         for n in range(DF.shape[0]):
             eps_jac_x[n, :] = DF[n].T @ self.y
         return eps_jac_x
-
+    
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
         """
@@ -297,7 +297,7 @@ class Minimize:
 
         .. math::
 
-            p_{n} &= \textrm{prox}_{\rho f} (x_{n}-\rho(\nabla h(x_{n})+\sigma L^{\top}x_{n}))\\
+            p_{n} &= \textrm{prox}_{\rho f} (x_{n}-\rho(\nabla h(x_{n})+\sigma L^{\top}v_{n}))\\
             q_{n} &= (\mathrm{Id}-\textrm{prox}_{\lambda g/\sigma}) (v_{n}+L(2p_{n}-x_{n})\\
             (x_{n+1},v_{n+1}) &= (x_{n},v_{n}) + \lambda_{n}((p_{n},q_{n})-(x_{n},v_{n}))
 
@@ -327,7 +327,7 @@ class Minimize:
         # Constant for the projection on [EPS,1-EPS] corresponding to the
         # constraint that beta belongs to the open set ]0,1[
         EPS = 1e-8
-
+        
         # Initialization
         n = x0.shape[0]         # Dimension of the ambient space
         x = x0                  # Primal variable
@@ -337,14 +337,6 @@ class Minimize:
 
         param.tau = 1 / LA.norm(self.jac_res_x(x).transpose() @ self.jac_res_x(x))
         param.sigma = 1 / LA.norm(L)**2
-
-        # Check the input parameters tau and sigma
-        # beta = ??? # Value of the Lipschitz constant for the gradient of h
-        # if 1/param.tau-param.sigma*LA.norm(L)**2 < beta/2:
-        #     raise Exception("Input values for parameters tau and sigma are not valid.")
-        # delta = 2-beta/(1/param.tau-param.sigma*LA.norm(L)**2)
-        # if (delta < 1) or (delta >= 2):
-        #     raise Exception("Input values for parameters tau and sigma are not valid.")
 
         # Main loop
         for n in range(param.maxit):
@@ -358,7 +350,7 @@ class Minimize:
             q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
                                               param.reg_param / param.sigma)
             # 3) Inertial update
-            LAMB = 1.3
+            LAMB = 1.8
             x = x + LAMB * (p - x)
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)

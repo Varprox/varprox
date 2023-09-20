@@ -97,7 +97,7 @@ if __name__ == "__main__":
     scalemin = 0  # Minimal scale for grid definition of the semi-variogram.
 
     # Model parameters.
-    K = 512         # Number of parameters for the Hurst function.
+    K = 32         # Number of parameters for the Hurst function.
     J = K           # Number of parameters for the topothesy function.
     ftype = "step"  # Type of representation for Hurst and topothesy functions.
     noise = True    # True if model with additive noise, False otherwise.
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     maxit = 10000
     gtol = 0.001
     verbose = 1
-    reg_param = 0.05
+    reg_param = 0.00001
     myparam = Fit_Param(noise_lvl, None, multigrid, maxit, gtol, verbose, reg_param)
 
     # Import image.
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     end_time = time.perf_counter()
     print("CPU Execution time: {} seconds".format(end_time-start_time))
     delta = model.noise
-    with open('model_file_N=512', 'wb') as model_file:
+    with open('model_file_N=32_test', 'wb') as model_file:
         pickle.dump(model, model_file)
 
     #with open('model_file_N=32', 'rb') as model_file:

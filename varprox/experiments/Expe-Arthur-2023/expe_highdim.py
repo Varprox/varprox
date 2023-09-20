@@ -7,7 +7,7 @@ import time
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
 from afbf.Simulation.TurningBands import tbparameters
-from varprox.models.model_afbf_2 import FitVariogram, FitVariogram_ADMM, FitVariogramMixed
+from varprox.models.model_afbf import FitVariogram, Fit_Param
 from varprox import tv
 
 from ParamsReader import ParamsReader
@@ -48,7 +48,7 @@ CONFIG_FILE = 'expe_config.ini'
 # Read parameters from the configuration file
 myreader = ParamsReader(CONFIG_FILE)
 myparam = myreader.get_optim_param()
-(Nbexpe, Tvario, noise, display, save, stepK, alpha) = myreader.init_expe_param()
+(Nbexpe, Tvario, noise, display, save, stepK) = myreader.init_expe_param()
 (N, step, M, J) = myreader.init_model_param()
 
 # Initialization a new random generator
@@ -78,7 +78,11 @@ ehurst = perfunction('step', finter.size)
 etopo.finter[0, :] = finter[:]
 ehurst.finter[0, :] = finter[:]
 emodel1 = tbfield('reference', etopo, ehurst, tb)
-emodel3 = tbfield('reference', etopo, ehurst, tb)
+etopo3 = perfunction('step', finter.size)
+ehurst3 = perfunction('step', finter.size)
+etopo3.finter[0, :] = finter[:]
+ehurst3.finter[0, :] = finter[:]
+emodel3 = tbfield('reference', etopo3, ehurst3, tb)
 
 # Definition of the initial estimated model (using varproj)
 topo0 = perfunction('step', J)
@@ -162,26 +166,28 @@ for expe in range(Nbexpe):
 
     # Initial variogram fitting with varproj
     t0 = time.perf_counter()
-    emodel0, wt = FitVariogram(model0, lags, w, myparam, alpha)
+    emodel0, wt = FitVariogram(model0, lags, w, myparam)
     t1 = time.perf_counter()
     time_c1 += t1 - t0
 
     emodel0.topo.Evaluate(fintermid)
     emodel0.hurst.Evaluate(fintermid)
     emodel1.topo.fparam[0, :] = emodel0.topo.values[0, :]
+    emodel1.hurst.fparam[0, :] = emodel0.hurst.values[0, :]
     Tau1[expe, :] = emodel1.topo.fparam[0, :]
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
 
     # Variogram fitting with varprox
     t0 = time.perf_counter()
-    emodel2, w1 = FitVariogramMixed(model0, lags, w, myparam, alpha)
-    #emodel02, w1 = FitVariogram(model0, lags, w, myparam, alpha)
+    myparam.threshold_reg = 32
+    emodel2, w1 = FitVariogram(model0, lags, w, myparam)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
 
     emodel2.topo.Evaluate(fintermid)
     emodel2.hurst.Evaluate(fintermid)
     emodel3.topo.fparam[0, :] = emodel2.topo.values[0, :]
+    emodel3.hurst.fparam[0, :] = emodel2.hurst.values[0, :]
     Tau2[expe, :] = emodel3.topo.fparam[0, :]
     Beta2[expe, :] = emodel3.hurst.fparam[0, :]
 
