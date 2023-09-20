@@ -18,7 +18,7 @@ import pickle
 
 def print_report(title, beta_est, tau_est, beta_grd, tau_grd, time, nbexpe):
     diff_beta = beta_est - beta_grd
-    diff_tau = tau_est-tau_grd
+    diff_tau = tau_est - tau_grd
     (h, minu, sec) = convert_time(time)
 
     print(' ' + title)
@@ -70,7 +70,7 @@ model = tbfield('reference', topo, hurst, tb)
 
 # Definition of a fbm to sample the Hurst function
 fbm = process()
-fbm.param = 0.9
+fbm.param = 0.5
 
 # Definition of the estimated model (using varprox)
 etopo = perfunction('step', finter.size)
@@ -174,7 +174,7 @@ for expe in range(Nbexpe):
 
     # Variogram fitting with varprox
     t0 = time.perf_counter()
-    emodel2, w1 = FitVariogram_ADMM(model0, lags, w, myparam, alpha)
+    emodel2, w1 = FitVariogramMixed(model0, lags, w, myparam, alpha)
     #emodel02, w1 = FitVariogram(model0, lags, w, myparam, alpha)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
@@ -196,7 +196,7 @@ print(" - Reg param (beta) = {:.3E}".format(myparam.reg_param))
 print(" - Reg param (tau) =  {:.3E}".format(alpha))
 print_report("1) Varproj", Beta1, Tau1, Beta0, Tau0, time_c1, Nbexpe)
 print_report("2) Varprox", Beta2, Tau2, Beta0, Tau0, time_c2, Nbexpe)
-
+print(" Mytest = {:.5E}".format(np.sqrt(np.mean(np.power(Beta2-Beta1, 2), axis=None))))
 # if save:
 #     with open("results.pickle", "wb") as f:
 #         pickle.dump([Beta0, Tau0, Beta1, Tau1,
