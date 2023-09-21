@@ -7,8 +7,9 @@ from afbf import sdata, coordinates, perfunction, tbfield
 from matplotlib import pyplot as plt
 from numpy.fft import fft2, fftshift
 from numpy.random import default_rng
-from varprox.models.model_afbf import FitVariogram, FitVariogram_ADMM, FitVariogramMixed
+from varprox.models.model_afbf import FitVariogram
 from varprox.models.model_afbf import Fit_Param
+from varprox.ParamsReader import ParamsReader
 import pickle
 import time
 
@@ -91,28 +92,26 @@ if __name__ == "__main__":
     IMDIR = '../../../data/'
     IMNAME = 'Mammo/Patch02.png'
 
+    # Name of the configuration file containing the parameters
+    CONFIG_FILE = 'mammo_config.ini'
+    # Read parameters from the configuration file
+    myreader = ParamsReader(CONFIG_FILE)
+
     # Parameters to set the lags where to compute the semi-variogram.
-    N = 40        # Size of the grid for the definition of the semi-variogram.
-    step = 2      # Step for grid definition
     scalemin = 0  # Minimal scale for grid definition of the semi-variogram.
 
-    # Model parameters.
-    K = 32         # Number of parameters for the Hurst function.
-    J = K           # Number of parameters for the topothesy function.
-    ftype = "step"  # Type of representation for Hurst and topothesy functions.
-    noise = True    # True if model with additive noise, False otherwise.
-    if noise:
-        noise_lvl = 1
+    (_, _, noise_lvl, display, _, _) = myreader.init_expe_param()
+    (N, step, _, J) = myreader.init_model_param()
+    K = J            # Number of parameters for the Hurst function.
+    ftype = "step"   # Type of representation for Hurst and topothesy functions.
+    if noise_lvl == 0:
+        noise = False
     else:
-        noise_lvl = 0
-
+        noise = True
+    
     # Optimization parameters
-    multigrid = True
-    maxit = 10000
-    gtol = 0.001
-    verbose = 1
-    reg_param = 0.00001
-    myparam = Fit_Param(noise_lvl, None, multigrid, maxit, gtol, verbose, reg_param)
+    myparam = myreader.get_optim_param()
+    myparam.threshold_reg = J / 2
 
     # Import image.
     im = sdata()
@@ -138,18 +137,18 @@ if __name__ == "__main__":
     model = tbfield("Fitted model", topo, hurst)
 
     # Fitting of the semi-variogram.
-    start_time = time.perf_counter()
-    model, w1 = FitVariogramMixed(model, lags, w0, myparam)
-    end_time = time.perf_counter()
-    print("CPU Execution time: {} seconds".format(end_time-start_time))
-    delta = model.noise
-    with open('model_file_N=32_test', 'wb') as model_file:
-        pickle.dump(model, model_file)
+    # start_time = time.perf_counter()
+    # model, w1 = FitVariogram(model, lags, w0, myparam)
+    # end_time = time.perf_counter()
+    # print("CPU Execution time: {} seconds".format(end_time-start_time))
+    # delta = model.noise
+    # with open('model_file_N=32_test', 'wb') as model_file:
+    #     pickle.dump(model, model_file)
 
-    #with open('model_file_N=32', 'rb') as model_file:
+    # with open('model_file_N=32', 'rb') as model_file:
     #   model = pickle.load(model_file)
     #   delta = model.noise
-    #model.DisplayParameters(1)
+    # model.DisplayParameters(1)
     
 
     # Code snippet from Frederic
@@ -173,10 +172,10 @@ if __name__ == "__main__":
     # model = tbfield("Fitted model", topo, hurst)
     
     
-    #start_time = time.perf_counter()
-    #model, w1 = FitVariogram_ADMM(model, lags, w0, myparam)
-    #end_time = time.perf_counter()
-    #print("CPU Execution time: {} seconds".format(end_time-start_time))
+    start_time = time.perf_counter()
+    model, w1 = FitVariogram(model, lags, w0, myparam)
+    end_time = time.perf_counter()
+    print("CPU Execution time: {} seconds".format(end_time-start_time))
 
     model.DisplayParameters(1)
 
@@ -205,13 +204,14 @@ if __name__ == "__main__":
          np.expand_dims(err[ind], 1)),
         axis=1
     )
-    print(errp[0:5, :])
+    if display:
+        print(errp[0:5, :])
 
-    # Plot variogram comparison
-    plot_comp_vario(3, w0, w1, w11)
-    plot_comp_vario_2(4, w0, w1, w11)
+        # Plot variogram comparison
+        plot_comp_vario(3, w0, w1, w11)
+        plot_comp_vario_2(4, w0, w1, w11)
 
-    # Plot comparison of original and simulated images
-    x0 = im.values.reshape(im.M)[0:simu.M[0], 0:simu.M[1]]
-    x1 = simu.values.reshape(simu.M)
-    plot_comp_fft(x0, x1)
+        # Plot comparison of original and simulated images
+        x0 = im.values.reshape(im.M)[0:simu.M[0], 0:simu.M[1]]
+        x1 = simu.values.reshape(simu.M)
+        plot_comp_fft(x0, x1)

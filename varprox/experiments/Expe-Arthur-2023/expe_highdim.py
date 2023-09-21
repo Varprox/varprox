@@ -9,9 +9,9 @@ from afbf import coordinates, perfunction, tbfield, process
 from afbf.Simulation.TurningBands import tbparameters
 from varprox.models.model_afbf import FitVariogram, Fit_Param
 from varprox import tv
-
-from ParamsReader import ParamsReader
+from varprox.ParamsReader import ParamsReader
 from numpy.random import default_rng, rand
+
 import pickle
 
 # ============================ Auxiliary functions =========================== #
@@ -199,13 +199,11 @@ print(' - Number of coefficients (beta={:d}, tau={:d})'.format(J, J))
 print(' - Radial precision: {:e}'.format(np.pi / J))
 print(' - Theoretical variogram: {}'.format(Tvario))
 print(" - Reg param (beta) = {:.3E}".format(myparam.reg_param))
-print(" - Reg param (tau) =  {:.3E}".format(alpha))
+print(" - Reg param (tau) =  {:.3E}".format(myparam.alpha))
 print_report("1) Varproj", Beta1, Tau1, Beta0, Tau0, time_c1, Nbexpe)
 print_report("2) Varprox", Beta2, Tau2, Beta0, Tau0, time_c2, Nbexpe)
-print(" Mytest = {:.5E}".format(np.sqrt(np.mean(np.power(Beta2-Beta1, 2), axis=None))))
-# if save:
-#     with open("results.pickle", "wb") as f:
-#         pickle.dump([Beta0, Tau0, Beta1, Tau1,
-#                      Tvario, noise,
-#                      multigrid, maxit, gtol,
-#                      N, step, M, J], f)
+if save:
+    with open("results.pickle", "wb") as f:
+        pickle.dump([Beta1, Tau1, Beta2, Tau2,
+                     Tvario, noise, Nbexpe,
+                     myparam, N, step, M, J], f)
