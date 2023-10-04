@@ -1,0 +1,5 @@
+sphinx/build/
+build/
+dist/
+varprox.egg-info/
+__pycache__/

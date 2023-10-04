@@ -4,9 +4,8 @@ Tools for computing the semi-variogram of an anisotropic fractional
 Brownian field and applying the fitting method.
 """
 import numpy as np
-from afbfstatio import field
-from afbf import perfunction
-from varprox import minimize
+from afbf import perfunction, tbfield
+from varprox import Minimize, Varprox_Param
 
 
 def BasisFunctions(fun, t):
@@ -103,6 +102,9 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
         print("FitVariogram: only runs for step functions.")
         return(0)
 
+    # Optimisation parameters
+    optim_param = Varprox_Param(gtol, maxit, verbose)
+
     # Number of model parameters.
     npar0_tau = model.topo.fparam.size
     npar0_beta = model.hurst.fparam.size
@@ -128,21 +130,18 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
         h0 = np.inf
         beta = np.array([0.5])
         tau = np.ones((noise + 1,))
-        for k in range(incremax):
-            f, lf = CoordinateProjection(cxy, k, True)
-            pb = minimize(beta, tau, w, Ffun, DFfun,
-                          bounds_beta, bounds_tau, f, lf, T, B, noise)
-            for i in range(1, 9):
-                beta = np.array([i / 10])
-                tau = pb.argmin_h_y(beta)
-                h = pb.h_value()
-                if h < h0:
-                    h0 = h
-                    beta2 = beta
-                    tau2 = tau
-                    increm = k
-                npar_tau = 1
-                npar_beta = 1
+        pb = Minimize(beta, tau, w, Ffun, DFfun,
+                      bounds_beta, bounds_tau, f, lf, T, B, noise)
+        for i in range(1, 9):
+            beta = np.array([i / 10])
+            tau = pb.argmin_h_y(beta)
+            h0 = pb.h_value()
+            if h0 < h:
+                h = h0
+                beta2 = beta
+                tau2 = tau
+            npar_tau = 1
+            npar_beta = 1
     else:
         npar_tau = npar0_tau
         npar_beta = npar0_beta
@@ -183,9 +182,9 @@ def FitVariogram(model, lags, w, noise=1, incremax=30,
             print("Nb param: Hurst=%d, Topo=%d" %
                   (hurst.fparam.size, topo.fparam.size))
             print("Tol = %e, Nepochs = %d" % (gtol, maxit))
-        pb = minimize(beta, tau, w, Ffun, DFfun,
+        pb = Minimize(beta, tau, w, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, noise)
-        beta, tau = pb.argmin_h(gtol, maxit, verbose)
+        beta, tau = pb.argmin_h(optim_param)
 
         stop = True
         if multigrid:

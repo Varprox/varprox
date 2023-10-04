@@ -13,4 +13,5 @@ __status__ = "Development"
 """
 Import the main class of the package.
 """
-from varprox.main import minimize
+from varprox.main import Minimize, Varprox_Param, tv
+from varprox.ParamsReader import ParamsReader

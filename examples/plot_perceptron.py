@@ -52,7 +52,7 @@ import numpy as np
 import scipy as sp
 from numpy.matlib import repmat
 
-from varprox import minimize
+from varprox import Minimize
 
 
 def HiddenLayer(x, v):
@@ -149,14 +149,14 @@ y0[:] = y[:]
 
 y = np.random.randn(y.size)
 bounds = (-np.inf, np.inf)
-pb = minimize(x0, y, w, Ffun, DFfun, bounds, bounds, v)
+pb = Minimize(x0, y, w, Ffun, DFfun, bounds, bounds, v)
 y1 = pb.argmin_h_y(x0)
 print('argmin y')
 print(y0)
 print(y1)
 
 x = np.random.randn(x.size)
-pb = minimize(x, y0, w, Ffun, DFfun, bounds, bounds, v)
+pb = Minimize(x, y0, w, Ffun, DFfun, bounds, bounds, v)
 x1 = pb.argmin_h_x(x)
 print('argmin x')
 print(x0)
@@ -164,7 +164,7 @@ print(x1)
 
 x = np.random.randn(x.size)
 y = np.random.randn(y.size)
-pb = minimize(x, y, w, Ffun, DFfun, bounds, bounds, v)
+pb = Minimize(x, y, w, Ffun, DFfun, bounds, bounds, v)
 x1, y1 = pb.argmin_h()
 print('argmin (x, y)')
 # print(x0)
