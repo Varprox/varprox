@@ -124,7 +124,7 @@ class Minimize:
             raise ValueError("Problem with the definition of F.")
 
         aux = DFfun(self.x0, *args, **kwargs)
-        
+
         if not isinstance(aux, np.ndarray):
             raise TypeError("Problem with variable type of DF output.")
         if (aux.shape[0] != N or aux.shape[1] != J or aux.shape[2] != K):
@@ -166,7 +166,7 @@ class Minimize:
         for n in range(DF.shape[0]):
             eps_jac_x[n, :] = DF[n].T @ self.y
         return eps_jac_x
-    
+
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
         """
@@ -253,8 +253,8 @@ class Minimize:
             else:
                 dh = 0
             if param.verbose:
-                print('Varpro | iter {:4d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
-                      .format(it, param.maxit, h, 100 * (h0-h) / h0))
+                print('Varpro | iter {:4d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
+                      .format(it, param.maxit, h, 100 * (h0 - h) / h0))
 
             if dh < param.gtol:
                 if dh < 0:
@@ -276,7 +276,7 @@ class Minimize:
         i, j = np.indices(D.shape)
         D[i == j] = 1
         D[i == j + 1] = -1
-        D[0, n-1] = -1
+        D[0, n - 1] = -1
         return D
 
     def rfbpd(self, x0, param):
@@ -327,7 +327,7 @@ class Minimize:
         # Constant for the projection on [EPS,1-EPS] corresponding to the
         # constraint that beta belongs to the open set ]0,1[
         EPS = 1e-8
-        
+
         # Initialization
         n = x0.shape[0]         # Dimension of the ambient space
         x = x0                  # Primal variable
@@ -483,6 +483,5 @@ class Varprox_Param:
     verbose: bool = True
     reg: str = None
     reg_param: float = 0
-    
-# ============================================================================ #
->>>>>>> origin/ADMM
+
+# ============================================================================
