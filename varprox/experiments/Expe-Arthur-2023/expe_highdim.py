@@ -2,7 +2,6 @@
 r"""
 Experiments of fitting variogram of an anisotropic fractional Brownian field.
 """
-from matplotlib import pyplot as plt
 import time
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
