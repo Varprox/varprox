@@ -95,7 +95,7 @@ model0 = tbfield('reference', topo0, hurst0)
 # Grid where to simulate images
 if not Tvario:
     coord = coordinates(M)
-    coord.N = N
+    coord.N = M
 
 # Lags where to compute the semi-variogram
 lags = coordinates()
