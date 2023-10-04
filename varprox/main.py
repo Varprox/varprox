@@ -355,7 +355,7 @@ class Minimize:
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param * tv(x)
+            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param * tv(x) / x.size
             if np.abs(crit_old - crit) < param.gtol * crit:
                 break
             # dh = (crit_old - crit) / crit
