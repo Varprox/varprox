@@ -57,18 +57,27 @@ myparam = myreader.get_optim_param()
 rng = default_rng()
 
 # Definition of turning-band parameters
-tb = tbparameters(J)
-kangle = tb.Kangle[0::stepK]
-fintermid = kangle[0:-1]
-finter = (kangle[1:] + kangle[0:-1]) / 2
-J = finter.size
+# tb = tbparameters(J)
+# kangle = tb.Kangle[0::stepK]
+# fintermid = kangle[0:-1]
+# finter = (kangle[1:] + kangle[0:-1]) / 2
+# J = finter.size
 
 # Definition of the reference model
-topo = perfunction('step', finter.size)
-hurst = perfunction('step', finter.size)
-topo.finter[0, :] = finter[:]
-hurst.finter[0, :] = finter[:]
-model = tbfield('reference', topo, hurst, tb)
+topo = perfunction('step', J)
+hurst = perfunction('step', J)
+finter = np.linspace(- np.pi / 2, np.pi / 2, topo.finter.size + 1, True)
+fintermid = (finter[0:-1] + finter[1:]) / 2
+finter = finter[1:]
+model = tbfield('reference', topo, hurst)
+tb = model.tb
+
+# topo = perfunction('step', finter.size)
+# hurst = perfunction('step', finter.size)
+# topo.finter[0, :] = finter[:]
+# hurst.finter[0, :] = finter[:]
+# model = tbfield('reference', topo, hurst, tb)
+# model = tbfield('reference', topo, hurst)
 
 # Definition of a fbm to sample the Hurst function
 fbm = process()
@@ -129,7 +138,8 @@ for expe in range(Nbexpe):
         fparam = flow + fext * (fparam - fmin) / (fmax - fmin)
     else:
         fparam = flow * np.ones(fparam.shape)
-    model.hurst.fparam[0, :] = fparam[:]
+    # model.hurst.fparam[0, :] = fparam[:]
+    model.hurst.ChangeParameters(fparam, finter)
     model.NormalizeModel()
     print("Topo  TV-norm: {:.5e}".format(tv(model.topo.fparam[0, 0:-2]) / J))
     print("Hurst TV-norm: {:.5e}".format(tv(model.hurst.fparam[0, 0:-2]) / J))
