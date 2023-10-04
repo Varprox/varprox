@@ -5,9 +5,7 @@ Experiments of fitting variogram of an anisotropic fractional Brownian field.
 import time
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
-from afbf.Simulation.TurningBands import tbparameters
 from varprox.models.model_afbf import FitVariogram
-from varprox import tv
 from varprox.ParamsReader import ParamsReader
 from numpy.random import default_rng
 
@@ -50,8 +48,8 @@ CONFIG_FILE = 'expe_config.ini'
 # Read parameters from the configuration file
 myreader = ParamsReader(CONFIG_FILE)
 myparam = myreader.get_optim_param()
-(Nbexpe, Tvario, noise, display, save, stepK) = myreader.init_expe_param()
-(N, step, M, J) = myreader.init_model_param()
+(Nbexpe, Tvario, display, save) = myreader.init_expe_param()
+(grid_dim, grid_step, field_size, hurst_dim, _, noise) = myreader.init_model_param()
 
 # Initialization a new random generator
 rng = default_rng()
@@ -64,9 +62,9 @@ rng = default_rng()
 # J = finter.size
 
 # Definition of the reference model
-topo = perfunction('step', J)
-hurst = perfunction('step', J)
-finter = np.linspace(- np.pi / 2, np.pi / 2, topo.finter.size + 1, True)
+topo = perfunction('step', hurst_dim)
+hurst = perfunction('step', hurst_dim)
+finter = np.linspace(- np.pi / 2, np.pi / 2, hurst.finter.size + 1, True)
 fintermid = (finter[0:-1] + finter[1:]) / 2
 finter = finter[1:]
 model = tbfield('reference', topo, hurst)
@@ -96,36 +94,37 @@ ehurst3.finter[0, :] = finter[:]
 emodel3 = tbfield('reference', etopo3, ehurst3, tb)
 
 # Definition of the initial estimated model (using varproj)
-topo0 = perfunction('step', J)
-hurst0 = perfunction('step', J)
-finter0 = np.linspace(- np.pi / 2, np.pi / 2, J + 1, True)[1:]
+topo0 = perfunction('step', hurst_dim)
+hurst0 = perfunction('step', hurst_dim)
+finter0 = np.linspace(- np.pi / 2, np.pi / 2, hurst_dim + 1, True)[1:]
 topo0.finter[0, :] = finter0[:]
 hurst0.finter[0, :] = finter0[:]
 model0 = tbfield('reference', topo0, hurst0)
 
 # Grid where to simulate images
 if not Tvario:
-    coord = coordinates(M)
-    coord.N = M
+    coord = coordinates(field_size)
+    coord.N = field_size
 
 # Lags where to compute the semi-variogram
 lags = coordinates()
-lags.DefineSparseSemiBall(N)
+lags.DefineSparseSemiBall(grid_dim)
+lags.N = field_size
 sc = np.sqrt(np.power(lags.xy[:, 0], 2) + np.power(lags.xy[:, 1], 2))
 
-Tau0 = np.zeros((Nbexpe, J))
-Beta0 = np.zeros((Nbexpe, J))
-Tau1 = np.zeros((Nbexpe, J))
-Beta1 = np.zeros((Nbexpe, J))
-Tau2 = np.zeros((Nbexpe, J))
-Beta2 = np.zeros((Nbexpe, J))
+Tau0 = np.zeros((Nbexpe, hurst_dim))
+Beta0 = np.zeros((Nbexpe, hurst_dim))
+Tau1 = np.zeros((Nbexpe, hurst_dim))
+Beta1 = np.zeros((Nbexpe, hurst_dim))
+Tau2 = np.zeros((Nbexpe, hurst_dim))
+Beta2 = np.zeros((Nbexpe, hurst_dim))
 err_fit = err_est = err_tes = 0
 time_c1 = 0
 time_c2 = 0
 for expe in range(Nbexpe):
     # Change model parameters
     np.random.seed(expe)
-    fbm.Simulate(J)
+    fbm.Simulate(hurst_dim)
     fparam = fbm.y[:, 0]
 
     fparam = fparam + np.flip(fparam)
@@ -141,8 +140,6 @@ for expe in range(Nbexpe):
     # model.hurst.fparam[0, :] = fparam[:]
     model.hurst.ChangeParameters(fparam, finter)
     model.NormalizeModel()
-    print("Topo  TV-norm: {:.5e}".format(tv(model.topo.fparam[0, 0:-2]) / J))
-    print("Hurst TV-norm: {:.5e}".format(tv(model.hurst.fparam[0, 0:-2]) / J))
 
     Tau0[expe, :] = topo.fparam[0, :]
     Beta0[expe, :] = hurst.fparam[0, :]
@@ -207,8 +204,9 @@ for expe in range(Nbexpe):
 
 
 print('\nExperiment report:')
-print(' - Number of coefficients (beta={:d}, tau={:d})'.format(J, J))
-print(' - Radial precision: {:e}'.format(np.pi / J))
+print(' - Number of coefficients (beta={:d}, tau={:d})'.format(hurst_dim,
+                                                               hurst_dim))
+print(' - Radial precision: {:e}'.format(np.pi / hurst_dim))
 print(' - Theoretical variogram: {}'.format(Tvario))
 print(" - Reg param (beta) = {:.3E}".format(myparam.reg_param))
 print(" - Reg param (tau) =  {:.3E}".format(myparam.alpha))
@@ -216,6 +214,4 @@ print_report("1) Varproj", Beta1, Tau1, Beta0, Tau0, time_c1, Nbexpe)
 print_report("2) Varprox", Beta2, Tau2, Beta0, Tau0, time_c2, Nbexpe)
 if save:
     with open("results.pickle", "wb") as f:
-        pickle.dump([Beta1, Tau1, Beta2, Tau2,
-                     Tvario, noise, Nbexpe,
-                     myparam, N, step, M, J], f)
+        pickle.dump([Beta1, Tau1, Beta2, Tau2], f)
