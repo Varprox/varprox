@@ -7,14 +7,15 @@ import time
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
 from afbf.Simulation.TurningBands import tbparameters
-from varprox.models.model_afbf import FitVariogram, Fit_Param
+from varprox.models.model_afbf import FitVariogram
 from varprox import tv
 from varprox.ParamsReader import ParamsReader
-from numpy.random import default_rng, rand
+from numpy.random import default_rng
 
 import pickle
 
 # ============================ Auxiliary functions =========================== #
+
 
 def print_report(title, beta_est, tau_est, beta_grd, tau_grd, time, nbexpe):
     diff_beta = beta_est - beta_grd
@@ -32,8 +33,9 @@ def print_report(title, beta_est, tau_est, beta_grd, tau_grd, time, nbexpe):
     print('    RMSE: beta={:e}, tau={:e}'.format(
         np.sqrt(np.mean(np.power(diff_beta, 2), axis=None)),
         np.sqrt(np.mean(np.power(diff_tau, 2), axis=None))))
-    print('    Mean execution time : {:e} (sec) / {:d}h {:d}min {:d}s'\
+    print('    Mean execution time : {:e} (sec) / {:d}h {:d}min {:d}s'
           .format(time / nbexpe, h, minu, sec))
+
 
 def convert_time(time):
     minu, sec = divmod(round(time), 60)
@@ -41,6 +43,7 @@ def convert_time(time):
     return (h, minu, sec)
 
 # ============================================================================ #
+
 
 # Name of the configuration file containing the parameters
 CONFIG_FILE = 'expe_config.ini'
@@ -129,8 +132,8 @@ for expe in range(Nbexpe):
         fparam = flow * np.ones(fparam.shape)
     model.hurst.fparam[0, :] = fparam[:]
     model.NormalizeModel()
-    print("Topo  TV-norm: {:.5e}".format(tv(model.topo.fparam[0, 0:-2])/J))
-    print("Hurst TV-norm: {:.5e}".format(tv(model.hurst.fparam[0, 0:-2])/J))
+    print("Topo  TV-norm: {:.5e}".format(tv(model.topo.fparam[0, 0:-2]) / J))
+    print("Hurst TV-norm: {:.5e}".format(tv(model.hurst.fparam[0, 0:-2]) / J))
 
     Tau0[expe, :] = topo.fparam[0, :]
     Beta0[expe, :] = hurst.fparam[0, :]
@@ -141,7 +144,7 @@ for expe in range(Nbexpe):
     w0[:] = model.svario.values[:, 0]
 
     if noise == 1:
-        s0 = np.random.rand() * np.min(w0) # Noise variance
+        s0 = np.random.rand() * np.min(w0)  # Noise variance
     else:
         s0 = 0
 
