@@ -27,13 +27,32 @@
 
 \begin{equation}
   \label{eq:optim_pb}
-  \min_{\beta,\tau} \quad
-  \frac{1}{2} \sum_{n=1}^{N} {\left(F_{n}(\beta)\tau - \tilde{w}_{n}\right)}^{2}
-  +\frac{1}{2}\lambda_{\alpha}\norm{\tau}_{2}^{2}
-  +\lambda_{\beta}\mR(\beta)
+  \begin{aligned}
+    \min_{\beta,\tau} \quad &
+    \frac{1}{2} \sum_{n=1}^{N} {\left(F_{n}(\bbeta)\btau - \tilde{w}_{n}\right)}^{2}
+    +\frac{1}{2}\lambda_{\alpha}\norm{\btau}_{2}^{2} + \lambda_{\beta}\mR(\bbeta) \\
+    \textrm{s.t.} \quad &
+    \btau \in \RR^{M}_{+} \, , \, \bbeta \in ]0,1[^{M}
+  \end{aligned}
 \end{equation}
-Equation~\eqref{eq:optim_pb} has the typical form of a variable projection
-problem~\cite{OLeary_D_2012_j-comput-optim-appl_variable_pnlsp}.
+where $\mR$ is a regularization that is proper, convex and lower-semicontinuous.
+For instance, $\mR$ can be the total variation $\mR(\*x)=\norm{\*D\*x}_{1}$ with
+$\*D$ the discrete gradient matrix defined as the idendity matrix with
+coefficients -1 on its subdiagonal.
+
+Equation~\eqref{eq:optim_pb} has the typical form of a constrained variable
+projection problem~\cite{Golub_G_2003_j-inv-prob_separable_nlsvpma}.
+Indeed, it can be formulated as
+\begin{equation}
+  \begin{aligned}
+    \min_{\beta,\tau} \quad &
+    \frac{1}{2} \norm{\begin{pmatrix}F(\bbeta) \\ \sqrt{\lambda_{\alpha}}\Id\end{pmatrix}\btau
+        - \begin{pmatrix}\tilde{w}\\ \*0 \end{pmatrix}}_{2}^{2}
+    + \lambda_{\beta}\mR(\bbeta) \\
+    \textrm{s.t.} \quad &
+    \btau \in \RR^{M}_{+} \, , \, \bbeta \in ]0,1[^{M}
+  \end{aligned}
+\end{equation}
 
 % ============================================================================ %
 
