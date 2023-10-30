@@ -28,11 +28,11 @@
 \begin{equation}
   \label{eq:optim_pb}
   \begin{aligned}
-    \min_{\beta,\tau} \quad &
+    \min_{\bbeta,\btau} \quad &
     \frac{1}{2} \sum_{n=1}^{N} {\left(F_{n}(\bbeta)\btau - \tilde{w}_{n}\right)}^{2}
     +\frac{1}{2}\lambda_{\alpha}\norm{\btau}_{2}^{2} + \lambda_{\beta}\mR(\bbeta) \\
     \textrm{s.t.} \quad &
-    \btau \in \RR^{M}_{+} \, , \, \bbeta \in ]0,1[^{M}
+    \btau \in \RR^{M}_{+} \, , \, \bbeta \in ]0,1[^{M} \, .
   \end{aligned}
 \end{equation}
 where $\mR$ is a regularization that is proper, convex and lower-semicontinuous.
@@ -45,14 +45,31 @@ projection problem~\cite{Golub_G_2003_j-inv-prob_separable_nlsvpma}.
 Indeed, it can be formulated as
 \begin{equation}
   \begin{aligned}
-    \min_{\beta,\tau} \quad &
+    \min_{\bbeta,\btau} \quad &
     \frac{1}{2} \norm{\begin{pmatrix}\*F(\bbeta) \\ \sqrt{\lambda_{\alpha}}\Id\end{pmatrix}\btau
         - \begin{pmatrix}\bwtilde\\ \*0 \end{pmatrix}}_{2}^{2}
     + \lambda_{\beta}\mR(\bbeta) \\
     \textrm{s.t.} \quad &
-    \btau \in \RR^{M}_{+} \, , \, \bbeta \in ]0,1[^{M}
+    \btau \in \RR^{M}_{+} \, , \, \bbeta \in ]0,1[^{M} \, .
   \end{aligned}
 \end{equation}
+
+Solving Problem~\ref{eq:optim_pb} can be performed in a block-descent scheme.
+Minimization with respect to $\btau$ consists in solving a non-negative
+least-squares problem.
+Minimization with respect to $\bbeta$ can be performed with primal-dual
+methods~\cite{Komodakis_N_2015_j-ieee-sig-proc-mag_playing_d}.
+Indeed, setting $f$ as the indicator function of the set $[0+\epsilon , 1-\epsilon]$, $g$ as
+the $\ell_{1}$-norm multiplied by $\lambda_{\beta}$, and $h$ as the least-squares term,
+Problem~\ref{eq:optim_pb} can be written as an unconstrained problem of
+the form
+\begin{equation}
+  \label{eq:uncons_beta_optim}
+  \min_{\bbeta\in\mathbb{R}^{M}} f(\bbeta) + g(D\bbeta) + h(\bbeta) \, ,
+\end{equation}
+where $f$, $g$, and $h$ are proper, convex, and lower-semicontinuous functions,
+$h$ is gradient $1$-Lipschitz, and $D$ is a linear operator from $\RR^{M}$ to
+$\RR^{M}$.
 
 % ============================================================================ %
 
