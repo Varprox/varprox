@@ -1,0 +1,63 @@
+\documentclass[review,onefignum,onetabnum]{siamart190516}
+
+% =========================================================================== %
+
+\pdfminorversion=5
+\input{preambule}
+
+% =========================================================================== %
+
+\input{macro}
+
+\graphicspath{{img/}}
+
+\ifpdf
+\hypersetup{
+  pdftitle={Title},
+  pdfauthor={Authors}
+}
+\fi
+
+\begin{document}
+
+% =========================================================================== %
+
+\headers{Title}
+        {Authors}
+
+\title{Title}
+
+\author{Authors}
+
+\maketitle
+
+% =========================================================================== %
+
+\begin{abstract}
+  Abstract
+\end{abstract}
+
+\begin{keywords}
+  key words
+\end{keywords}
+
+\begin{AMS}
+  AMS ref numbers
+\end{AMS}
+
+% =========================================================================== %
+
+\input{content}
+
+\appendix
+
+\input{appendix}
+
+% =========================================================================== %
+
+\bibliographystyle{./biblio/siamplain}
+\bibliography{abbr,mybiblio}
+
+% =========================================================================== %
+
+\end{document}

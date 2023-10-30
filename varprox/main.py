@@ -199,7 +199,7 @@ class Minimize:
                                 bounds=self.bounds_x,
                                 method='trf',
                                 verbose=0,
-                                gtol=param.gtol,
+                                gtol=0.0001,
                                 max_nfev=param.maxit
                                 )
             ret_x = res.x

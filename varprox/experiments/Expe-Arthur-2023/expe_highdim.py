@@ -187,8 +187,8 @@ for expe in range(Nbexpe):
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
 
     # Variogram fitting with varprox
+    myparam.threshold_reg = 4
     t0 = time.perf_counter()
-    myparam.threshold_reg = 32
     emodel2, w1 = FitVariogram(model0, lags, w, myparam)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
@@ -202,6 +202,12 @@ for expe in range(Nbexpe):
 
     print('Running experiments = {:3d} / {:3d}.'.format(expe + 1, Nbexpe))
 
+    if save:
+        data_filename = "results_" + str(expe+1) + ".pickle"
+        with open(data_filename, "wb") as f:
+            pickle.dump([Beta1, Tau1, Beta2, Tau2, model0, emodel0, emodel1,
+                         emodel2, emodel3], f)
+
 
 print('\nExperiment report:')
 print(' - Number of coefficients (beta={:d}, tau={:d})'.format(hurst_dim,
@@ -212,6 +218,4 @@ print(" - Reg param (beta) = {:.3E}".format(myparam.reg_param))
 print(" - Reg param (tau) =  {:.3E}".format(myparam.alpha))
 print_report("1) Varproj", Beta1, Tau1, Beta0, Tau0, time_c1, Nbexpe)
 print_report("2) Varprox", Beta2, Tau2, Beta0, Tau0, time_c2, Nbexpe)
-if save:
-    with open("results.pickle", "wb") as f:
-        pickle.dump([Beta1, Tau1, Beta2, Tau2], f)
+
