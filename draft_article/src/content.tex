@@ -9,9 +9,26 @@
 \subsection{Previous studies / State-of-the-art}
 \label{ssec:prev_stud}
 
-\cite{Leeuwen_T_2021_j-siam-j-sci-comput_variable_pnp}: does not handle box
-constraint with regularization. In contrast, we can do it using primal-dual
-optimization.
+
+Liste de papiers intéressants:
+\begin{itemize}
+\item \cite{OLeary_D_2012_j-comput-optim-appl_variable_pnlsp}: variable projection
+  with constraints on the variable but there is no regularization
+\item \cite{Leeuwen_T_2021_j-siam-j-sci-comput_variable_pnp}: variable projection
+  with regularization but without constraint.
+  The formulation loses the structure of variable projection does not handle box
+  constraint with regularization.
+  ({\color{red} mais plus je lis moins, je comprends l'article et leur algorithme)}
+  In contrast, we can handle both contraints and regularizations using
+  primal-dual optimization.
+\item J. Chen, M. Gan, G. -Y. Chen and C. L. P. Chen, ``Constrained Variable Projection Optimization for Stationary RBF-AR Models,'' in IEEE Transactions on Systems, Man, and Cybernetics: Systems, vol. 52, no. 3, pp. 1882-1890, March 2022, doi: 10.1109/TSMC.2020.3034644. \\
+  Pas d'accès à l'I2M et pas de version preprint (article IEEE)
+\item ``Constrained variable projection method for blind deconvolution''
+  (doi: 10.1088/1742-6596/386/1/012005): not very interesting, variable
+  projection with nonnegative constraints nad Tikhonov regularization
+  (similar to what we do for topothesy $\tau$)
+\item \TODO{à compléter}
+\end{itemize}
 
 % ---------------------------------------------------------------------------- %
 
@@ -61,11 +78,13 @@ Indeed, it can be formulated as
 Solving Problem~\ref{eq:optim_pb} can be performed in a block-descent scheme.
 Minimization with respect to $\btau$ consists in solving a non-negative
 least-squares problem.
-This problem can be solved using for instance trust region reflective algorithm
-described in~\cite{Coleman_T_1996_j-siam-j-optim_interior_tranmsb} and implemented
-in SciPy library~\cite{Virtanen_P_2020_j-nat-meth_scipy_fascp}.
-Minimization with respect to $\bbeta$ can be performed with primal-dual
-methods~\cite{Komodakis_N_2015_j-ieee-sig-proc-mag_playing_d}.
+This problem has a long history and can be solved using one of the standard
+methods.
+For instance one can use the trust region reflective algorithm described
+in~\cite{Coleman_T_1996_j-siam-j-optim_interior_tranmsb} and implemented in SciPy
+library~\cite{Virtanen_P_2020_j-nat-meth_scipy_fascp}.
+On the other hand, minimization with respect to $\bbeta$ can be performed with
+primal-dual methods~\cite{Komodakis_N_2015_j-ieee-sig-proc-mag_playing_d}.
 Indeed, setting $f$ as the indicator function of the set $[\epsilon, 1-\epsilon]$, $g$ as
 the $\ell_{1}$-norm multiplied by $\lambda_{\beta}$, and $h$ as the least-squares term,
 Problem~\ref{eq:optim_pb} can be written as an unconstrained problem of
@@ -90,6 +109,9 @@ Note that the infinimal convolution acts to the Fenchel transform as the classic
 convolution to the Fourier transform~\cite{Komodakis_N_2015_j-ieee-sig-proc-mag_playing_d}.
 For instance, the two following equalities hold:
 ${(f \iconv g)}^{*} = f^{*} + g^{*}$ and ${(f+g)}^{*} = f^{*} \iconv g^{*}$.
+While in Fourier analysis we are interested in transform of products and
+convolutions, in convex analysis, we are interested in the transform of sum
+since our objective function is often composed by a sum of several terms.
 The main idea of primal-dual algorithms consists then to solve both the
 primal~\eqref{eq:uncons_beta_optim} and the dual~\eqref{eq:dual_beta_optim}
 problems at the same time.
