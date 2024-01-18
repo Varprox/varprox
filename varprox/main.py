@@ -343,9 +343,9 @@ class Minimize:
             # 1) Primal update
             p = x - param.tau * self.gradient_g(x) -\
                 param.sigma * L.transpose() @ v
-            # Projection on [EPS,1-EPS]
-            p[p <= 0] = EPS
-            p[p >= 1] = 1 - EPS
+            # Projection on [bounds_x[0] + EPS, bounds_x[1] - EPS]
+            p[p <= self.bounds_x[0]] = self.bounds_x[0] + EPS
+            p[p >= self.bounds_x[1]] = self.bounds_x[1] - EPS
             # 2) Dual update
             q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
                                               param.reg_param / param.sigma)
