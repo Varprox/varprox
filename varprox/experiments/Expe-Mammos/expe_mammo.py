@@ -100,15 +100,14 @@ if __name__ == "__main__":
     # Parameters to set the lags where to compute the semi-variogram.
     scalemin = 0  # Minimal scale for grid definition of the semi-variogram.
 
-    (_, _, noise_lvl, display, _, _) = myreader.init_expe_param()
-    (N, step, _, J) = myreader.init_model_param()
-    K = J            # Number of parameters for the Hurst function.
-    ftype = "step"   # Type of representation for Hurst and topothesy functions.
+    (_, _, display, _) = myreader.init_expe_param()
+    (N, step, _, K, J, noise_lvl) = myreader.init_model_param()
+    ftype = "step"   # Representation type for Hurst and topothesy functions.
     if noise_lvl == 0:
         noise = False
     else:
         noise = True
-    
+
     # Optimization parameters
     myparam = myreader.get_optim_param()
     myparam.threshold_reg = J / 2
@@ -136,46 +135,10 @@ if __name__ == "__main__":
     hurst = perfunction(ftype, K)
     model = tbfield("Fitted model", topo, hurst)
 
-    # Fitting of the semi-variogram.
-    # start_time = time.perf_counter()
-    # model, w1 = FitVariogram(model, lags, w0, myparam)
-    # end_time = time.perf_counter()
-    # print("CPU Execution time: {} seconds".format(end_time-start_time))
-    # delta = model.noise
-    # with open('model_file_N=32_test', 'wb') as model_file:
-    #     pickle.dump(model, model_file)
-
-    # with open('model_file_N=32', 'rb') as model_file:
-    #   model = pickle.load(model_file)
-    #   delta = model.noise
-    # model.DisplayParameters(1)
-    
-
-    # Code snippet from Frederic
-    # topo2 =  perfunction('step', model.tb.Kangle.size - 1)
-    # hurst2 =  perfunction('step', model.tb.Kangle.size - 1)
-
-    # angles = model.tb.Kangle[1:]
-    # topo.Evaluate(angles)
-    # topo2.finter[0, :] = angles[:]
-    # topo2.fparam[0, :] = topo.values[0, :]
-
-    # hurst.Evaluate(angles)
-    # hurst2.finter[0, :] = angles[:]
-    # hurst2.fparam[0, :] = hurst.values[0, :]
-
-    # model2 = tbfield("max precision", topo2, hurst2, model.tb)
-    #model2.DisplayParameters()
-
-    # topo = perfunction(ftype, 64)
-    # hurst = perfunction(ftype, 64)
-    # model = tbfield("Fitted model", topo, hurst)
-    
-    
     start_time = time.perf_counter()
     model, w1 = FitVariogram(model, lags, w0, myparam)
     end_time = time.perf_counter()
-    print("CPU Execution time: {} seconds".format(end_time-start_time))
+    print("CPU Execution time: {} seconds".format(end_time - start_time))
 
     model.DisplayParameters(1)
 
@@ -184,8 +147,9 @@ if __name__ == "__main__":
     coord = coordinates()
     coord.DefineUniformGrid(im.coord.N)
     simu = model.Simulate(coord)
+    delta = model.noise
     simu.name = "Simulation"
-    if noise:
+    if delta > 0:
         simu.values = simu.values +\
             np.sqrt(delta) * rng.standard_normal(simu.values.shape)
 
@@ -207,11 +171,11 @@ if __name__ == "__main__":
     if display:
         print(errp[0:5, :])
 
-        # Plot variogram comparison
+        # Plot variogram comparison.
         plot_comp_vario(3, w0, w1, w11)
         plot_comp_vario_2(4, w0, w1, w11)
 
-        # Plot comparison of original and simulated images
+        # Plot comparison of original and simulated images.
         x0 = im.values.reshape(im.M)[0:simu.M[0], 0:simu.M[1]]
         x1 = simu.values.reshape(simu.M)
         plot_comp_fft(x0, x1)
