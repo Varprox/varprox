@@ -226,6 +226,7 @@ class Minimize:
         self.y = res.x
         return res.x
 
+
     def argmin_h(self, param):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
 

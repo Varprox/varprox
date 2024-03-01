@@ -52,7 +52,6 @@ def Ffun_v(H, c, scales, logscales, noise=1):
     for s in range(1, scales.size):
         F0 = Ffun_v_block(H, c, scales[s], noise)
         F = concatenate((F, F0), axis=0)
-    F = 0.5 * F
 
     return F
 
@@ -60,10 +59,11 @@ def Ffun_v(H, c, scales, logscales, noise=1):
 def DFfun_v(H, c, scales, logscales, noise=1):
 
     M = H.size
-    DF = zeros((scales.size * M, M + noise))
+    N = scales.size * M
+    DF = zeros((N, M + noise))
     cnt = 0
     for s in range(scales.size):
-        D = logscales[s] * power(scales[s], H) * c
+        D = logscales[s] * power(scales[s], H) * c / N
         for m in range(M):
             DF[cnt, noise + m] = D[m]
             cnt += 1

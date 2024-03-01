@@ -188,7 +188,7 @@ class Minimize:
 
         :return: Value of :math:`h` at the current point :math:`x`.
         """
-        return np.sum(np.power(self.val_res(self.x), 2)) / 2
+        return np.mean(np.power(self.val_res(self.x), 2)) / 2
 
     def argmin_h_x(self, x_init, param):
         r"""Minimize :math:`h` with respect to :math:`x`.
