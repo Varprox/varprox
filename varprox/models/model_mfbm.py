@@ -34,4 +34,38 @@ def DFfun(H, scales, logscales, noise=1):
     if noise == 1:
         DF = concatenate((zeros((DF.shape[0], 1)), DF), axis=1)
 
+
+def Ffun_v_block(H, c, scale, noise):
+
+    F = diag(power(scale, H))
+    if noise == 1:
+        F = concatenate((ones((F.shape[0], 1)), F), axis=1)
+    if c is not None:
+        F = F @ c
+
+    return F
+
+
+def Ffun_v(H, c, scales, logscales, noise=1):
+
+    F = Ffun_v_block(H, c, scales[0], noise)
+    for s in range(1, scales.size):
+        F0 = Ffun_v_block(H, c, scales[s], noise)
+        F = concatenate((F, F0), axis=0)
+    F = 0.5 * F
+
+    return F
+
+
+def DFfun_v(H, c, scales, logscales, noise=1):
+
+    M = H.size
+    DF = zeros((scales.size * M, M + noise))
+    cnt = 0
+    for s in range(scales.size):
+        D = logscales[s] * power(scales[s], H) * c
+        for m in range(M):
+            DF[cnt, noise + m] = D[m]
+            cnt += 1
+
     return DF

@@ -8,23 +8,30 @@ Created on Fri Jan 26 10:28:54 2024
 
 from afbf import process
 from numpy.random import seed
-from numpy import zeros, std, arange, power, mean, maximum, log, array
+from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
 from numpy import concatenate, ones, infty, sqrt
 from scipy.optimize import lsq_linear
-from varprox import Minimize, Varprox_Param
-from varprox.models.model_mfbm import Ffun, DFfun
+from varprox.main_2 import Minimize, Varprox_Param
+from varprox.models.model_mfbm import Ffun_v, DFfun_v
 from matplotlib import pyplot as plt
 
+
+# Optimisation parameters
+gtol = 1e-3
+maxiter = 200
+verbose = True 
+reg_param = 10000
 
 # Experiment parameters
 N = 1000  # Size of the observed process.
 
+order = 1
 scales = arange(1, 5)
-w_size = 40
-w_step = 1
+w_size = 40  # 990  # 40
+w_step = 1  # 990  # 1
 
 
-def Simulate_MFBM(H, seed_n=None):
+def Simulate_MFBM(H, seed_n=1):
     """Simulate of multi-fractional Brownian motion of Hurst function H.
 
     Parameters
@@ -40,8 +47,6 @@ def Simulate_MFBM(H, seed_n=None):
         A simulation of the process.
 
     """
-    if seed_n is None:
-        seed()
     N = H.size
 
     fbm = process()
@@ -50,12 +55,12 @@ def Simulate_MFBM(H, seed_n=None):
         seed(seed_n)
         fbm.param = H[j]
         fbm.Simulate(N)
-        y[j] = fbm.y[j] / std(fbm.y)
+        y[j] = 10 * fbm.y[j] / std(fbm.y)
 
     return y
 
 
-def Estimate_LocalSemiVariograms(y, scales, w_size, w_step):
+def Estimate_LocalSemiVariograms(y, scales, w_size, w_step, order=0):
     """Compute the local semi-variogram of the process.
 
     Parameters
@@ -68,6 +73,8 @@ def Estimate_LocalSemiVariograms(y, scales, w_size, w_step):
         Size of the window where the semi-variogram is computed.
     w_step : int
         Step between two successive positions of computations.
+    order: int
+        Order of the increments. The default is 0.
 
     Returns
     -------
@@ -77,16 +84,25 @@ def Estimate_LocalSemiVariograms(y, scales, w_size, w_step):
     """
 
     N = y.size
-    Nr = N - max(max(scales), w_size)
+    order += 1
+    Nr = N - order * max(scales) - w_size
 
-    v = zeros((Nr // w_step, scales.size))
+    if Nr < 0:
+        raise "Decrease max of scales or w_size."
+
+    v = zeros((Nr // w_step + 1, scales.size))
     for j in range(scales.size):
         # Increments
         scale = scales[j]
-        increm = power(y[:-scale] - y[scale:], 2)
+        increm = zeros(y.shape)
+        increm[:] = y[:]
+        for o in range(order):
+            increm = increm[:-scale] - increm[scale:]
+        increm = power(increm[:-scale] - increm[scale:], 2)
         # Local semi-variogram.
         w_ind = 0
         for w in range(0, Nr, w_step):
+            # v[w_ind, j] = 0.5 * power(scale, 2 * 0.7)
             v[w_ind, j] = 0.5 * mean(increm[w:w + w_size])
             w_ind += 1
 
@@ -119,8 +135,8 @@ def Estimate_HurstFunction(scales, v):
     lb = array([0, - infty])
     ub = array([1, infty])
 
-    H = zeros((N, 1))
-    c = zeros((N, 1))
+    H = zeros((N,))
+    c = zeros((N,))
     for j in range(N):
         pb = lsq_linear(X, v[j, :], bounds=(lb, ub))
         H[j] = pb.x[0]
@@ -132,35 +148,53 @@ def Estimate_HurstFunction(scales, v):
 # Simulate a Hurst function.
 H1 = 0.1
 H2 = 0.9
-T = arange(N)
+T = arange(stop=N, step=2)
 N = N - 1
 T = sqrt(T / N)
 H = (1 - T) * H1 + T * H2
+H = concatenate((H[::-1], H[1:]))
+# H = 0.8 * ones(H.shape)
 # Simulate a mfbm of Hurst function H.
 seed_n = 1
 y = Simulate_MFBM(H, seed_n)
 # Estimate the local semi-variogram of y.
-v = Estimate_LocalSemiVariograms(y, scales, w_size, w_step)
-# Estimate the Hurst function.
-Hest, c = Estimate_HurstFunction(scales, v)
+v = Estimate_LocalSemiVariograms(y, scales, w_size, w_step, order)
+
+# Estimate the Hurst function by linear regression.
+Hest1, c1 = Estimate_HurstFunction(scales, v)
+
 # Comparison with ground truth.
-ind0 = w_size // 2
-H = H[ind0:ind0 + Hest.size]
-DH = H - Hest
-print(mean(DH), std(DH))
+ind0 = (H.size - Hest1.size) // 2
+H = H[ind0:ind0 + Hest1.size]
+DH = H - Hest1
 
-plt.figure(1)
-plt.plot(H, label="True")
-plt.plot(Hest, label="Estimate")
-plt.show()
-
-logscales = log(scales)
+# Estimation of the Hurst function by minimisation.
+scales = scales / (2 * max(scales))
 scales2 = power(scales, 2)
+logscales = log(scales2)
 
 Hest2 = 0.5 * ones(H.shape)
-y = ones(H.shape)
-w = v.reshape((v.size,))
-pb = Minimize(Hest2, y, w, Ffun, DFfun, (0, 1), (0, infty),
+Hest2[:] = Hest1[:]
+Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
+w = v.reshape((v.size,), order="F")
+pb = Minimize(Hest2, w, Ffun_v, DFfun_v, (0.0001, 0.9999), (0, infty),
               scales2, logscales, 0)
-optim_param = Varprox_Param(1e-3, 100, True)
+optim_param = Varprox_Param(gtol, maxiter, verbose)
 Hest2, c2 = pb.argmin_h(optim_param)
+
+
+# Regularization parameter x
+optim_param.reg_param = reg_param * Hest2.size
+# Weight for y regularization
+optim_param.alpha = 0
+optim_param.reg == 'tv-1d'
+Hest3, c3 = pb.argmin_h(optim_param)
+
+
+plt.figure(1)
+plt.plot(H, label="Ground truth")
+plt.plot(Hest1, label="Linear regression")
+plt.plot(Hest2, label="Varpro")
+plt.plot(Hest3, label="Varprox")
+plt.legend()
+plt.show()
