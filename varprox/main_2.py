@@ -6,6 +6,7 @@ import numpy as np
 from scipy.optimize import lsq_linear, least_squares
 from dataclasses import dataclass, field
 from numpy import linalg as LA
+from functools import partial
 
 
 # ============================== CLASS MINIMIZE ============================= #
@@ -99,14 +100,22 @@ class Minimize:
         """
 
         # Optimisation parameters.
-        self.Ffun = Ffun
-        self.DFfun = DFfun
         if goptim_param is None:
             self.param = GOptim_Param()
         else:
             self.param = goptim_param
         self.args = args
         self.kwargs = kwargs
+
+        # Definition of Ffun and DFfun.
+        if self.param.vectorized:
+            # vectorized version of the functions.
+            self.Ffun_v = Ffun
+            self.DFfun_v = DFfun
+        else:
+            # vectorization of the functions.
+            self.Ffun = Ffun
+            self.DFfun = DFfun
 
         # Test the variable types.
         if not isinstance(w, np.ndarray)\
@@ -135,6 +144,15 @@ class Minimize:
         # if (aux.shape[0] != self.N or aux.shape[1] != self.K):
         #     raise ValueError("Problem with the definition of DF.")
 
+    def Ffun_v(self, x, y, *args, **kwargs):
+        F = self.Ffun(x, *args, **kwargs)
+        if y is not None:
+            F = F @ y
+        return F
+
+    def DFfun_v(self, x, y, *args, **kwargs):
+        return np.swapaxes(self.DFfun(x, *args, **kwargs), 1, 2) @ y
+
     def val_res(self, x):
         r"""Compute the residuals :math:`\epsilon_n` in :eq:`residuals`.
 
@@ -143,21 +161,7 @@ class Minimize:
 
         :return: Value of the residuals at the point given in argument
         """
-        return self.Ffun(x, self.y, *self.args, **self.kwargs) - self.w
-
-    # def jac_res_x(self, x):
-    #     r"""Compute the Jacobian of residuals with respect to :math:`x`.
-
-    #     :param x: Point where to compute the Jacobian of the residuals
-    #     :type x: :class:`numpy.ndarray` of size (N,)
-
-    #     :return: Value of the Jacobian of residuals at the current point :math:`x`.
-    #     """
-    #     DF = self.DFfun(x, *self.args, **self.kwargs)
-    #     eps_jac_x = np.zeros((DF.shape[0], x.size))
-    #     for n in range(DF.shape[0]):
-    #         eps_jac_x[n, :] = DF[n].T @ self.y
-    #     return eps_jac_x
+        return self.Ffun_v(x, self.y, *self.args, **self.kwargs) - self.w
 
     def jac_res_x(self, x):
         r"""Compute the Jacobian of residuals with respect to :math:`x`.
@@ -167,7 +171,7 @@ class Minimize:
 
         :return: Value of the Jacobian of residuals at the current point :math:`x`.
         """
-        return self.DFfun(x, self.y, *self.args, **self.kwargs)
+        return self.DFfun_v(x, self.y, *self.args, **self.kwargs)
 
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
@@ -224,7 +228,7 @@ class Minimize:
             This operation corresponds to eq:`varpro`, which is the
             variable projection.
         """
-        res = lsq_linear(self.Ffun(x, None, *self.args, **self.kwargs), self.w,
+        res = lsq_linear(self.Ffun_v(x, None, *self.args, **self.kwargs), self.w,
                          bounds=self.param.bounds_y)
         self.y = res.x
         return res.x
@@ -407,6 +411,8 @@ def prox_l1(data, reg_param):
     return y
 
 
+
+
 @dataclass
 class GOptim_Param:
     gtol_h: float = 1e-4
@@ -416,6 +422,7 @@ class GOptim_Param:
     reg_weight: float = 0
     bounds_x: tuple[float, float] = (- np.inf, np.inf)
     bounds_y: tuple[float, float] = (- np.inf, np.inf)
+    vectorized: bool = True
 
 
 @dataclass

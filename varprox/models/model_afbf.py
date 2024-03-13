@@ -99,8 +99,10 @@ def FitVariogram(model, lags, w, param):
         h = np.inf
         beta = np.array([0.5])
         tau = np.ones((param.noise + 1,))
-        pb = Minimize(beta, tau, w1, Ffun, DFfun,
-                      bounds_beta, bounds_tau, f, lf, T, B, param.noise)
+        pb = Minimize(beta, tau, w1, Ffun, DFfun, None,
+                      f, lf, T, B, param.noise)
+        pb.param.bounds_x = bounds_beta
+        pb.param.bounds_y = bounds_tau
         for i in range(1, 9):
             beta = np.array([i / 10])
             tau = pb.argmin_h_y(beta)
@@ -155,13 +157,16 @@ def FitVariogram(model, lags, w, param):
         pb = Minimize(beta, tau, w1, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, param.noise,
                       param.alpha)
+        pb = Minimize(beta, tau, w1, Ffun, DFfun, None,
+                      f, lf, T, B, param.noise)
+        pb.param.bounds_x = bounds_beta
+        pb.param.bounds_y = bounds_tau
         if beta.size > param.threshold_reg:
             myoptim_param = Varprox_Param(param.gtol, param.maxit,
                                           param.verbose, reg="tv-1d",
                                           reg_param=param.reg_param)
         else:
-            myoptim_param = Varprox_Param(param.gtol, param.maxit,
-                                          param.verbose)
+            myoptim_param = Solver_Param()
 
         beta, tau = pb.argmin_h(myoptim_param)
 
