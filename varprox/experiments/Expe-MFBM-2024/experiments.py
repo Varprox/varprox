@@ -11,7 +11,7 @@ from numpy.random import seed
 from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
 from numpy import concatenate, ones, infty, sqrt
 from scipy.optimize import lsq_linear
-from varprox.main_2 import Minimize, Varprox_Param
+from varprox.main_2 import Minimize, Solver_Param, tv
 from varprox.models.model_mfbm import Ffun_v, DFfun_v
 from matplotlib import pyplot as plt
 
@@ -25,7 +25,7 @@ reg_param = 10000
 # Experiment parameters
 N = 1000  # Size of the observed process.
 
-order = 1
+order = 0
 scales = arange(1, 5)
 w_size = 40  # 990  # 40
 w_step = 1  # 990  # 1
@@ -177,18 +177,18 @@ Hest2 = 0.5 * ones(H.shape)
 Hest2[:] = Hest1[:]
 Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
 w = v.reshape((v.size,), order="F")
-pb = Minimize(Hest2, w, Ffun_v, DFfun_v, (0.0001, 0.9999), (0, infty),
-              scales2, logscales, 0)
-optim_param = Varprox_Param(gtol, maxiter, verbose)
-Hest2, c2 = pb.argmin_h(optim_param)
+pb = Minimize(Hest2, w, Ffun_v, DFfun_v, None, scales2, logscales, 0)
+pb.param.bounds_x = (0.0001, 0.9999)
+pb.param.bounds_y = (0, infty)
+solver_param = Solver_Param()
+Hest2, c2 = pb.argmin_h(solver_param)
 
 
 # Regularization parameter x
-optim_param.reg_param = reg_param * Hest2.size
+pb.param.reg_weight = pb.h_value() / tv(pb.x) * pb.K * 10e20
 # Weight for y regularization
-optim_param.alpha = 0
-optim_param.reg == 'tv-1d'
-Hest3, c3 = pb.argmin_h(optim_param)
+pb.param.reg_type = 'tv-1d'
+Hest3, c3 = pb.argmin_h(solver_param)
 
 
 plt.figure(1)

@@ -4,7 +4,7 @@ Tools for minimizing the penalized SNLS criterion.
 """
 import numpy as np
 from scipy.optimize import lsq_linear, least_squares
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from numpy import linalg as LA
 
 
@@ -81,10 +81,7 @@ class Minimize:
     :type args, kwargs: tuple and dict, optional
     """
 
-    def __init__(self, x0, w, Ffun, DFfun,
-                 bounds_x=(-np.inf, np.inf),
-                 bounds_y=(-np.inf, np.inf),
-                 *args, **kwargs):
+    def __init__(self, x0, w, Ffun, DFfun, goptim_param=None, *args, **kwargs):
         r"""Constructor method.
         :param x0: initial guess for :math:`x`.
         :type x0: :ref:`ndarray` with shape (K,)
@@ -104,8 +101,10 @@ class Minimize:
         # Optimisation parameters.
         self.Ffun = Ffun
         self.DFfun = DFfun
-        self.bounds_x = bounds_x
-        self.bounds_y = bounds_y
+        if goptim_param is None:
+            self.param = GOptim_Param()
+        else:
+            self.param = goptim_param
         self.args = args
         self.kwargs = kwargs
 
@@ -115,33 +114,26 @@ class Minimize:
             raise TypeError("Problem with variable type.")
 
         # Define input variables as row vectors.
-        N = w.size
-        K = x0.size
-        self.w = w.reshape((N,))
-        self.x0 = x0
-        self.y0 = self.argmin_h_y(self.x0)
-        J = self.y0.size
+        self.N = w.size
+        self.w = w.reshape((self.N,))
+        self.x = np.zeros(x0.shape)
+        self.x[:] = x0[:]
+        self.y = self.argmin_h_y(x0)
+        self.K = self.x.size
+        self.J = self.y.size
 
         # Test input variable consistency.
-        aux = Ffun(self.x0, None, *args, **kwargs)
+        aux = Ffun(self.x, None, *args, **kwargs)
         if not isinstance(aux, np.ndarray):
             raise TypeError("Problem with variable type of F output.")
-        if aux.shape[0] != N or aux.shape[1] != J:
+        if aux.shape[0] != self.N or aux.shape[1] != self.J:
             raise ValueError("Problem with the definition of F.")
 
-        # aux = DFfun(self.x0, *args, **kwargs)
-
+        # aux = DFfun(self.x, *args, **kwargs)
         # if not isinstance(aux, np.ndarray):
         #     raise TypeError("Problem with variable type of DF output.")
-        # if (aux.shape[0] != N or aux.shape[1] != J or aux.shape[2] != K):
+        # if (aux.shape[0] != self.N or aux.shape[1] != self.K):
         #     raise ValueError("Problem with the definition of DF.")
-
-        # Variable initializations.
-
-        self.x = np.zeros(self.x0.shape)
-        self.x[:] = self.x0[:]
-        self.y = np.zeros(self.y0.shape)
-        self.y[:] = self.y0[:]
 
     def val_res(self, x):
         r"""Compute the residuals :math:`\epsilon_n` in :eq:`residuals`.
@@ -180,7 +172,7 @@ class Minimize:
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
         """
-        return self.jac_res_x(x).transpose() @ self.val_res(x)
+        return self.jac_res_x(x).transpose() @ self.val_res(x) / self.N
 
     def h_value(self):
         r"""Compute the value of the criterion :math:`h` in :eq:`criterion`
@@ -188,13 +180,14 @@ class Minimize:
 
         :return: Value of :math:`h` at the current point :math:`x`.
         """
-        return np.mean(np.power(self.val_res(self.x), 2)) / 2
+        h = np.mean(np.power(self.val_res(self.x), 2)) / 2
 
-    def argmin_h_x(self, x_init, param):
+        if self.param.reg_type == 'tv-1d':
+            h = h + self.param.reg_weight * tv(self.x) / self.K
+        return h
+
+    def argmin_h_x(self, param):
         r"""Minimize :math:`h` with respect to :math:`x`.
-
-        :param x_init: Initial point for the minimization algorithm
-        :type x_init: :class:`numpy.ndarray` of size (N,)
 
         :param param: Parameter for the algorithm
         :type param: :class:Varprox_Param
@@ -203,18 +196,18 @@ class Minimize:
         """
         ret_x = None
         # Minimizing h over x
-        if param.reg is None:
-            res = least_squares(fun=self.val_res, x0=x_init,
+        if self.param.reg_type is None:
+            res = least_squares(fun=self.val_res, x0=self.x,
                                 jac=self.jac_res_x,
-                                bounds=self.bounds_x,
+                                bounds=self.param.bounds_x,
                                 method='trf',
                                 verbose=0,
-                                gtol=0.0001,
+                                gtol=param.gtol,
                                 max_nfev=param.maxit
                                 )
             ret_x = res.x
-        elif param.reg == 'tv-1d':
-            ret_x = self.rfbpd(x_init, param)
+        elif self.param.reg_type == 'tv-1d':
+            ret_x = self.rfbpd(param)
         else:
             raise ValueError('The value of the parameter <reg> is unknown.')
         return ret_x
@@ -232,45 +225,50 @@ class Minimize:
             variable projection.
         """
         res = lsq_linear(self.Ffun(x, None, *self.args, **self.kwargs), self.w,
-                         bounds=self.bounds_y)
+                         bounds=self.param.bounds_y)
         self.y = res.x
         return res.x
 
     def argmin_h(self, param):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
 
-        :param param: Parameter for the algorithm
-        :type param: :class:Varprox_Param
+        :param param: Parameter for the minimization of h wrt x
+        :type param: :class:Solver_Param
 
         :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
         h = self.h_value()
-        x0 = np.zeros(self.x.shape)
-        y0 = np.zeros(self.y.shape)
-        for it in range(param.maxit):
-            x0[:] = self.x[:]
-            y0[:] = self.y[:]
-            self.x = self.argmin_h_x(self.x, param)
+        xtmp = np.zeros(self.x.shape)
+        ytmp = np.zeros(self.y.shape)
+        for it in range(self.param.maxit):
+            xtmp[:] = self.x[:]
+            ytmp[:] = self.y[:]
+            self.x = self.argmin_h_x(param)
             self.y = self.argmin_h_y(self.x)
 
             h0 = h
             h = self.h_value()
             if h0 != 0:
-                if param.reg is None:
+                if self.param.reg_type is None:
                     dh = (h0 - h) / h0 * 100
+                    sdh = 1
                 else:
-                    dh = abs(h0 - h) / h0 * 100
+                    dh = h0 - h
+                    sdh = np.sign(dh)
+                    dh = abs(dh) / h0 * 100
             else:
                 dh = 0
 
-            if param.verbose:
-                print('varprox | iter {:4d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
-                      .format(it, param.maxit, h, dh))
+            if self.param.verbose:
+                print('varprox reg = {} | iter {:4d} / {}: cost = {:.6e} '
+                      'improved by {:3.4f} percent.'
+                      .format(self.param.reg_type, it,
+                              self.param.maxit, h, sdh * dh))
 
-            if dh < param.gtol:
+            if dh < self.param.gtol_h:
                 if dh < 0:
-                    self.x[:] = x0[:]
-                    self.y[:] = y0[:]
+                    self.x[:] = xtmp[:]
+                    self.y[:] = ytmp[:]
                 break
         return self.x, self.y
 
@@ -290,7 +288,7 @@ class Minimize:
         D[0, n - 1] = -1
         return D
 
-    def rfbpd(self, x0, param):
+    def rfbpd(self, param):
         r"""Implementation of the rescaled Primal-dual Forward-backward
         algorithm (RFBPD) to minimize the following optimization problem:
 
@@ -327,9 +325,6 @@ class Minimize:
         :math:`(x_{n})` to a solution to the optimization:
         :math:`\rho^{-1}-\sigma\|L\|_{*}^{2} \geq \gamma/2`.
 
-        :param x0: Initial value of the primal variable.
-        :type x0: :class:`numpy.ndarray` (1-dimensional)
-
         :param param: Parameters of the algorithm.
         :type param: :class:`Varprox_Param`
 
@@ -340,113 +335,38 @@ class Minimize:
         EPS = 1e-8
 
         # Initialization
-        n = x0.shape[0]         # Dimension of the ambient space
-        x = x0                  # Primal variable
-        v = np.zeros(x0.shape)  # Dual variable
-        L = self.generate_discrete_grad_mat(n)  # Linear operator
+        x = self.x              # Primal variable
+        v = np.zeros(x.shape)   # Dual variable
+        L = self.generate_discrete_grad_mat(self.K)  # Linear operator
         crit = np.Inf          # Initial value of the objective function
 
-        param.tau = 1 / LA.norm(self.jac_res_x(x).transpose() @ self.jac_res_x(x))
-        param.sigma = 1 / LA.norm(L)**2
+        jac_res_x = self.jac_res_x(x)
+        tau = 1 / LA.norm(jac_res_x.transpose() @ jac_res_x)
+        sigma = 0.99 / LA.norm(L)**2
+        sigmarw = self.param.reg_weight / self.K / sigma
 
         # Main loop
         for n in range(param.maxit):
             # 1) Primal update
-            p = x - param.tau * self.gradient_g(x) -\
-                param.sigma * L.transpose() @ v
+            p = x - tau * self.gradient_g(x) - sigma * L.transpose() @ v
             # Projection on [bounds_x[0] + EPS, bounds_x[1] - EPS]
-            p[p <= self.bounds_x[0]] = self.bounds_x[0] + EPS
-            p[p >= self.bounds_x[1]] = self.bounds_x[1] - EPS
+            p[p <= self.param.bounds_x[0]] = self.param.bounds_x[0] + EPS
+            p[p >= self.param.bounds_x[1]] = self.param.bounds_x[1] - EPS
             # 2) Dual update
-            q = v + L @ (2 * p - x) - prox_l1(v + L @ (2 * p - x),
-                                              param.reg_param / param.sigma)
+            vtemp = v + L @ (2 * p - x)
+            q = vtemp - prox_l1(vtemp, sigmarw)
             # 3) Inertial update
             LAMB = 1.8
             x = x + LAMB * (p - x)
             v = v + LAMB * (q - v)
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
-            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param * tv(x) / x.size
+            crit = self.h_value()
             if np.abs(crit_old - crit) < param.gtol * crit:
                 break
-            # dh = (crit_old - crit) / crit
-            # if np.abs(dh) < param.gtol:
-            #     break
-            # else:
-            #     print('sub iter {:3d} / {}: cost = {:.6e} improved by {:3.4f} percent.'
-            #           .format(n, param.max_iter, crit, dh))
-        print(" - RFBPD | Nb subiter : {}".format(n))
 
         return x
 
-    def admm(self, x0, param):
-        r"""Implementation of ADMM to minimize the optimization problem
-        :eq:`uncons_pb`.
-
-        ADMM iteration then reads:
-
-        .. math::
-
-            x_{n} &= \textrm{argmin}_{x \in \mathbb{R}^{n}} \frac{1}{2}\|Lx-y_{n}+z_{n}\|^{2} + \frac{1}{\gamma}(f(x)+h(x))\\
-            s_{n} &= L x_{n}\\
-            y_{n+1} &= \textrm{prox}_{g/\sigma} (z_{n}+s_{n})\\
-            z_{n+1} &= z_{n}+s_{n}-y_{n+1}
-
-        where :math:`\gamma` is the (strictly positive) parameter of the augmented
-        Lagrangian, :math:`\gamma z_{n}` is the dual variable, and :math:`x_{n}`
-        is the primal variable.
-
-        In this implementation, :math:`f` is the indicator function of the set
-        :math:`[\epsilon,1-\epsilon]^n`, :math:`g` is the :math:`\ell_{1}`-norm
-        multiplied by a (strictly positive) regularization parameter, :math:`L`
-        is the discrete gradient operator, and :math:`h` is the nonlinear
-        least-squares.
-
-        :param x0: Initial value of the primal variable.
-        :type x0: :class:`numpy.ndarray` (1-dimensional)
-
-        :param param: Parameters of the algorithm.
-        :type param: :class:`ADMM_Param`
-
-        :return: Final value of the primal variable.
-        """
-        # Constant for the projection on [EPS,1-EPS] corresponding to the
-        # constraint that beta belongs to the open set ]0,1[
-        EPS = 1e-8
-
-        # Initialization
-        n = x0.shape[0]         # Dimension of the ambient space
-        x = x0                  # Primal variable
-        y = np.zeros(x0.shape)  # Second primal variable
-        z = np.zeros(x0.shape)  # Dual variable
-        L = self.generate_discrete_grad_mat(n)  # Linear operator
-        crit = np.Inf           # Initial value of the objective function
-        gamma = 1               # Augmented Lagrangian parameter
-
-        # Main loop
-        for n in range(param.maxit):
-            # 1) Minimize the augmented Lagrangian in x using a Forward-Backward
-            #    subroutine
-            for m in range(10000):
-                # a) Forward step (gradient descent)
-                x = x - L.transpose() @ (L @ x - y + z)\
-                    - gamma * self.jac_res_x(x).transpose() @ self.val_res(x)
-                # b) Backward step (projection on [EPS,1-EPS])
-                x[x <= 0] = EPS
-                x[x >= 1] = 1 - EPS
-            # 2) Update temporary variable s
-            s = L @ x
-            # 3) Minimize the augmented Lagrangian in y
-            y = prox_l1(z + s, param.reg_param / gamma)
-            # 4) Update the dual variable using a gradient ascent
-            z = z + s - y
-            # 5) Check stopping criterion (convergence in term objective function)
-            crit_old = crit
-            crit = 0.5 * LA.norm(self.val_res(x))**2 + param.reg_param * tv(x)
-            if np.abs(crit_old - crit) < param.tol * crit:
-                break
-
-        return x
 # ============================ END CLASS MINIMIZE  ========================== #
 
 
@@ -488,11 +408,19 @@ def prox_l1(data, reg_param):
 
 
 @dataclass
-class Varprox_Param:
-    gtol: float = 1e-4
+class GOptim_Param:
+    gtol_h: float = 1e-4
     maxit: int = 1000
     verbose: bool = True
-    reg: str = None
-    reg_param: float = 0
+    reg_type: str = None
+    reg_weight: float = 0
+    bounds_x: tuple[float, float] = (- np.inf, np.inf)
+    bounds_y: tuple[float, float] = (- np.inf, np.inf)
+
+
+@dataclass
+class Solver_Param:
+    gtol: float = 1e-3
+    maxit: int = 1000
 
 # ============================================================================
