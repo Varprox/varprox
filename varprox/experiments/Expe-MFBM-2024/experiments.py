@@ -11,16 +11,15 @@ from numpy.random import seed
 from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
 from numpy import concatenate, ones, infty, sqrt
 from scipy.optimize import lsq_linear
-from varprox.main_2 import Minimize, tv
+from varprox.main_2 import Minimize, tv, GOptim_Param
 from varprox.models.model_mfbm import Ffun_v, DFfun_v
 from matplotlib import pyplot as plt
 
 
 # Optimisation parameters
-gtol = 1e-3
-maxiter = 200
-verbose = True 
-reg_param = 10000
+maxit = 5000
+gtol_h = 10e-4
+
 
 # Experiment parameters
 N = 1000  # Size of the observed process.
@@ -177,8 +176,9 @@ Hest2 = 0.5 * ones(H.shape)
 Hest2[:] = Hest1[:]
 Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
 w = v.reshape((v.size,), order="F")
-pb = Minimize(Hest2, w, Ffun_v, DFfun_v, None, scales2, logscales, 0)
-pb.param.vectorized = True
+param = GOptim_Param(gtol_h=gtol_h, maxit=maxit, vectorized=True)
+pb = Minimize(Hest2, w, Ffun_v, DFfun_v, param, scales2, logscales, 0)
+
 pb.param.bounds_x = (0.0001, 0.9999)
 pb.param.bounds_y = (0, infty)
 Hest2, c2 = pb.argmin_h()
