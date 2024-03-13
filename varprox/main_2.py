@@ -233,7 +233,7 @@ class Minimize:
         self.y = res.x
         return res.x
 
-    def argmin_h(self, param):
+    def argmin_h(self, param=None):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
 
         :param param: Parameter for the minimization of h wrt x
@@ -241,6 +241,8 @@ class Minimize:
 
         :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
+        if param is None:
+            param = Solver_Param()
         h = self.h_value()
         xtmp = np.zeros(self.x.shape)
         ytmp = np.zeros(self.y.shape)
@@ -411,8 +413,6 @@ def prox_l1(data, reg_param):
     return y
 
 
-
-
 @dataclass
 class GOptim_Param:
     gtol_h: float = 1e-4
@@ -422,7 +422,7 @@ class GOptim_Param:
     reg_weight: float = 0
     bounds_x: tuple[float, float] = (- np.inf, np.inf)
     bounds_y: tuple[float, float] = (- np.inf, np.inf)
-    vectorized: bool = True
+    vectorized: bool = False
 
 
 @dataclass

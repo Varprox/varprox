@@ -6,7 +6,7 @@ Brownian field and applying the fitting method.
 import numpy as np
 from scipy.linalg import circulant
 from afbf import perfunction, tbfield
-from varprox import Minimize, Varprox_Param
+from varprox.main_2 import Minimize
 from dataclasses import dataclass
 
 
@@ -99,10 +99,11 @@ def FitVariogram(model, lags, w, param):
         h = np.inf
         beta = np.array([0.5])
         tau = np.ones((param.noise + 1,))
-        pb = Minimize(beta, tau, w1, Ffun, DFfun, None,
+        pb = Minimize(beta, w1, Ffun, DFfun,
                       f, lf, T, B, param.noise)
         pb.param.bounds_x = bounds_beta
         pb.param.bounds_y = bounds_tau
+
         for i in range(1, 9):
             beta = np.array([i / 10])
             tau = pb.argmin_h_y(beta)
@@ -154,21 +155,16 @@ def FitVariogram(model, lags, w, param):
             print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol, param.maxit))
         if param.alpha > 0 and T.shape[1] > 1:
             w1 = np.concatenate((w, np.zeros((T.shape[1],))), axis=0)
-        pb = Minimize(beta, tau, w1, Ffun, DFfun,
+        pb = Minimize(beta, w1, Ffun, DFfun,
                       bounds_beta, bounds_tau, f, lf, T, B, param.noise,
                       param.alpha)
-        pb = Minimize(beta, tau, w1, Ffun, DFfun, None,
-                      f, lf, T, B, param.noise)
         pb.param.bounds_x = bounds_beta
         pb.param.bounds_y = bounds_tau
         if beta.size > param.threshold_reg:
-            myoptim_param = Varprox_Param(param.gtol, param.maxit,
-                                          param.verbose, reg="tv-1d",
-                                          reg_param=param.reg_param)
-        else:
-            myoptim_param = Solver_Param()
+            pb.param.reg_type = "tv-1d"
+            pb.param.reg_weight = param.reg_param
 
-        beta, tau = pb.argmin_h(myoptim_param)
+        beta, tau = pb.argmin_h()
 
         stop = True
         if param.multigrid:
