@@ -174,7 +174,7 @@ class Minimize:
         h = np.mean(np.power(self.val_res(self.x), 2)) / 2
 
         if self.param.reg.name == 'tv-1d':
-            h = h + self.param.reg_weight * tv(self.x) / self.K
+            h = h + self.param.reg.weight * tv(self.x) / self.K
         return h
 
     def argmin_h_x(self, param):
@@ -198,7 +198,7 @@ class Minimize:
                                 )
             ret_x = res.x
         elif self.param.reg.name == 'tv-1d':
-            ret_x = self.rfbpd(self.param.solver_param)
+            ret_x = self.rfbpd()
         else:
             raise ValueError('The value of the parameter <reg> is unknown.')
         return ret_x
