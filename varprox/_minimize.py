@@ -189,7 +189,7 @@ class Minimize:
         """
         ret_x = None
         # Minimizing h over x
-        if self.param.reg_type is None:
+        if self.param.reg.name is None:
             res = least_squares(fun=self.val_res, x0=self.x,
                                 jac=self.jac_res_x,
                                 bounds=self.param.bounds_x,
@@ -199,8 +199,8 @@ class Minimize:
                                 max_nfev=param.maxit
                                 )
             ret_x = res.x
-        elif self.param.reg_type == 'tv-1d':
-            ret_x = self.rfbpd(param)
+        elif self.param.reg.name == 'tv-1d':
+            ret_x = self.rfbpd(self.param.solver_param)
         else:
             raise ValueError('The value of the parameter <reg> is unknown.')
         return ret_x
@@ -255,7 +255,7 @@ class Minimize:
             if self.param.verbose:
                 print('varprox reg = {} | iter {:4d} / {}: cost = {:.6e} '
                       'improved by {:3.4f} percent.'
-                      .format(self.param.reg_type, it,
+                      .format(self.param.reg.name, it,
                               self.param.maxit, h, sdh * dh))
 
             if dh < self.param.gtol_h:
@@ -281,7 +281,7 @@ class Minimize:
         D[0, n - 1] = -1
         return D
 
-    def rfbpd(self, param):
+    def rfbpd(self):
         r"""Implementation of the rescaled Primal-dual Forward-backward
         algorithm (RFBPD) to minimize the following optimization problem:
 
@@ -336,10 +336,10 @@ class Minimize:
         jac_res_x = self.jac_res_x(x)
         tau = 1 / LA.norm(jac_res_x.transpose() @ jac_res_x)
         sigma = 0.99 / LA.norm(L)**2
-        sigmarw = self.param.reg_weight / self.K / sigma
+        sigmarw = self.param.reg.weight / self.K / sigma
 
         # Main loop
-        for n in range(param.maxit):
+        for n in range(self.param.solver_param.maxit):
             # 1) Primal update
             p = x - tau * self.gradient_g(x) - sigma * L.transpose() @ v
             # Projection on [bounds_x[0] + EPS, bounds_x[1] - EPS]
@@ -355,7 +355,7 @@ class Minimize:
             # 4) Check stopping criterion (convergence in term objective function)
             crit_old = crit
             crit = self.h_value()
-            if np.abs(crit_old - crit) < param.gtol * crit:
+            if np.abs(crit_old - crit) < self.param.solver_param.gtol * crit:
                 break
 
         return x
