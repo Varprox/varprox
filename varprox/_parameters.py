@@ -2,19 +2,22 @@ from configparser import ConfigParser
 from dataclasses import dataclass
 import numpy as np
 
+
 @dataclass
 class SolverParam:
-    tol: float = 1e-3
+    gtol: float = 1e-3
     maxit: int = 1000
-        
+
+
 @dataclass
 class RegParam:
     name: float = None
     weight: int = 0
 
+
 class Parameters:
     def __init__(self, gtol=1e-4, maxit=1000, verbose=True, reg=RegParam(),
-                 bounds_x=(-np.inf,np.inf), bounds_y=(-np.inf,np.inf),
+                 bounds_x=(-np.inf, np.inf), bounds_y=(-np.inf, np.inf),
                  solver_param=SolverParam()):
         self.gtol_h = gtol
         self.maxit = maxit
@@ -34,19 +37,18 @@ class Parameters:
         mystr += "  bounds_x     = {}\n".format(self.bounds_x)
         mystr += "  bounds_y     = {}\n".format(self.bounds_y)
         mystr += "  solver param = Maxit: {} | Tol: {:.3E}\n"\
-            .format(self.solver_param.maxit, self.solver_param.tol)
+            .format(self.solver_param.maxit, self.solver_param.gtol)
         return mystr
 
     def load(self, filename):
         parser = ConfigParser()
         parser.read(filename)
-    
+
         self.gtol = parser.getfloat('general-param', 'gtol')
         self.maxit = parser.getint('general-param', 'maxit')
         self.verbose = parser.getboolean('general-param', 'verbose')
         self.reg = RegParam(parser.get('regul-param', 'reg_name'),
                             parser.getfloat('regul-param', 'reg_param'))
-        
 
         if parser.get('general-param', 'lbound_x') == '-inf':
             lower_bd_x = -np.inf
@@ -64,10 +66,10 @@ class Parameters:
             upper_bd_y = np.inf
         else:
             upper_bd_y = parser.getfloat('general-param', 'ubound_y')
-            
+
         self.bounds_x = (lower_bd_x, upper_bd_x)
         self.bounds_y = (lower_bd_y, upper_bd_y)
-        
+
         self.solver_param = SolverParam(parser.getfloat('solver-param', 'tol'),
                                         parser.getint('solver-param', 'maxit'))
 
@@ -100,7 +102,7 @@ class Parameters:
         config.set('regul-param', 'reg_param', str(self.reg.weight))
 
         config.add_section('solver-param')
-        config.set('solver-param', 'tol', str(self.solver_param.tol))
+        config.set('solver-param', 'tol', str(self.solver_param.gtol))
         config.set('solver-param', 'maxit', str(self.solver_param.maxit))
 
         with open(filename, 'w') as f:

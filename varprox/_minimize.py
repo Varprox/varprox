@@ -4,10 +4,8 @@ Tools for minimizing the penalized SNLS criterion.
 """
 import numpy as np
 from scipy.optimize import lsq_linear, least_squares
-from dataclasses import dataclass, field
 from numpy import linalg as LA
-from functools import partial
-from varprox.Parameters import Parameters
+from varprox._parameters import Parameters
 
 
 # ============================== CLASS MINIMIZE ============================= #
@@ -175,7 +173,7 @@ class Minimize:
         """
         h = np.mean(np.power(self.val_res(self.x), 2)) / 2
 
-        if self.param.reg_type == 'tv-1d':
+        if self.param.reg.name == 'tv-1d':
             h = h + self.param.reg_weight * tv(self.x) / self.K
         return h
 
@@ -242,7 +240,7 @@ class Minimize:
             h0 = h
             h = self.h_value()
             if h0 != 0:
-                if self.param.reg_type is None:
+                if self.param.reg.name is None:
                     dh = (h0 - h) / h0 * 100
                     sdh = 1
                 else:

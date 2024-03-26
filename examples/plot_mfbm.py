@@ -171,7 +171,7 @@ Hest2[:] = Hest1[:]
 Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
 w = v.reshape((v.size,), order="F")
 pb = Minimize(Hest2, w, Ffun, DFfun_v, scales2, logscales, 0)
-pb.param.load("plot_mfbm.ini")
+# pb.param.load("plot_mfbm.ini")
 
 pb.param.bounds_x = (0.0001, 0.9999)
 pb.param.bounds_y = (0, infty)
