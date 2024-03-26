@@ -178,7 +178,7 @@ pb.param.bounds_y = (0, infty)
 Hest2, c2 = pb.argmin_h()
 
 
-# Estimateof the Hurst function by minimisation with a penalization.
+# Estimate of the Hurst function by minimisation with a penalization.
 # Regularization parameter x.
 pb.param.reg.weight = pb.h_value() / tv(pb.x) * pb.K * 10e20
 # Weight for y regularization.
