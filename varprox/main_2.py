@@ -108,14 +108,8 @@ class Minimize:
         self.kwargs = kwargs
 
         # Definition of Ffun and DFfun.
-        if self.param.vectorized:
-            # vectorized version of the functions.
-            self.Ffun_v = Ffun
-            self.DFfun_v = DFfun
-        else:
-            # vectorization of the functions.
-            self.Ffun = Ffun
-            self.DFfun = DFfun
+        self.Ffun = Ffun
+        self.DFfun = DFfun
 
         # Test the variable types.
         if not isinstance(w, np.ndarray)\
@@ -132,26 +126,23 @@ class Minimize:
         self.J = self.y.size
 
         # Test input variable consistency.
-        aux = Ffun(self.x, None, *args, **kwargs)
+        aux = Ffun(self.x, *args, **kwargs)
         if not isinstance(aux, np.ndarray):
             raise TypeError("Problem with variable type of F output.")
         if aux.shape[0] != self.N or aux.shape[1] != self.J:
             raise ValueError("Problem with the definition of F.")
 
-        # aux = DFfun(self.x, *args, **kwargs)
-        # if not isinstance(aux, np.ndarray):
-        #     raise TypeError("Problem with variable type of DF output.")
-        # if (aux.shape[0] != self.N or aux.shape[1] != self.K):
-        #     raise ValueError("Problem with the definition of DF.")
+        aux = DFfun(self.x, self.y, *args, **kwargs)
+        if not isinstance(aux, np.ndarray):
+            raise TypeError("Problem with variable type of DF output.")
+        if (aux.shape[0] != self.N or aux.shape[1] != self.K):
+            raise ValueError("Problem with the definition of DF.")
 
     def Ffun_v(self, x, y, *args, **kwargs):
-        F = self.Ffun(x, *args, **kwargs)
-        if y is not None:
-            F = F @ y
-        return F
+        return self.Ffun(x, *args, **kwargs) @ y
 
-    def DFfun_v(self, x, y, *args, **kwargs):
-        return np.swapaxes(self.DFfun(x, *args, **kwargs), 1, 2) @ y
+    # def DFfun_v(self, x, y, *args, **kwargs):
+    #     return np.swapaxes(self.DFfun(x, *args, **kwargs), 1, 2) @ y
 
     def val_res(self, x):
         r"""Compute the residuals :math:`\epsilon_n` in :eq:`residuals`.
@@ -171,7 +162,7 @@ class Minimize:
 
         :return: Value of the Jacobian of residuals at the current point :math:`x`.
         """
-        return self.DFfun_v(x, self.y, *self.args, **self.kwargs)
+        return self.DFfun(x, self.y, *self.args, **self.kwargs)
 
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
@@ -228,7 +219,7 @@ class Minimize:
             This operation corresponds to eq:`varpro`, which is the
             variable projection.
         """
-        res = lsq_linear(self.Ffun_v(x, None, *self.args, **self.kwargs), self.w,
+        res = lsq_linear(self.Ffun(x, *self.args, **self.kwargs), self.w,
                          bounds=self.param.bounds_y)
         self.y = res.x
         return res.x
