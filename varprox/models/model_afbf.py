@@ -7,7 +7,6 @@ import numpy as np
 from scipy.linalg import circulant
 from afbf import perfunction, tbfield
 from varprox import Minimize
-from dataclasses import dataclass
 
 
 def BasisFunctions(fun, t):
