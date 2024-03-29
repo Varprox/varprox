@@ -12,7 +12,7 @@ import pickle
 
 # Experiment parameters
 # Number of experiments
-Nbexpe = 1
+Nbexpe = 50
 # True if the the theoretical semi-variogram is fitted
 Tvario = False
 # 1 if model with noise and 0 otherwise
@@ -222,7 +222,7 @@ print(' - Number of coefficients (beta={:d}, tau={:d})'.format(hurst_dim,
                                                                hurst_dim))
 print(' - Radial precision: {:e}'.format(np.pi / hurst_dim))
 print(' - Theoretical variogram: {}'.format(Tvario))
-print(" - Reg param (beta) = {:.3E}".format(param.reg_param))
+print(" - Reg param (beta) = {:.3E}".format(param.reg.weight))
 print(" - Reg param (tau) =  {:.3E}".format(param.alpha))
 print_report("1) Varproj", Beta1, Tau1, Beta0, Tau0, time_c1, Nbexpe)
 print_report("2) Varprox", Beta2, Tau2, Beta0, Tau0, time_c2, Nbexpe)
