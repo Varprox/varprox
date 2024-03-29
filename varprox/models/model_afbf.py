@@ -6,7 +6,7 @@ Brownian field and applying the fitting method.
 import numpy as np
 from scipy.linalg import circulant
 from afbf import perfunction, tbfield
-from varprox.main_2 import Minimize
+from varprox import Minimize
 from dataclasses import dataclass
 
 
@@ -25,7 +25,7 @@ def BasisFunctions(fun, t):
 def SemiVariogram(tau, beta, f, T, B, noise=1):
     """Compute the semi-variogram of an AFBF or its increment field.
     """
-    return Ffun(beta, f, None, T, B, noise) @ tau
+    return Ffun(beta, f, T, B, noise) @ tau
 
 
 def Ffun(beta, f, lf, T, B, noise=1, alpha=0):
@@ -43,7 +43,7 @@ def Ffun(beta, f, lf, T, B, noise=1, alpha=0):
     return F
 
 
-def DFfun(beta, f, lf, T, B, noise=1, alpha=0):
+def DFfun(beta, tau, f, lf, T, B, noise=1, alpha=0):
 
     if alpha > 0 and T.shape[1] > 1:
         DF = np.zeros((f.shape[0] + T.shape[1], T.shape[1] + noise, B.shape[1]))
@@ -55,7 +55,7 @@ def DFfun(beta, f, lf, T, B, noise=1, alpha=0):
         for k in range(DF.shape[2]):
             DF[0:f.shape[0], j, k] = v @ (T[:, j - noise] * B[:, k])
 
-    return DF
+    return np.swapaxes(DF, 1, 2) @ tau
 
 
 def FitVariogram(model, lags, w, param):
@@ -86,9 +86,6 @@ def FitVariogram(model, lags, w, param):
     ind = np.nonzero(f > 0)
     lf[ind] = np.log(f[ind])
 
-    bounds_beta = (0, 1)
-    bounds_tau = (0, np.inf)
-
     w1 = w
     if param.multigrid:
         # Initialization
@@ -100,9 +97,8 @@ def FitVariogram(model, lags, w, param):
         beta = np.array([0.5])
         tau = np.ones((param.noise + 1,))
         pb = Minimize(beta, w1, Ffun, DFfun,
-                      f, lf, T, B, param.noise)
-        pb.param.bounds_x = bounds_beta
-        pb.param.bounds_y = bounds_tau
+                      f, lf, T, B, param.noise, param.alpha)
+        pb.param = param
 
         for i in range(1, 9):
             beta = np.array([i / 10])
@@ -155,14 +151,12 @@ def FitVariogram(model, lags, w, param):
             print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol, param.maxit))
         if param.alpha > 0 and T.shape[1] > 1:
             w1 = np.concatenate((w, np.zeros((T.shape[1],))), axis=0)
-        pb = Minimize(beta, w1, Ffun, DFfun,
-                      bounds_beta, bounds_tau, f, lf, T, B, param.noise,
-                      param.alpha)
-        pb.param.bounds_x = bounds_beta
-        pb.param.bounds_y = bounds_tau
+        pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B,
+                      param.noise, param.alpha)
+        pb.param = param
+
         if beta.size > param.threshold_reg:
-            pb.param.reg_type = "tv-1d"
-            pb.param.reg_weight = param.reg_param
+            pb.param.reg.name = "tv-1d"
 
         beta, tau = pb.argmin_h()
 
@@ -199,16 +193,3 @@ def FitVariogram(model, lags, w, param):
             emodel.noise = 0
 
     return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
-
-
-@dataclass
-class Fit_Param:
-    noise: int = 1
-    k: np.ndarray = None
-    multigrid: bool = True
-    maxit: int = 1000
-    gtol: float = 1e-6
-    verbose: bool = True
-    reg_param: float = 1
-    alpha: float = 0
-    threshold_reg: int = np.Inf

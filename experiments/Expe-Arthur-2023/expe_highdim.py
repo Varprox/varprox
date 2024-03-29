@@ -6,10 +6,33 @@ import time
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
 from varprox.models.model_afbf import FitVariogram
-from varprox.ParamsReader import ParamsReader
 from numpy.random import default_rng
-
+from varprox import Parameters
 import pickle
+
+# Experiment parameters
+# Number of experiments
+Nbexpe = 1
+# True if the the theoretical semi-variogram is fitted
+Tvario = False
+# 1 if model with noise and 0 otherwise
+noise = 1
+# Size of the grid for the definition of the semi-variogram
+grid_dim = 40
+# Step for grid definition
+grid_step = 2
+# Size of field realization
+field_size = 100
+# Display results of each experiment
+display = False
+# Save the results
+save = False
+# Number of parameters for the Hurst function
+hurst_dim = 8
+# Number of parameters for the topothesy function.
+topo_dim = 8
+# True if the multigrid algorithm is used.
+multigrid = True
 
 # ============================ Auxiliary functions =========================== #
 
@@ -38,28 +61,20 @@ def convert_time(time):
     minu, sec = divmod(round(time), 60)
     h, minu = divmod(minu, 60)
     return (h, minu, sec)
-
 # ============================================================================ #
 
 
-# Name of the configuration file containing the parameters
-CONFIG_FILE = 'expe_config.ini'
-
-# Read parameters from the configuration file
-myreader = ParamsReader(CONFIG_FILE)
-myparam = myreader.get_optim_param()
-(Nbexpe, Tvario, display, save) = myreader.init_expe_param()
-(grid_dim, grid_step, field_size, hurst_dim, _, noise) = myreader.init_model_param()
+# Setting parameters for model and optimisation.
+param = Parameters()
+param.load("expe_highdim.ini")
+param.multigrid = multigrid
+param.noise = noise
+param.alpha = 0.01  # à intégrer dans les paramètres d'opti.
+param.threshold_reg = np.Inf
+param.reg.name = None
 
 # Initialization a new random generator
 rng = default_rng()
-
-# Definition of turning-band parameters
-# tb = tbparameters(J)
-# kangle = tb.Kangle[0::stepK]
-# fintermid = kangle[0:-1]
-# finter = (kangle[1:] + kangle[0:-1]) / 2
-# J = finter.size
 
 # Definition of the reference model
 topo = perfunction('step', hurst_dim)
@@ -70,18 +85,11 @@ finter = finter[1:]
 model = tbfield('reference', topo, hurst)
 tb = model.tb
 
-# topo = perfunction('step', finter.size)
-# hurst = perfunction('step', finter.size)
-# topo.finter[0, :] = finter[:]
-# hurst.finter[0, :] = finter[:]
-# model = tbfield('reference', topo, hurst, tb)
-# model = tbfield('reference', topo, hurst)
-
 # Definition of a fbm to sample the Hurst function
 fbm = process()
 fbm.param = 0.5
 
-# Definition of the estimated model (using varprox)
+# Definition of the estimated models.
 etopo = perfunction('step', finter.size)
 ehurst = perfunction('step', finter.size)
 etopo.finter[0, :] = finter[:]
@@ -137,7 +145,7 @@ for expe in range(Nbexpe):
         fparam = flow + fext * (fparam - fmin) / (fmax - fmin)
     else:
         fparam = flow * np.ones(fparam.shape)
-    # model.hurst.fparam[0, :] = fparam[:]
+
     model.hurst.ChangeParameters(fparam, finter)
     model.NormalizeModel()
 
@@ -173,9 +181,9 @@ for expe in range(Nbexpe):
         # Evaluate the estimation error
         err_est += np.mean(np.abs(w0 + s0 - w))
 
-    # Initial variogram fitting with varproj
+    # Initial variogram fitting with varpro.
     t0 = time.perf_counter()
-    emodel0, wt = FitVariogram(model0, lags, w, myparam)
+    emodel0, wt = FitVariogram(model0, lags, w, param)
     t1 = time.perf_counter()
     time_c1 += t1 - t0
 
@@ -187,9 +195,9 @@ for expe in range(Nbexpe):
     Beta1[expe, :] = emodel1.hurst.fparam[0, :]
 
     # Variogram fitting with varprox
-    myparam.threshold_reg = 4
+    param.threshold_reg = 4
     t0 = time.perf_counter()
-    emodel2, w1 = FitVariogram(model0, lags, w, myparam)
+    emodel2, w1 = FitVariogram(model0, lags, w, param)
     t1 = time.perf_counter()
     time_c2 += t1 - t0
 
@@ -203,7 +211,7 @@ for expe in range(Nbexpe):
     print('Running experiments = {:3d} / {:3d}.'.format(expe + 1, Nbexpe))
 
     if save:
-        data_filename = "results_" + str(expe+1) + ".pickle"
+        data_filename = "results_" + str(expe + 1) + ".pickle"
         with open(data_filename, "wb") as f:
             pickle.dump([Beta1, Tau1, Beta2, Tau2, model0, emodel0, emodel1,
                          emodel2, emodel3], f)

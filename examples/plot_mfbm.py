@@ -20,7 +20,7 @@ N = 1000  # Size of the observed process.
 
 order = 0
 scales = arange(1, 5)
-w_size = 40
+w_size = 80
 w_step = 1
 
 
@@ -140,7 +140,7 @@ def Estimate_HurstFunction(scales, v):
 
 # Simulate a Hurst function.
 H1 = 0.1
-H2 = 0.9
+H2 = 0.3
 T = arange(stop=N, step=2)
 N = N - 1
 T = sqrt(T / N)
