@@ -222,8 +222,7 @@ print(' - Number of coefficients (beta={:d}, tau={:d})'.format(hurst_dim,
                                                                hurst_dim))
 print(' - Radial precision: {:e}'.format(np.pi / hurst_dim))
 print(' - Theoretical variogram: {}'.format(Tvario))
-print(" - Reg param (beta) = {:.3E}".format(myparam.reg_param))
-print(" - Reg param (tau) =  {:.3E}".format(myparam.alpha))
+print(" - Reg param (beta) = {:.3E}".format(param.reg_param))
+print(" - Reg param (tau) =  {:.3E}".format(param.alpha))
 print_report("1) Varproj", Beta1, Tau1, Beta0, Tau0, time_c1, Nbexpe)
 print_report("2) Varprox", Beta2, Tau2, Beta0, Tau0, time_c2, Nbexpe)
-

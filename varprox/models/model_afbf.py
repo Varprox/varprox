@@ -22,10 +22,10 @@ def BasisFunctions(fun, t):
     return fun.basis.T
 
 
-def SemiVariogram(tau, beta, f, T, B, noise=1):
+def SemiVariogram(tau, beta, f, lf, T, B, noise=1):
     """Compute the semi-variogram of an AFBF or its increment field.
     """
-    return Ffun(beta, f, T, B, noise) @ tau
+    return Ffun(beta, f, lf, T, B, noise) @ tau
 
 
 def Ffun(beta, f, lf, T, B, noise=1, alpha=0):
@@ -192,4 +192,4 @@ def FitVariogram(model, lags, w, param):
         else:
             emodel.noise = 0
 
-    return (emodel, SemiVariogram(tau, beta, f, T, B, param.noise))
+    return (emodel, SemiVariogram(tau, beta, f, lf, T, B, param.noise))
