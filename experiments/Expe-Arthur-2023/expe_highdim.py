@@ -15,8 +15,6 @@ import pickle
 Nbexpe = 50
 # True if the the theoretical semi-variogram is fitted
 Tvario = False
-# 1 if model with noise and 0 otherwise
-noise = 1
 # Size of the grid for the definition of the semi-variogram
 grid_dim = 40
 # Step for grid definition
@@ -31,6 +29,8 @@ save = False
 hurst_dim = 8
 # Number of parameters for the topothesy function.
 topo_dim = 8
+# 1 if model with noise and 0 otherwise
+noise = 1
 # True if the multigrid algorithm is used.
 multigrid = True
 
@@ -117,7 +117,7 @@ if not Tvario:
 # Lags where to compute the semi-variogram
 lags = coordinates()
 lags.DefineSparseSemiBall(grid_dim)
-lags.N = field_size
+lags.N = coord.N
 sc = np.sqrt(np.power(lags.xy[:, 0], 2) + np.power(lags.xy[:, 1], 2))
 
 Tau0 = np.zeros((Nbexpe, hurst_dim))
