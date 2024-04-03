@@ -15,9 +15,11 @@ grid_dim = 40
 # Step for grid definition
 grid_step = 2
 # Number of parameters for the Hurst and topothesy function
-hurst_dim = topo_dim = 64
+hurst_dim = topo_dim = 16
 # 1 if model with noise and 0 otherwise
 noise = 1
+# Scale at which regularization is applied.
+threshold_reg = np.Inf
 
 
 # ============================ Plotting Functions =========================== #
@@ -99,8 +101,9 @@ if __name__ == "__main__":
     # Name of the configuration file containing the parameters
     param = Parameters()
     param.load('plot_afbf.ini')
+    param.reg.name = None
     param.multigrid = True
-    param.threshold_reg = 16
+    param.threshold_reg = threshold_reg
     param.noise = 1
     param.alpha = 0
 

@@ -60,6 +60,11 @@ def DFfun(beta, tau, f, lf, T, B, noise=1, alpha=0):
 def FitVariogram(model, lags, w, param):
     """Fit the field variogram using a coarse-to-fine multigrid strategy.
     """
+    # Regularization parameters.
+    reg_name = param.reg.name
+    if reg_name is not None:
+        reg_weight = np.mean(np.power(w, 2)) * param.reg.weight
+
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         raise ValueError("FitVariogram: only runs for step functions.")
 
@@ -147,15 +152,21 @@ def FitVariogram(model, lags, w, param):
         if param.verbose:
             print("Nb param: Hurst={:d}, Topo={:d}".format(
                 hurst.fparam.size, topo.fparam.size))
-            print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol, param.maxit))
+            print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol,
+                                                        param.maxit))
         if param.alpha > 0 and T.shape[1] > 1:
             w1 = np.concatenate((w, np.zeros((T.shape[1],))), axis=0)
         pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B,
                       param.noise, param.alpha)
         pb.param = param
 
-        if beta.size > param.threshold_reg:
-            pb.param.reg.name = "tv-1d"
+        # Cancel the tv regularization if only one parameter is involved.
+        if reg_name == "tv-1d":
+            if beta.size == 1:
+                pb.param.reg.name = None
+            else:
+                pb.param.reg.name = reg_name
+                pb.param.reg.weight = reg_weight 
 
         beta, tau = pb.argmin_h()
 
