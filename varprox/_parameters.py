@@ -44,7 +44,7 @@ class Parameters:
 
     def __repr__(self):
         mystr = "Object Parameters\n"
-        mystr += "  gtol         = {:.3E}\n".format(self.gtol)
+        mystr += "  gtol         = {:.3E}\n".format(self.gtol_h)
         mystr += "  maxit        = {:d}\n".format(self.maxit)
         mystr += "  verbose      = {}\n".format(self.verbose)
         mystr += "  reg          = Name: {} | Weight: {:.3E}\n"\
