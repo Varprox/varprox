@@ -2,13 +2,19 @@
 r"""
 Tools for minimizing the penalized SNLS criterion.
 """
+# ============================================================================ #
+#                              MODULES IMPORTATION                             #
+# ============================================================================ #
 import numpy as np
 from scipy.optimize import lsq_linear, least_squares
 from numpy import linalg as LA
 from varprox._parameters import Parameters
+# ============================================================================ #
 
 
-# ============================== CLASS MINIMIZE ============================= #
+# ============================================================================ #
+#                                 CLASS MINIMIZE                               #
+# ============================================================================ #
 class Minimize:
     r"""
     This class contains methods to minimize of a separable non-linear
@@ -358,10 +364,12 @@ class Minimize:
 
         return x
 
-# ============================ END CLASS MINIMIZE  ========================== #
+# ============================ END CLASS MINIMIZE  =========================== #
 
 
-# ========================= Helping Functions/Classes ======================= #
+# ============================================================================ #
+#                           Auxiliary Functions                                #
+# ============================================================================ #
 def tv(x):
     r"""
     This function computes the 1-dimensional discrete total variation of its
@@ -397,4 +405,4 @@ def prox_l1(data, reg_param):
     y = np.sign(data) * tmp
     return y
 
-# ============================================================================
+# ============================================================================ #

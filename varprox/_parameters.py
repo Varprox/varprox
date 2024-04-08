@@ -1,8 +1,19 @@
+# -*- coding: utf-8 -*-
+r"""
+Implementation of the classes handling the parameters for the class Minimize
+"""
+# ============================================================================ #
+#                              MODULES IMPORTATION                             #
+# ============================================================================ #
 from configparser import ConfigParser
 from dataclasses import dataclass
 import numpy as np
+# ============================================================================ #
 
 
+# ============================================================================ #
+#                                DATA STRUCTURES                               #
+# ============================================================================ #
 @dataclass
 class SolverParam:
     gtol: float = 1e-3
@@ -13,8 +24,12 @@ class SolverParam:
 class RegParam:
     name: float = None
     weight: int = 0
+# ============================================================================ #
 
 
+# ============================================================================ #
+#                                CLASS PARAMETERS                              #
+# ============================================================================ #
 class Parameters:
     def __init__(self, gtol=1e-4, maxit=1000, verbose=True, reg=RegParam(),
                  bounds_x=(-np.inf, np.inf), bounds_y=(-np.inf, np.inf),
@@ -41,6 +56,12 @@ class Parameters:
         return mystr
 
     def load(self, filename):
+        """Load the parameters from a file in the format of Linux configuration
+        file.
+
+        :param filename: Name of the file containing the parameters
+        :type: str
+        """
         parser = ConfigParser()
         parser.read(filename)
 
@@ -74,6 +95,12 @@ class Parameters:
                                         parser.getint('solver-param', 'maxit'))
 
     def save(self, filename):
+        """Save the parameters to a file in the format of Linux configuration
+        file.
+
+        :param filename: Name of the output file
+        :type: str
+        """
         config = ConfigParser()
 
         config.add_section('general-param')
@@ -107,3 +134,4 @@ class Parameters:
 
         with open(filename, 'w') as f:
             config.write(f)
+# ============================================================================ #

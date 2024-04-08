@@ -1,6 +1,7 @@
 Metadata-Version: 2.1
 Name: varprox
 Version: 0.0.2
+Summary: UNKNOWN
 Home-page: undefined
 Author: Paul Escande and Frederic Richard
 Author-email: frederic.richard@univ-amu.fr
@@ -8,7 +9,7 @@ License: undefined
 Project-URL: Documentation, 
 Project-URL: Source, 
 Project-URL: Tracker, 
-Keywords: separable non linear least square,optimization,data fitting
+Keywords: separable non linear least square,data fitting,optimization
 Platform: Linux
 Platform: MacOSX
 Platform: Windows
@@ -67,5 +68,7 @@ Credits
 =======
 
 Varprox is written and maintained by Paul Escande and Frederic Richard, Aix-Marseille University, France. 
+
+
 
 
