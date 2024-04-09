@@ -38,10 +38,10 @@ class Parameters:
         self.maxit = maxit
         self.verbose = verbose
         self.reg = reg
+        self.alpha = 0
         self.bounds_x = bounds_x
         self.bounds_y = bounds_y
         self.solver_param = solver_param
-        self.alpha = 0
 
     def __repr__(self):
         mystr = "Object Parameters\n"
@@ -50,6 +50,7 @@ class Parameters:
         mystr += "  verbose      = {}\n".format(self.verbose)
         mystr += "  reg          = Name: {} | Weight: {:.3E}\n"\
             .format(self.reg.name, self.reg.weight)
+        mystr += "  alpha        = {:.3E}\n".format(self.alpha)
         mystr += "  bounds_x     = {}\n".format(self.bounds_x)
         mystr += "  bounds_y     = {}\n".format(self.bounds_y)
         mystr += "  solver param = Maxit: {} | Tol: {:.3E}\n"\

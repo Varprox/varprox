@@ -9,6 +9,7 @@ import numpy as np
 from scipy.optimize import lsq_linear, least_squares
 from numpy import linalg as LA
 from varprox._parameters import Parameters
+from copy import deepcopy
 # ============================================================================ #
 
 
@@ -140,11 +141,31 @@ class Minimize:
         if (aux.shape[0] != self.N or aux.shape[1] != self.K):
             raise ValueError("Problem with the definition of DF.")
 
-    def Set_Parameters(self, filename):
+    def set_parameters_fromfile(self, filename):
+        r"""Load parameters from a configuration file in Linux format.
 
+        :param filename: Name of the configuration file
+        :type filename: str
+        """
+        # Load parameters from a configuration file
         self.param.load(filename)
+        # Update Ffun and DFfun is need
+        self.update_Ffun()
 
-        # Redefine Ffun and DFfun if there is a quadratic regularization on y
+    @property
+    def params(self):
+        return self.param
+
+    @params.setter
+    def params(self, myparam):
+        self.param = deepcopy(myparam)
+        # Update Ffun and DFfun is need
+        self.update_Ffun()
+
+    def update_Ffun(self):
+        r"""Redefine Ffun and DFfun if the scalar parameter alpha is strictly
+        greater than 0 (i.e. there is a quadratic regularization on y).
+        """
         if self.param.alpha > 0:
             Ffun_old = self.Ffun
             self.Ffun =\
@@ -160,6 +181,7 @@ class Minimize:
                     np.zeros(self.K, self.K)),
                     axis=0)
             self.w = np.concatenate((self.w, np.zeros(self.N)))
+        
 
     def Ffun_v(self, x, y, *args, **kwargs):
         return self.Ffun(x, *args, **kwargs) @ y
