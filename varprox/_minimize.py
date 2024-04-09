@@ -108,7 +108,7 @@ class Minimize:
         self.param = Parameters()
 
         # Definition of Ffun and DFfun.
-        self.Ffun = Ffun
+        self.Ffun = Ffun        
         self.DFfun = DFfun
         self.args = args
         self.kwargs = kwargs
@@ -139,6 +139,21 @@ class Minimize:
             raise TypeError("Problem with variable type of DF output.")
         if (aux.shape[0] != self.N or aux.shape[1] != self.K):
             raise ValueError("Problem with the definition of DF.")
+
+        # Redefine Ffun and DFfun if there is a quadratic regularization on y
+        if self.alpha > 0:
+            def Ffun_alpha(x, *args, **kwargs):
+                F = Ffun(x, *args, **kwargs)
+                dim1 = F.shape[1]
+                return np.concatenate((F, np.eye(dim1)), axis=0)
+
+            self.Ffun = Ffun_alpha
+            self.w = np.concatenate((self.w, np.zeros(self.N)))
+
+            def DFfun_alpha(x, y, *args, **kwargs):
+                DF = DFfun(x, y, *args, **kwargs)
+                return np.concatenate(DF)
+            self.DFfun = DFfun_alpha
 
     def Ffun_v(self, x, y, *args, **kwargs):
         return self.Ffun(x, *args, **kwargs) @ y
@@ -339,8 +354,8 @@ class Minimize:
 
         jac_res_x = self.jac_res_x(x)
         tau = 1 / LA.norm(jac_res_x.transpose() @ jac_res_x)
-        sigma = 0.99 / LA.norm(L)**2
-        sigmarw = self.param.reg.weight / self.K / sigma
+        sigma = 0.99 / (tau * LA.norm(L)**2)
+        sigmarw = self.param.reg.weight / sigma
 
         # Main loop
         for n in range(self.param.solver_param.maxit):
@@ -351,7 +366,7 @@ class Minimize:
             p[p >= self.param.bounds_x[1]] = self.param.bounds_x[1] - EPS
             # 2) Dual update
             vtemp = v + L @ (2 * p - x)
-            q = vtemp - prox_l1(vtemp, sigmarw)
+            q = vtemp - prox_l1(vtemp, self.param.reg.weight / sigma)
             # 3) Inertial update
             LAMB = 1.8
             x = x + LAMB * (p - x)

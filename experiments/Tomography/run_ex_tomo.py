@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 r"""
-Tools for minimizing the penalized SNLS criterion.
+Tomography inverse problem example using Varprox.
 """
 # ============================================================================ #
 #                              MODULES IMPORTATION                             #
 # ============================================================================ #
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import lsq_linear, least_squares
+from scipy.optimize import lsq_linear
 from dataclasses import dataclass
 from numpy import linalg as LA
 from varprox._minimize import Minimize
@@ -109,7 +109,7 @@ NOISE_STD = 0  # Standard deviation for the Gaussian noise on the data vector
 MAXIT = 500  # Maximum number of iterations
 GTOL = 5E-3  # Tolerance for the stopping criterion
 VERBOSE = True  # Is the algorithm verbose?
-REG_WEIGHT = 1000  # Regularization weight for x
+REG_WEIGHT = 100  # Regularization weight for x
 # --- Read parameters from the configuration file
 
 # Number of experiments
