@@ -108,7 +108,7 @@ class Minimize:
         self.param = Parameters()
 
         # Definition of Ffun and DFfun.
-        self.Ffun = Ffun        
+        self.Ffun = Ffun
         self.DFfun = DFfun
         self.args = args
         self.kwargs = kwargs
@@ -140,20 +140,26 @@ class Minimize:
         if (aux.shape[0] != self.N or aux.shape[1] != self.K):
             raise ValueError("Problem with the definition of DF.")
 
+    def Set_Parameters(self, filename):
+
+        self.param.load(filename)
+
         # Redefine Ffun and DFfun if there is a quadratic regularization on y
-        if self.alpha > 0:
-            def Ffun_alpha(x, *args, **kwargs):
-                F = Ffun(x, *args, **kwargs)
-                dim1 = F.shape[1]
-                return np.concatenate((F, np.eye(dim1)), axis=0)
+        if self.param.alpha > 0:
+            Ffun_old = self.Ffun
+            self.Ffun =\
+                lambda x: np.concatenate((
+                    Ffun_old(x, *self.args, **self.kwargs),
+                    np.sqrt(self.param.alpha) * np.eye(self.J)),
+                    axis=0)
 
-            self.Ffun = Ffun_alpha
+            DFfun_old = self.DFfun
+            self.DFfun =\
+                lambda x, y: np.concatenate((
+                    DFfun_old(x, y, *self.args, **self.kwargs),
+                    np.zeros(self.K, self.K)),
+                    axis=0)
             self.w = np.concatenate((self.w, np.zeros(self.N)))
-
-            def DFfun_alpha(x, y, *args, **kwargs):
-                DF = DFfun(x, y, *args, **kwargs)
-                return np.concatenate(DF)
-            self.DFfun = DFfun_alpha
 
     def Ffun_v(self, x, y, *args, **kwargs):
         return self.Ffun(x, *args, **kwargs) @ y

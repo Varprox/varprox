@@ -4,14 +4,9 @@ r"""Build a database for experiments on variogram fitting.
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
 from numpy.random import default_rng
+from param_expe import params
 
-# Experiment parameters
-# Number of experiments
-Nbexpe = 2
-# Number of parameters for the Hurst and topothesy functions
-hurst_dim = topo_dim = 512
-# Image size.
-N = 512
+
 # Repetory for data
 home_dir = "/home/frichard/Recherche/Python/"
 data_out = "varprox/data/afbf_fitting/"
@@ -19,9 +14,11 @@ data_out = "varprox/data/afbf_fitting/"
 # Initialization a new random generator
 rng = default_rng()
 
+param = params()
+
 # Definition of the reference model
-topo = perfunction('step', topo_dim)
-hurst = perfunction('step', hurst_dim)
+topo = perfunction('step', param.topo_dim)
+hurst = perfunction('step', param.hurst_dim)
 finter = np.linspace(- np.pi / 2, np.pi / 2, hurst.finter.size + 1, True)
 fintermid = (finter[0:-1] + finter[1:]) / 2
 finter = finter[1:]
@@ -33,16 +30,16 @@ fbm = process()
 fbm.param = 0.9
 
 
-coord = coordinates(N)
-coord.N = N
+coord = coordinates(param.N)
+coord.N = param.N
 
-for expe in range(Nbexpe):
+for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     filename = home_dir + data_out + caseid
 
     # Change model parameters.
-    fbm.Simulate(hurst_dim)
+    fbm.Simulate(param.hurst_dim)
     fparam = fbm.y[:, 0]
 
     fparam = fparam + np.flip(fparam)
@@ -59,7 +56,7 @@ for expe in range(Nbexpe):
     # Update the model.
     model.hurst.ChangeParameters(fparam, finter)
     model.NormalizeModel()
-    model.topo.fparam = model.topo.fparam * 10e4
+    model.topo.fparam = model.topo.fparam * param.enhan_factor
     model.DisplayParameters()
 
     # Simulate a field realization.

@@ -18,7 +18,7 @@ from varprox._parameters import Parameters, SolverParam, RegParam
 # ============================================================================ #
 #                              FUNCTIONS DEFINITION                            #
 # ============================================================================ #
-def Ffun(x, s, theta, dim_grid):    
+def Ffun(x, s, theta, dim_grid):   
     k = len(theta)
     m = len(s)
     A = np.zeros((m*k, dim_grid*dim_grid))

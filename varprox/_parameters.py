@@ -41,6 +41,7 @@ class Parameters:
         self.bounds_x = bounds_x
         self.bounds_y = bounds_y
         self.solver_param = solver_param
+        self.alpha = 0
 
     def __repr__(self):
         mystr = "Object Parameters\n"
@@ -70,6 +71,7 @@ class Parameters:
         self.verbose = parser.getboolean('general-param', 'verbose')
         self.reg = RegParam(parser.get('regul-param', 'reg_name'),
                             parser.getfloat('regul-param', 'reg_param'))
+        self.alpha = parser.getfloat('regul-param', 'alpha')
 
         if parser.get('general-param', 'lbound_x') == '-inf':
             lower_bd_x = -np.inf
@@ -127,6 +129,7 @@ class Parameters:
         config.add_section('regul-param')
         config.set('regul-param', 'reg_name', str(self.reg.name))
         config.set('regul-param', 'reg_param', str(self.reg.weight))
+        config.set('regul-param', 'alpha', str(self.alpha))
 
         config.add_section('solver-param')
         config.set('solver-param', 'tol', str(self.solver_param.gtol))
