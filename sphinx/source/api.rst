@@ -3,13 +3,13 @@ API reference.
 
 The Minimize class
 ------------------
-.. autoclass:: varprox.main.Minimize
+.. autoclass:: varprox._minimize.Minimize
    :members:
 
 The tv function
 ---------------
-.. autofunction:: varprox.main.tv
+.. autofunction:: varprox._minimize.tv
       
 The prox_l1 function
 --------------------
-.. autofunction:: varprox.main.prox_l1
+.. autofunction:: varprox._minimize.prox_l1
