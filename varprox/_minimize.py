@@ -183,7 +183,8 @@ class Minimize:
         :param x: Point where to compute the Jacobian of the residuals
         :type x: :class:`numpy.ndarray` of size (N,)
 
-        :return: Value of the Jacobian of residuals at the current point :math:`x`.
+        :return: Value of the Jacobian of residuals
+        at the current point :math:`x`.
         """
         return self.DFfun(x, self.y, *self.args, **self.kwargs)
 
@@ -361,7 +362,7 @@ class Minimize:
         jac_res_x = self.jac_res_x(x)
         tau = 1 / LA.norm(jac_res_x.transpose() @ jac_res_x)
         sigma = 0.99 / (tau * LA.norm(L)**2)
-        sigmarw = self.param.reg.weight / sigma
+        sigmarw = self.param.reg.weight / (sigma * self.K)
 
         # Main loop
         for n in range(self.param.solver_param.maxit):
@@ -372,7 +373,7 @@ class Minimize:
             p[p >= self.param.bounds_x[1]] = self.param.bounds_x[1] - EPS
             # 2) Dual update
             vtemp = v + L @ (2 * p - x)
-            q = vtemp - prox_l1(vtemp, self.param.reg.weight / sigma)
+            q = vtemp - prox_l1(vtemp, sigmarw)
             # 3) Inertial update
             LAMB = 1.8
             x = x + LAMB * (p - x)

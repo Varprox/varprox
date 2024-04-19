@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-r"""Build a database for experiments on variogram fitting.
+r"""Fitting variogram of an anisotropic fractional Brownian field:
+    Part 1. Data simulation.
 """
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
@@ -9,7 +10,8 @@ from param_expe import params
 
 # Repetory for data
 home_dir = "/home/frichard/Recherche/Python/"
-data_out = "varprox/data/afbf_fitting/"
+home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
+data_out = "data/afbf_fitting/"
 
 # Initialization a new random generator
 rng = default_rng()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-r"""
-Experiments of fitting variogram of an anisotropic fractional Brownian field.
+r"""Fitting variogram of an anisotropic fractional Brownian field:
+    Part 2. Variogram fitting.
 """
 import time
 import numpy as np
@@ -13,7 +13,8 @@ from varprox import Parameters
 from param_expe import params
 
 # Data repertory.
-home_dir = "/home/frichard/Recherche/Python/varprox/"
+home_dir = "/home/frederic/Recherche/Python/varprox/"
+# home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
 data_in = "data/afbf_fitting/"
 data_out = "experiments/afbf_fitting/results/"
 
@@ -42,7 +43,7 @@ sc = np.sqrt(np.power(lags.xy[:, 0], 2) + np.power(lags.xy[:, 1], 2))
 err_fit = err_est = err_tes = 0
 time_c1 = 0
 time_c2 = 0
-for expe in range(1):  # Nbexpe):
+for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     file_in = home_dir + data_in + caseid
@@ -73,6 +74,7 @@ for expe in range(1):  # Nbexpe):
         if param.noise == 1:
             z.values = z.values +\
                 np.sqrt(s0) * rng.standard_normal(z.values.shape)
+        print(np.mean(z.values))
 
         # Compute the empirical semi-variogram
         evario = z.ComputeEmpiricalSemiVariogram(lags)
@@ -81,8 +83,8 @@ for expe in range(1):  # Nbexpe):
         err_est += np.mean(np.abs(w0 + s0 - w))
 
     # Estimation model.
-    topo0 = perfunction('step', 128)
-    hurst0 = perfunction('step', 128)
+    topo0 = perfunction('step', param.topo_dim)
+    hurst0 = perfunction('step', param.hurst_dim)
     model0 = tbfield('Estimation model', topo0, hurst0)
 
     # Initial variogram fitting with varpro.
@@ -90,6 +92,8 @@ for expe in range(1):  # Nbexpe):
     emodel_varproj, wt = FitVariogram(model0, lags, w, param_opti)
     t1 = time.perf_counter()
     time_c1 += t1 - t0
+
+    emodel_varproj.Save(file_out + "-varproj")
 
     # Variogram fitting with varprox.
     # param_opti.threshold_reg = 4
