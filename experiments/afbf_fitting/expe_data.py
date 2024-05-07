@@ -9,8 +9,8 @@ from param_expe import params
 
 
 # Repetory for data
-home_dir = "/home/frichard/Recherche/Python/"
-home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
+home_dir = "/home/frederic/Recherche/Python/varprox/"
+# home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
 data_out = "data/afbf_fitting/"
 
 # Initialization a new random generator
@@ -33,7 +33,7 @@ fbm.param = 0.9
 
 
 coord = coordinates(param.N)
-coord.N = param.N
+coord.N = param.grid_dim * 2
 
 for expe in range(param.Nbexpe):
     caseid = str(expe + 100)

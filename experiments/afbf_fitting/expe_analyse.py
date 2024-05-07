@@ -4,10 +4,11 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 """
 import numpy as np
 from afbf.Simulation.TurningBands import LoadTBField
+from param_expe import params
 
 # Repetory for data
 home_dir = "/home/frichard/Recherche/Python/varprox/"
-home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
+# home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
 data_in = "data/afbf_fitting/"
 data_out = "experiments/afbf_fitting/results/"
 
@@ -28,7 +29,10 @@ def CompareModels(model_ref, model_est):
     return rmse
 
 
-for expe in range(1):  # Nbexpe):
+# Experience parameters.
+param = params()
+
+for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     file_simu = home_dir + data_in + caseid

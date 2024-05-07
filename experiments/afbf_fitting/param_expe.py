@@ -11,9 +11,9 @@ class params:
     # Image size.
     N: int = 512
     # Enhancement factor for semi-variogram values.
-    enhan_factor: float = 10e4
+    enhan_factor: float = 10
     # True if the the theoretical semi-variogram is fitted
-    Tvario: bool = False
+    Tvario: bool = True
     # Size of the grid for the definition of the semi-variogram
     grid_dim: int = 40
     # Step for grid definition
@@ -27,4 +27,4 @@ class params:
     # 1 if model with noise and 0 otherwise
     noise = 1
     # True if the multigrid algorithm is used.
-    multigrid = False
+    multigrid = True
