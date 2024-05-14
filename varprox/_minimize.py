@@ -277,7 +277,7 @@ class Minimize:
 
         :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
-        h = self.h_value()
+        h = np.finfo(float).max
         xtmp = np.zeros(self.x.shape)
         ytmp = np.zeros(self.y.shape)
         for it in range(self.param.maxit):
@@ -289,10 +289,10 @@ class Minimize:
             h0 = h
             h = self.h_value()
             if h0 != 0:
-                # if self.param.reg.name is None:
-                #     dh = (h0 - h) / h0 * 100
-                #     sdh = 1
-                # else:
+                if self.param.reg.name is None:
+                    dh = (h0 - h) / h0 * 100
+                    sdh = 1
+                else:
                     dh = h0 - h
                     sdh = np.sign(dh)
                     dh = abs(dh) / h0 * 100
