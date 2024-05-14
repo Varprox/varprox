@@ -181,7 +181,6 @@ class Minimize:
                     np.zeros(self.K, self.K)),
                     axis=0)
             self.w = np.concatenate((self.w, np.zeros(self.N)))
-        
 
     def Ffun_v(self, x, y, *args, **kwargs):
         return self.Ffun(x, *args, **kwargs) @ y
@@ -290,10 +289,10 @@ class Minimize:
             h0 = h
             h = self.h_value()
             if h0 != 0:
-                if self.param.reg.name is None:
-                    dh = (h0 - h) / h0 * 100
-                    sdh = 1
-                else:
+                # if self.param.reg.name is None:
+                #     dh = (h0 - h) / h0 * 100
+                #     sdh = 1
+                # else:
                     dh = h0 - h
                     sdh = np.sign(dh)
                     dh = abs(dh) / h0 * 100
