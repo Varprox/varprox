@@ -4,14 +4,13 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 """
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
-from numpy.random import default_rng
-from param_expe import params
-
+from numpy.random import default_rng, seed
+from param_expe_8_tvario import params
+from os import path
 
 # Repetory for data
-home_dir = "/home/frederic/Recherche/Python/varprox/"
+home_dir = "/home/frichard/Recherche/Python/varprox/"
 # home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
-data_out = "data/afbf_fitting/"
 
 # Initialization a new random generator
 rng = default_rng()
@@ -38,33 +37,35 @@ coord.N = param.grid_dim * 2
 for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
-    filename = home_dir + data_out + caseid
+    filename = home_dir + param.data_in + caseid
 
-    # Change model parameters.
-    fbm.Simulate(param.hurst_dim)
-    fparam = fbm.y[:, 0]
+    if path.exists(filename + "-imag.pickle") is False:
+        seed(expe)
+        # Change model parameters.
+        fbm.Simulate(param.hurst_dim)
+        fparam = fbm.y[:, 0]
 
-    fparam = fparam + np.flip(fparam)
-    fmin = np.min(fparam)
-    fmax = np.max(fparam)
-    fext = np.random.rand() * 0.9
-    flow = 0.05 + np.random.rand() * (0.9 - fext)
+        fparam = fparam + np.flip(fparam)
+        fmin = np.min(fparam)
+        fmax = np.max(fparam)
+        fext = np.random.rand() * 0.9
+        flow = 0.05 + np.random.rand() * (0.9 - fext)
 
-    if fmin != fmax:
-        fparam = flow + fext * (fparam - fmin) / (fmax - fmin)
-    else:
-        fparam = flow * np.ones(fparam.shape)
+        if fmin != fmax:
+            fparam = flow + fext * (fparam - fmin) / (fmax - fmin)
+        else:
+            fparam = flow * np.ones(fparam.shape)
 
-    # Update the model.
-    model.hurst.ChangeParameters(fparam, finter)
-    model.NormalizeModel()
-    model.topo.fparam = model.topo.fparam * param.enhan_factor
-    model.DisplayParameters()
+        # Update the model.
+        model.hurst.ChangeParameters(fparam, finter)
+        model.NormalizeModel()
+        model.topo.fparam = model.topo.fparam * param.enhan_factor
+        model.DisplayParameters()
 
-    # Simulate a field realization.
-    z = model.Simulate(coord)
-    z.Display()
+        # Simulate a field realization.
+        z = model.Simulate(coord)
+        z.Display()
 
-    # Save model and image.
-    z.Save(filename + "-imag")
-    model.Save(filename)
+        # Save model and image.
+        z.Save(filename + "-imag")
+        model.Save(filename)

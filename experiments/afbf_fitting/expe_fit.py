@@ -10,14 +10,12 @@ from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng
 from varprox import Parameters
-from param_expe import params
+from param_expe_8_tvario import params
 from os import path
 
 # Data repertory.
 home_dir = "/home/frichard/Recherche/Python/varprox/"
 # home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
-data_in = "data/afbf_fitting/"
-data_out = "experiments/afbf_fitting/results/"
 
 
 # Experience parameters.
@@ -42,13 +40,13 @@ lags.N = param.grid_dim * 2
 
 time_c1 = 0
 time_c2 = 0
-for expe in range(4, 5):  # param.Nbexpe):
+for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
-    file_in = home_dir + data_in + caseid
-    file_out = home_dir + data_out + caseid
+    file_in = home_dir + param.data_in + caseid
+    file_out = home_dir + param.data_out + caseid
 
-    if True:  # path.exists(file_out + "-varproj-hurst.pickle") is False:
+    if path.exists(file_out + "-varproj-hurst.pickle") is False:
         print('Running experiments = {:3d} / {:3d}.'.format(expe,
                                                             param.Nbexpe - 1))
 
@@ -107,4 +105,3 @@ for expe in range(4, 5):  # param.Nbexpe):
         # emodel_varprox, w1 = FitVariogram(model0, lags, w, param_opti)
         # t1 = time.perf_counter()
         # time_c2 += t1 - t0
-
