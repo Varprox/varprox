@@ -5,7 +5,7 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
 from numpy.random import default_rng, seed
-from param_expe_8_tvario import params
+from param_expe_32_evario import params
 from os import path
 
 # Repetory for data
@@ -40,6 +40,9 @@ for expe in range(param.Nbexpe):
     filename = home_dir + param.data_in + caseid
 
     if path.exists(filename + "-imag.pickle") is False:
+        print('Running experiments = {:3d} / {:3d}.'.format(expe,
+                                                            param.Nbexpe - 1))
+
         seed(expe)
         # Change model parameters.
         fbm.Simulate(param.hurst_dim)

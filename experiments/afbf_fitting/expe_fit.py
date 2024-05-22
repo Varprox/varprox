@@ -13,11 +13,13 @@ from varprox import Parameters
 from param_expe_8_tvario import params
 from os import path
 
+
 # Data repertory.
 home_dir = "/home/frichard/Recherche/Python/varprox/"
 # home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
 
-
+# Optimisation method (varproj vs. varprox)
+optim = "varproj"
 # Experience parameters.
 param = params()
 
@@ -46,7 +48,7 @@ for expe in range(param.Nbexpe):
     file_in = home_dir + param.data_in + caseid
     file_out = home_dir + param.data_out + caseid
 
-    if path.exists(file_out + "-varproj-hurst.pickle") is False:
+    if path.exists(file_out + "-" + optim + "-hurst.pickle") is False:
         print('Running experiments = {:3d} / {:3d}.'.format(expe,
                                                             param.Nbexpe - 1))
 
@@ -67,6 +69,10 @@ for expe in range(param.Nbexpe):
         else:
             # Load a field realization
             z = LoadSdata(file_in + "-imag")
+            if param.crop is not None:
+                z.values.reshape(z.M)[0:param.crop, 0:param.crop]
+                z.M = np.array([param.crop, param.crop])
+                z.values = np.reshape(z.values, (np.prod(z.M), 1))
             if param.noise == 1:
                 # Load the groundtruth model.
                 model = LoadTBField(file_in)
@@ -89,19 +95,20 @@ for expe in range(param.Nbexpe):
         hurst0 = perfunction('step', param.hurst_dim)
         model0 = tbfield('Estimation model', topo0, hurst0)
 
-        # Initial variogram fitting with varpro.
-        t0 = time.perf_counter()
-        emodel_varproj, wt = FitVariogram(model0, lags, w, param_opti)
-        t1 = time.perf_counter()
-        time_c1 += t1 - t0
+        if optim == "varproj":
+            # Variogram fitting with varpro.
+            t0 = time.perf_counter()
+            emodel, wt = FitVariogram(model0, lags, w, param_opti)
+            t1 = time.perf_counter()
+            time_c1 += t1 - t0
+        elif optim == "varprox":
+            # Variogram fitting with varprox.
+            param_opti.threshold_reg = 4
+            param_opti.reg.name = "tv-1d"
+            param_opti.reg.weight = 0.01
+            t0 = time.perf_counter()
+            emodel, w1 = FitVariogram(model0, lags, w, param_opti)
+            t1 = time.perf_counter()
+            time_c2 += t1 - t0
 
-        emodel_varproj.Save(file_out + "-varproj")
-
-        # Variogram fitting with varprox.
-        # param_opti.threshold_reg = 4
-        # param_opti.reg.name = "tv-1d"
-        # param_opti.reg.weight = 0.01
-        # t0 = time.perf_counter()
-        # emodel_varprox, w1 = FitVariogram(model0, lags, w, param_opti)
-        # t1 = time.perf_counter()
-        # time_c2 += t1 - t0
+        emodel.Save(file_out + "-" + optim)

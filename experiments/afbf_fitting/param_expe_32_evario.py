@@ -4,12 +4,14 @@ from dataclasses import dataclass
 @dataclass
 class params:
     # Number of experiments
-    Nbexpe: int = 10
+    Nbexpe: int = 100
     # Number of parameters for the Hurst and topothesy functions
     hurst_dim: int = 32
     topo_dim: int = 32
     # Image size.
     N: int = 512
+    # Crop image
+    crop = None
     # Enhancement factor for semi-variogram values.
     enhan_factor: float = 10
     # True if the the theoretical semi-variogram is fitted
@@ -21,14 +23,14 @@ class params:
     # Size of field realization
     grid_normalization: int = 100
     # Display results of each experiment
-    display = False
+    display: bool = False
     # Save the results
-    save = False
+    save: bool = False
     # 1 if model with noise and 0 otherwise
-    noise = 1
+    noise: int = 1
     # True if the multigrid algorithm is used.
-    multigrid = True
+    multigrid: bool = True
     # Directory for data (Simulated fields)
-    data_in = "data/afbf-32/"
+    data_in: str = "data/afbf-32/"
     # Directory for results (estimated fields)
-    data_out = "experiments/afbf_fitting/results-32-tvario/"
+    data_out: str = "experiments/afbf_fitting/results-32-tvario/"
