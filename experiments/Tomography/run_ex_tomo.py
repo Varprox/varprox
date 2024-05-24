@@ -106,10 +106,10 @@ M = 50  # Offsets sampled regularly in [-1.5 ; 1.5] (number of data points)
 K = 50  # Angles sampled regularly in [0 ; 2 Pi]
 NOISE_STD = 0  # Standard deviation for the Gaussian noise on the data vector
 # Iterative algorithm parameters
-MAXIT = 500  # Maximum number of iterations
+MAXIT = 5  # Maximum number of iterations
 GTOL = 5E-3  # Tolerance for the stopping criterion
 VERBOSE = True  # Is the algorithm verbose?
-REG_WEIGHT = 100  # Regularization weight for x
+REG_WEIGHT = 0.1  # Regularization weight for x
 # --- Read parameters from the configuration file
 
 # Number of experiments
@@ -156,6 +156,8 @@ y0 = tmp.x
 # Estimate a solution using Varprox
 pb = Minimize(x0, d, Ffun, DFfun, s, theta, N)
 param.solver_param = SolverParam(1e-4, 5000)
+param.alpha = 10
+param.reg.order = 2
 pb.param = param
 x, y = pb.argmin_h()
 # ============================================================================ #
