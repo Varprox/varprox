@@ -105,8 +105,7 @@ if __name__ == "__main__":
     param.multigrid = True
     param.threshold_reg = threshold_reg
     param.noise = 1
-    param.alpha = 0
-
+ 
     # Parameters to set the lags where to compute the semi-variogram.
     scalemin = 0  # Minimal scale for grid definition of the semi-variogram.
 

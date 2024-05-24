@@ -27,27 +27,13 @@ def SemiVariogram(tau, beta, f, lf, T, B, noise=1):
     return Ffun(beta, f, lf, T, B, noise) @ tau
 
 
-def Ffun(beta, f, lf, T, B, noise=1, alpha=0):
-    # Semi-variogram of the field
-    F = np.concatenate((np.ones((f.shape[0], noise)),
-                        0.5 * np.power(f, B @ beta) @ T), axis=1)
-    if alpha > 0 and T.shape[1] > 1:
-        c = np.zeros(T.shape[1])
-        c[0] = 1
-        c[1] = -1
-        D = alpha * circulant(c).T
-        D = np.concatenate((np.zeros((D.shape[0], noise)), D), axis=1)
-        F = np.concatenate((F, D), axis=0)
-
-    return F
+def Ffun(beta, f, lf, T, B, noise=1):
+    return np.concatenate((np.ones((f.shape[0], noise)),
+                           0.5 * np.power(f, B @ beta) @ T), axis=1)
 
 
-def DFfun(beta, tau, f, lf, T, B, noise=1, alpha=0):
-
-    if alpha > 0 and T.shape[1] > 1:
-        DF = np.zeros((f.shape[0] + T.shape[1], T.shape[1] + noise, B.shape[1]))
-    else:
-        DF = np.zeros((f.shape[0], T.shape[1] + noise, B.shape[1]))
+def DFfun(beta, tau, f, lf, T, B, noise=1):
+    DF = np.zeros((f.shape[0], T.shape[1] + noise, B.shape[1]))
 
     v = 0.5 * lf * np.power(f, B @ beta)
     for j in range(noise, DF.shape[1]):
@@ -101,7 +87,7 @@ def FitVariogram(model, lags, w, param):
         beta = np.array([0.5])
         tau = np.ones((param.noise + 1,))
         pb = Minimize(beta, w1, Ffun, DFfun,
-                      f, lf, T, B, param.noise, param.alpha)
+                      f, lf, T, B, param.noise)
         pb.param = param
 
         for i in range(1, 9):
@@ -152,21 +138,19 @@ def FitVariogram(model, lags, w, param):
         if param.verbose:
             print("Nb param: Hurst={:d}, Topo={:d}".format(
                 hurst.fparam.size, topo.fparam.size))
-            print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol,
+            print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol_h,
                                                         param.maxit))
-        if param.alpha > 0 and T.shape[1] > 1:
-            w1 = np.concatenate((w, np.zeros((T.shape[1],))), axis=0)
-        pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B,
-                      param.noise, param.alpha)
+
+        pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B, param.noise)
         pb.param = param
 
         # Cancel the tv regularization if only one parameter is involved.
         if reg_name == "tv-1d":
-            if beta.size == 1:
+            if beta.size < pb.param.threshold_reg:
                 pb.param.reg.name = None
             else:
                 pb.param.reg.name = reg_name
-                pb.param.reg.weight = reg_weight 
+                pb.param.reg.weight = reg_weight
 
         beta, tau = pb.argmin_h()
 

@@ -24,6 +24,7 @@ class SolverParam:
 class RegParam:
     name: float = None
     weight: int = 0
+    order: int = 1
 # ============================================================================ #
 
 

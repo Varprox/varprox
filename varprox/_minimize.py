@@ -109,10 +109,9 @@ class Minimize:
         self.param = Parameters()
 
         # Definition of Ffun and DFfun.
-        self.Ffun = Ffun
-        self.DFfun = DFfun
-        self.args = args
-        self.kwargs = kwargs
+        self.Ffun = lambda x: Ffun(x, *args, **kwargs)
+        self.DFfun = lambda x, y: DFfun(x, y, *args, **kwargs)
+        self.Ffun_v = lambda x, y: self.Ffun(x) @ y
 
         # Test the variable types.
         if not isinstance(w, np.ndarray)\
@@ -127,6 +126,8 @@ class Minimize:
         self.y = self.argmin_h_y(x0)
         self.K = self.x.size
         self.J = self.y.size
+
+        self.tv = TV(self.K)
 
         # Test input variable consistency.
         aux = Ffun(self.x, *args, **kwargs)
@@ -149,8 +150,10 @@ class Minimize:
         """
         # Load parameters from a configuration file
         self.param.load(filename)
-        # Update Ffun and DFfun is need
+        # Update Ffun and DFfun if needed
         self.update_Ffun()
+        # Update TV if needed
+        self.update_tv()
 
     @property
     def params(self):
@@ -159,8 +162,10 @@ class Minimize:
     @params.setter
     def params(self, myparam):
         self.param = deepcopy(myparam)
-        # Update Ffun and DFfun is need
+        # Update Ffun and DFfun if needed
         self.update_Ffun()
+        # Update TV if needed
+        self.update_tv()
 
     def update_Ffun(self):
         r"""Redefine Ffun and DFfun if the scalar parameter alpha is strictly
@@ -170,20 +175,21 @@ class Minimize:
             Ffun_old = self.Ffun
             self.Ffun =\
                 lambda x: np.concatenate((
-                    Ffun_old(x, *self.args, **self.kwargs),
+                    Ffun_old(x),
                     np.sqrt(self.param.alpha) * np.eye(self.J)),
                     axis=0)
 
             DFfun_old = self.DFfun
             self.DFfun =\
                 lambda x, y: np.concatenate((
-                    DFfun_old(x, y, *self.args, **self.kwargs),
-                    np.zeros(self.K, self.K)),
-                    axis=0)
+                    DFfun_old(x, y), np.zeros((self.K, self.K))), axis=0)
             self.w = np.concatenate((self.w, np.zeros(self.N)))
 
-    def Ffun_v(self, x, y, *args, **kwargs):
-        return self.Ffun(x, *args, **kwargs) @ y
+    def update_tv(self):
+        self.tv = TV(self.K, self.param.reg.order)
+
+    # def Ffun_v(self, x, y):
+    #     return self.Ffun(x) @ y
 
     # def DFfun_v(self, x, y, *args, **kwargs):
     #     return np.swapaxes(self.DFfun(x, *args, **kwargs), 1, 2) @ y
@@ -196,7 +202,7 @@ class Minimize:
 
         :return: Value of the residuals at the point given in argument
         """
-        return self.Ffun_v(x, self.y, *self.args, **self.kwargs) - self.w
+        return self.Ffun_v(x, self.y) - self.w
 
     def jac_res_x(self, x):
         r"""Compute the Jacobian of residuals with respect to :math:`x`.
@@ -207,11 +213,15 @@ class Minimize:
         :return: Value of the Jacobian of residuals
         at the current point :math:`x`.
         """
-        return self.DFfun(x, self.y, *self.args, **self.kwargs)
+        return self.DFfun(x, self.y)
 
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
         """
+        a = self.jac_res_x(x).transpose()
+        b = self.val_res(x)
+        print(a.shape)
+        print(b.shape)
         return self.jac_res_x(x).transpose() @ self.val_res(x) / self.N
 
     def h_value(self):
@@ -223,7 +233,7 @@ class Minimize:
         h = np.mean(np.power(self.val_res(self.x), 2)) / 2
 
         if self.param.reg.name == 'tv-1d':
-            h = h + self.param.reg.weight * tv(self.x) / self.K
+            h = h + self.param.reg.weight * self.tv.value(self.x) / self.K
         return h
 
     def argmin_h_x(self, param):
@@ -255,8 +265,8 @@ class Minimize:
     def argmin_h_y(self, x):
         r"""Minimize :math:`h` with respect to :math:`y`.
 
-        :param x_init: Point where to evaluate :math:`F`
-        :type x_init: :class:`numpy.ndarray` of size (N,)
+        :param x: Point where to evaluate :math:`F`
+        :type x: :class:`numpy.ndarray` of size (N,)
 
         :return: Minimizer of :math:`h` with respect to :math:`y`
 
@@ -264,16 +274,13 @@ class Minimize:
             This operation corresponds to eq:`varpro`, which is the
             variable projection.
         """
-        res = lsq_linear(self.Ffun(x, *self.args, **self.kwargs), self.w,
+        res = lsq_linear(self.Ffun(x), self.w,
                          bounds=self.param.bounds_y)
         self.y = res.x
         return res.x
 
     def argmin_h(self):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
-
-        :param param: Parameter for the minimization of h wrt x
-        :type param: :class:Solver_Param
 
         :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
@@ -311,22 +318,6 @@ class Minimize:
                     self.y[:] = ytmp[:]
                 break
         return self.x, self.y
-
-    def generate_discrete_grad_mat(self, n):
-        r"""Generate the discrete gradient matrix, i.e. the matrix with 1 on its
-        diagonal and -1 on its first sub-diagonal.
-
-        :param n: Dimension of the generated matrix.
-        :type n: int
-
-        :return: The discrete gradient matrix.
-        """
-        D = np.zeros([n, n])
-        i, j = np.indices(D.shape)
-        D[i == j] = 1
-        D[i == j + 1] = -1
-        D[0, n - 1] = -1
-        return D
 
     def rfbpd(self):
         r"""Implementation of the rescaled Primal-dual Forward-backward
@@ -375,13 +366,13 @@ class Minimize:
         EPS = 1e-8
 
         # Initialization
-        x = self.x              # Primal variable
-        v = np.zeros(x.shape)   # Dual variable
-        L = self.generate_discrete_grad_mat(self.K)  # Linear operator
+        x = self.x             # Primal variable
+        v = np.zeros(x.shape)  # Dual variable
+        L = self.tv.L          # Linear operator
         crit = np.Inf          # Initial value of the objective function
 
         jac_res_x = self.jac_res_x(x)
-        tau = 1 / LA.norm(jac_res_x.transpose() @ jac_res_x)
+        tau = self.K / LA.norm(jac_res_x.transpose() @ jac_res_x)
         sigma = 0.99 / (tau * LA.norm(L)**2)
         sigmarw = self.param.reg.weight / (sigma * self.K)
 
@@ -394,7 +385,7 @@ class Minimize:
             p[p >= self.param.bounds_x[1]] = self.param.bounds_x[1] - EPS
             # 2) Dual update
             vtemp = v + L @ (2 * p - x)
-            q = vtemp - prox_l1(vtemp, sigmarw)
+            q = vtemp - self.tv.prox_l1(vtemp, sigmarw)
             # 3) Inertial update
             LAMB = 1.8
             x = x + LAMB * (p - x)
@@ -411,41 +402,73 @@ class Minimize:
 
 
 # ============================================================================ #
-#                           Auxiliary Functions                                #
+#                                    CLASS TV                                  #
 # ============================================================================ #
-def tv(x):
-    r"""
-    This function computes the 1-dimensional discrete total variation of its
-    input vector
+class TV():
+    def __init__(self, dim, order=1):
+        r"""
+        This class implements8 the total variation (TV) regularization.
 
-    .. math::
+        :param dim: Dimension of the space where to apply TV
+        :type dim: int
 
-        TV(x) = \sum_{n=1}^{N-1} x_{n+1} - x_{n}.
+        :param order: Order of the TV (order of the differential operator).
+        :type order: int
+        """
+        
+        self.order = order
+        self.dim = dim
+        self.generate_discrete_grad_mat()
 
-    :param x: input vector of length :math:`N`.
-    :type x: :class:`numpy.ndarray` of size (N,)
+    def generate_discrete_grad_mat(self):
+        r"""Generate the discrete gradient matrix, i.e. the matrix with 1 on its
+        diagonal and -1 on its first sub-diagonal.
 
-    :return: 1-dimensional discrete total variation of the vector :math:`x`.
-    """
-    return np.sum(np.abs(np.diff(x)))
+        :return: The discrete gradient matrix.
+        """
+        self.L = np.eye(self.dim)
+        
+        D = np.zeros([self.dim, self.dim])
+        i, j = np.indices(D.shape)
+        D[i == j] = 1
+        D[i == j + 1] = -1
+        D[0, self.dim - 1] = -1
 
+        for i in range(self.order):
+            self.L = np.matmul(self.L, D)
 
-def prox_l1(data, reg_param):
-    r"""
-    This function implements the proximal operator of the l1-norm
-    (a.k.a. soft thresholding).
+    def value(self, x):
+        r"""
+        This function computes the 1-dimensional discrete total variation of its
+        input vector
+        
+        .. math::
+        
+            TV(x) = \sum_{n=1}^{N-1} x_{n+1} - x_{n}.
 
-    :param data: input vector of length :math:`N`.
-    :type data: :class:`numpy.ndarray` of size (N,)
+        :param x: input vector of length :math:`N`.
+        :type x: :class:`numpy.ndarray` of size (N,)
 
-    :param reg_param: parameter of the operator (strictly positive).
-    :type reg_param: float
+        :return: 1-dimensional discrete total variation of the vector :math:`x`.
+        """
+        return np.sum(np.abs(self.L@x))
 
-    :return: The proximal operator of the l1-norm evaluated at the given point.
-    """
-    tmp = abs(data) - reg_param
-    tmp = (tmp + abs(tmp)) / 2
-    y = np.sign(data) * tmp
-    return y
+    def prox_l1(self, data, reg_param):
+        r"""
+        This function implements the proximal operator of the l1-norm
+        (a.k.a. soft thresholding).
+
+        :param data: input vector of length :math:`N`.
+        :type data: :class:`numpy.ndarray` of size (N,)
+
+        :param reg_param: parameter of the operator (strictly positive).
+        :type reg_param: float
+
+        :return: The proximal operator of the l1-norm evaluated at the given point.
+        """
+        tmp = abs(data) - reg_param
+        tmp = (tmp + abs(tmp)) / 2
+        y = np.sign(data) * tmp
+        return y
 
 # ============================================================================ #
