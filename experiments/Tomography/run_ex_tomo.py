@@ -158,7 +158,9 @@ pb = Minimize(x0, d, Ffun, DFfun, s, theta, N)
 param.solver_param = SolverParam(1e-4, 5000)
 param.alpha = 10
 param.reg.order = 2
-pb.param = param
+pb.params = param
+print("MY ALPHA = ", pb.param.alpha)
+print(pb.params)
 x, y = pb.argmin_h()
 # ============================================================================ #
 
