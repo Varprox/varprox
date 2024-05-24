@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class params:
     # Number of experiments
-    Nbexpe: int = 100
+    Nbexpe: int = 10
     # Number of parameters for the Hurst and topothesy functions
     hurst_dim: int = 32
     topo_dim: int = 32
@@ -33,4 +33,4 @@ class params:
     # Directory for data (Simulated fields)
     data_in: str = "data/afbf-32/"
     # Directory for results (estimated fields)
-    data_out: str = "experiments/afbf_fitting/results-32-tvario/"
+    data_out: str = "experiments/afbf_fitting/results-32-evario/"

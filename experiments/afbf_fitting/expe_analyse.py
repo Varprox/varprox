@@ -4,7 +4,7 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 """
 import numpy as np
 from afbf.Simulation.TurningBands import LoadTBField
-from param_expe_8_evario import params
+from param_expe_64_evario import params
 
 # Repetory for data
 home_dir = "/home/frichard/Recherche/Python/varprox/"
@@ -30,8 +30,9 @@ def CompareModels(model_ref, model_est):
 # Experience parameters.
 param = params()
 
-RMSE = 0
-for expe in range(param.Nbexpe):
+RMSE_varproj = 0
+RMSE_varprox = 0
+for expe in range(7, 8):  # param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     file_simu = home_dir + param.data_in + caseid
@@ -39,11 +40,19 @@ for expe in range(param.Nbexpe):
 
     model_ref = LoadTBField(file_simu)
     model_varproj = LoadTBField(file_res + "-varproj")
+    model_varprox = LoadTBField(file_res + "-varprox")
 
-    rmse = CompareModels(model_ref, model_varproj)
-    RMSE += rmse
-    print('expe {:4d}: rmse = {:.6e} '.format(expe, rmse))
+    rmse_varproj = CompareModels(model_ref, model_varproj)
+    rmse_varprox = CompareModels(model_ref, model_varprox)
+
+    RMSE_varproj += rmse_varproj
+    RMSE_varprox += rmse_varprox
+    print('expe {:4d}: rmse varproj = {:.6e}, varprox = {:.6e}'
+          .format(expe, rmse_varproj, rmse_varprox))
 
 
-RMSE = RMSE / param.Nbexpe
-print('Average RMSE = {:.6e} '.format(RMSE))
+RMSE_varproj = RMSE_varproj / param.Nbexpe
+RMSE_varprox = RMSE_varprox / param.Nbexpe
+
+print('Average RMSE varproj = {:.6e}, varprox = {:.6e}'
+      .format(RMSE_varproj, RMSE_varprox))

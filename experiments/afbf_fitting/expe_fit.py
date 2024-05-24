@@ -10,7 +10,7 @@ from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng
 from varprox import Parameters
-from param_expe_8_tvario import params
+from param_expe_64_evario import params
 from os import path
 
 
@@ -18,8 +18,7 @@ from os import path
 home_dir = "/home/frichard/Recherche/Python/varprox/"
 # home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
 
-# Optimisation method (varproj vs. varprox)
-optim = "varproj"
+
 # Experience parameters.
 param = params()
 
@@ -42,13 +41,20 @@ lags.N = param.grid_dim * 2
 
 time_c1 = 0
 time_c2 = 0
-for expe in range(param.Nbexpe):
+for expe in range(7, 8):  # param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     file_in = home_dir + param.data_in + caseid
     file_out = home_dir + param.data_out + caseid
 
-    if path.exists(file_out + "-" + optim + "-hurst.pickle") is False:
+    if path.exists(file_out + "-varproj-hurst.pickle") is False:
+        optim = "varproj"
+    elif path.exists(file_out + "-varprox-hurst.pickle") is False:
+        optim = "varprox"
+    else:
+        optim = None
+
+    if optim is not None:
         print('Running experiments = {:3d} / {:3d}.'.format(expe,
                                                             param.Nbexpe - 1))
 
@@ -80,7 +86,7 @@ for expe in range(param.Nbexpe):
                 model.ComputeApproximateSemiVariogram(lags)
                 w = np.zeros(model.svario.values.size)
                 w[:] = model.svario.values[:, 0]
-                s0 = np.random.rand() * np.min(w)  # Noise variance
+                s0 = np.random.rand() * np.min(w)  # Noise variance.
                 z.values = z.values +\
                     np.sqrt(s0) * rng.standard_normal(z.values.shape)
             else:
@@ -90,25 +96,25 @@ for expe in range(param.Nbexpe):
             evario = z.ComputeEmpiricalSemiVariogram(lags)
             w = evario.values[:, 0]
 
-        # Estimation model.
-        topo0 = perfunction('step', param.topo_dim)
-        hurst0 = perfunction('step', param.hurst_dim)
-        model0 = tbfield('Estimation model', topo0, hurst0)
-
         if optim == "varproj":
+            # Initialize the estimation model.
+            topo0 = perfunction('step', param.topo_dim)
+            hurst0 = perfunction('step', param.hurst_dim)
+            model0 = tbfield('Estimation model', topo0, hurst0)
             # Variogram fitting with varpro.
-            t0 = time.perf_counter()
-            emodel, wt = FitVariogram(model0, lags, w, param_opti)
-            t1 = time.perf_counter()
-            time_c1 += t1 - t0
+            param_opti.reg.name = None
         elif optim == "varprox":
+            # Initialize the estimation model.
+            model0 = LoadTBField(file_out + "-varproj")
             # Variogram fitting with varprox.
-            param_opti.threshold_reg = 4
+            param_opti.threshold_reg = 32
             param_opti.reg.name = "tv-1d"
-            param_opti.reg.weight = 0.01
-            t0 = time.perf_counter()
-            emodel, w1 = FitVariogram(model0, lags, w, param_opti)
-            t1 = time.perf_counter()
-            time_c2 += t1 - t0
+            param_opti.reg.weight = 1e-4 * w[0]
+            param_opti.reg.alpha = 0  # w[0]
+            param_opti.multigrid = True
+
+        t0 = time.perf_counter()
+        emodel, wt = FitVariogram(model0, lags, w, param_opti)
+        t1 = time.perf_counter()
 
         emodel.Save(file_out + "-" + optim)

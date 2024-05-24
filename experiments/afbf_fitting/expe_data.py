@@ -5,8 +5,10 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 import numpy as np
 from afbf import coordinates, perfunction, tbfield, process
 from numpy.random import default_rng, seed
-from param_expe_32_evario import params
+from param_expe_64_evario import params
 from os import path
+from varprox import Parameters
+from varprox.models.model_afbf import FitVariogram
 
 # Repetory for data
 home_dir = "/home/frichard/Recherche/Python/varprox/"
@@ -15,7 +17,14 @@ home_dir = "/home/frichard/Recherche/Python/varprox/"
 # Initialization a new random generator
 rng = default_rng()
 
+# Optimisation parameters.
 param = params()
+param_opti = Parameters()
+param_opti.load("param_optim.ini")
+param_opti.noise = 0
+param_opti.threshold_reg = np.Inf
+param_opti.verbose = False
+param_opti.maxit = 100
 
 # Definition of the reference model
 topo = perfunction('step', param.topo_dim)
@@ -30,10 +39,12 @@ tb = model.tb
 fbm = process()
 fbm.param = 0.9
 
+lags = coordinates()
+lags.DefineSparseSemiBall(param.grid_dim)
+lags.N = param.grid_dim * 2
 
 coord = coordinates(param.N)
 coord.N = param.grid_dim * 2
-
 for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
@@ -63,6 +74,17 @@ for expe in range(param.Nbexpe):
         model.hurst.ChangeParameters(fparam, finter)
         model.NormalizeModel()
         model.topo.fparam = model.topo.fparam * param.enhan_factor
+
+        model.ComputeApproximateSemiVariogram(lags)
+        w = np.zeros(model.svario.values.size)
+        w[:] = model.svario.values[:, 0]
+        param_opti.threshold_reg = 4
+        param_opti.reg.name = "tv-1d"
+        param_opti.reg.weight = 1e-1 * w[0]
+        param_opti.multigrid = False
+        model.DisplayParameters()
+        model, wt = FitVariogram(model, lags, w, param_opti)
+        model.NormalizeModel()
         model.DisplayParameters()
 
         # Simulate a field realization.
