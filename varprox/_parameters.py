@@ -67,7 +67,7 @@ class Parameters:
         parser = ConfigParser()
         parser.read(filename)
 
-        self.gtol = parser.getfloat('general-param', 'gtol')
+        self.gtol_h = parser.getfloat('general-param', 'gtol')
         self.maxit = parser.getint('general-param', 'maxit')
         self.verbose = parser.getboolean('general-param', 'verbose')
         self.reg = RegParam(parser.get('regul-param', 'reg_name'),
@@ -108,7 +108,7 @@ class Parameters:
 
         config.add_section('general-param')
         config.set('general-param', 'maxit', str(self.maxit))
-        config.set('general-param', 'gtol', str(self.gtol))
+        config.set('general-param', 'gtol', str(self.gtol_h))
         config.set('general-param', 'verbose', str(self.verbose))
         if self.bounds_x[0] == -np.inf:
             config.set('general-param', 'lbound_x', '-inf')
