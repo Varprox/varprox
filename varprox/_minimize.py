@@ -180,9 +180,14 @@ class Minimize:
                     axis=0)
 
             DFfun_old = self.DFfun
+            print(DFfun_old(self.x,self.y).shape)
+            print(self.N)
+            print(self.J)
+            print(self.K)
+            print(self.w.shape)
             self.DFfun =\
                 lambda x, y: np.concatenate((
-                    DFfun_old(x, y), np.zeros((self.K, self.K))), axis=0)
+                    DFfun_old(x, y), np.zeros((self.N, self.K))), axis=0)
             self.w = np.concatenate((self.w, np.zeros(self.N)))
 
     def update_tv(self):
