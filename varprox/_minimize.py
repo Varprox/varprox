@@ -222,10 +222,6 @@ class Minimize:
     def gradient_g(self, x):
         r"""Compute the gradient of the function :math:`g`.
         """
-        a = self.jac_res_x(x).transpose()
-        b = self.val_res(x)
-        print(a.shape)
-        print(b.shape)
         return self.jac_res_x(x).transpose() @ self.val_res(x) / self.N
 
     def h_value(self):
