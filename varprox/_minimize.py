@@ -142,6 +142,10 @@ class Minimize:
         if (aux.shape[0] != self.N or aux.shape[1] != self.K):
             raise ValueError("Problem with the definition of DF.")
 
+        # Update Ffun, DFfun, and TV if needed
+        self.update_Ffun()
+        self.update_tv()
+
     def set_parameters_fromfile(self, filename):
         r"""Load parameters from a configuration file in Linux format.
 
