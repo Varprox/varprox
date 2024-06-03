@@ -187,7 +187,7 @@ class Minimize:
             self.DFfun =\
                 lambda x, y: np.concatenate((
                     DFfun_old(x, y), np.zeros((self.N, self.K))), axis=0)
-            self.w = np.concatenate((self.w, np.zeros(self.N)))
+            self.w = np.concatenate((self.w, np.zeros(self.J)))
 
     def update_tv(self):
         self.tv = TV(self.K, self.param.reg.order)
@@ -415,7 +415,7 @@ class TV():
         :param order: Order of the TV (order of the differential operator).
         :type order: int
         """
-        
+
         self.order = order
         self.dim = dim
         self.generate_discrete_grad_mat()
@@ -427,7 +427,7 @@ class TV():
         :return: The discrete gradient matrix.
         """
         self.L = np.eye(self.dim)
-        
+
         D = np.zeros([self.dim, self.dim])
         i, j = np.indices(D.shape)
         D[i == j] = 1
@@ -441,9 +441,9 @@ class TV():
         r"""
         This function computes the 1-dimensional discrete total variation of its
         input vector
-        
+
         .. math::
-        
+
             TV(x) = \sum_{n=1}^{N-1} x_{n+1} - x_{n}.
 
         :param x: input vector of length :math:`N`.
@@ -451,7 +451,7 @@ class TV():
 
         :return: 1-dimensional discrete total variation of the vector :math:`x`.
         """
-        return np.sum(np.abs(self.L@x))
+        return np.sum(np.abs(self.L @ x))
 
     def prox_l1(self, data, reg_param):
         r"""
