@@ -186,7 +186,7 @@ class Minimize:
             DFfun_old = self.DFfun
             self.DFfun =\
                 lambda x, y: np.concatenate((
-                    DFfun_old(x, y), np.zeros((self.N, self.K))), axis=0)
+                    DFfun_old(x, y), np.zeros((self.J, self.K))), axis=0)
             self.w = np.concatenate((self.w, np.zeros(self.J)))
 
     def update_tv(self):
@@ -284,7 +284,7 @@ class Minimize:
 
         :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
-        h = np.finfo(float).max
+        h = self.h_value()
         xtmp = np.zeros(self.x.shape)
         ytmp = np.zeros(self.y.shape)
         for it in range(self.param.maxit):

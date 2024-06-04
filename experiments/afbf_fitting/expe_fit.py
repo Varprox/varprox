@@ -41,7 +41,7 @@ lags.N = param.grid_dim * 2
 
 time_c1 = 0
 time_c2 = 0
-for expe in range(7, 8):  # param.Nbexpe):
+for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     file_in = home_dir + param.data_in + caseid
@@ -96,21 +96,20 @@ for expe in range(7, 8):  # param.Nbexpe):
             evario = z.ComputeEmpiricalSemiVariogram(lags)
             w = evario.values[:, 0]
 
+        # Initialize the estimation model.
+        topo0 = perfunction('step', param.topo_dim)
+        hurst0 = perfunction('step', param.hurst_dim)
+        model0 = tbfield('Estimation model', topo0, hurst0)
+        param_opti.alpha = 1e-4 * w[0]
         if optim == "varproj":
-            # Initialize the estimation model.
-            topo0 = perfunction('step', param.topo_dim)
-            hurst0 = perfunction('step', param.hurst_dim)
-            model0 = tbfield('Estimation model', topo0, hurst0)
             # Variogram fitting with varpro.
             param_opti.reg.name = None
         elif optim == "varprox":
-            # Initialize the estimation model.
-            model0 = LoadTBField(file_out + "-varproj")
+            # model0 = LoadTBField(file_out + "-varproj")
             # Variogram fitting with varprox.
-            param_opti.threshold_reg = 32
+            param_opti.threshold_reg = 64
             param_opti.reg.name = "tv-1d"
-            param_opti.reg.weight = 1e-4 * w[0]
-            param_opti.reg.alpha = 0  # w[0]
+            param_opti.reg.weight = 1e-8 * w[0]
             param_opti.multigrid = True
 
         t0 = time.perf_counter()

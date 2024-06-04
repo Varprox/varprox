@@ -88,7 +88,8 @@ def FitVariogram(model, lags, w, param):
         tau = np.ones((param.noise + 1,))
         pb = Minimize(beta, w1, Ffun, DFfun,
                       f, lf, T, B, param.noise)
-        pb.param = param
+
+        pb.params = param
 
         for i in range(1, 9):
             beta = np.array([i / 10])
@@ -135,14 +136,14 @@ def FitVariogram(model, lags, w, param):
         beta = beta2
         tau = tau2
 
+        pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B, param.noise)
+        pb.params = param
+
         if param.verbose:
             print("Nb param: Hurst={:d}, Topo={:d}".format(
                 hurst.fparam.size, topo.fparam.size))
             print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol_h,
                                                         param.maxit))
-
-        pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B, param.noise)
-        pb.param = param
 
         # Cancel the tv regularization if only one parameter is involved.
         if reg_name == "tv-1d":
