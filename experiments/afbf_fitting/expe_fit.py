@@ -41,8 +41,8 @@ lags.N = param.grid_dim * 2
 
 time_c1 = 0
 time_c2 = 0
-for _ in range(1):  # 2):
-    for expe in range(1):  # param.Nbexpe):
+for _ in range(2):
+    for expe in range(param.Nbexpe):
         caseid = str(expe + 100)
         caseid = caseid[1:]
         file_in = home_dir + param.data_in + caseid
