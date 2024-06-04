@@ -123,20 +123,19 @@ class Minimize:
         self.w = w.reshape((self.N,))
         self.x = np.zeros(x0.shape)
         self.x[:] = x0[:]
-        self.y = self.argmin_h_y(x0)
         self.K = self.x.size
-        self.J = self.y.size
 
         self.tv = TV(self.K)
 
         # Test input variable consistency.
         aux = Ffun(self.x, *args, **kwargs)
+        self.J = aux.shape[1]
         if not isinstance(aux, np.ndarray):
             raise TypeError("Problem with variable type of F output.")
-        if aux.shape[0] != self.N or aux.shape[1] != self.J:
+        if aux.shape[0] != self.N:
             raise ValueError("Problem with the definition of F.")
 
-        aux = DFfun(self.x, self.y, *args, **kwargs)
+        aux = DFfun(self.x, np.zeros((self.J,)), *args, **kwargs)
         if not isinstance(aux, np.ndarray):
             raise TypeError("Problem with variable type of DF output.")
         if (aux.shape[0] != self.N or aux.shape[1] != self.K):
@@ -145,6 +144,8 @@ class Minimize:
         # Update Ffun, DFfun, and TV if needed
         self.update_Ffun()
         self.update_tv()
+        # Initialize y.
+        self.y = self.argmin_h_y(x0)
 
     def set_parameters_fromfile(self, filename):
         r"""Load parameters from a configuration file in Linux format.
@@ -170,8 +171,6 @@ class Minimize:
         self.update_Ffun()
         # Update TV if needed
         self.update_tv()
-        # update y.
-        self.y = self.argmin_h_y(self.x)
 
     def update_Ffun(self):
         r"""Redefine Ffun and DFfun if the scalar parameter alpha is strictly
@@ -190,6 +189,7 @@ class Minimize:
                 lambda x, y: np.concatenate((
                     DFfun_old(x, y), np.zeros((self.J, self.K))), axis=0)
             self.w = np.concatenate((self.w, np.zeros(self.J)))
+            self.y = self.argmin_h_y(self.x)
 
     def update_tv(self):
         self.tv = TV(self.K, self.param.reg.order)
