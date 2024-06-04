@@ -41,79 +41,80 @@ lags.N = param.grid_dim * 2
 
 time_c1 = 0
 time_c2 = 0
-for expe in range(param.Nbexpe):
-    caseid = str(expe + 100)
-    caseid = caseid[1:]
-    file_in = home_dir + param.data_in + caseid
-    file_out = home_dir + param.data_out + caseid
+for _ in range(1):  # 2):
+    for expe in range(1):  # param.Nbexpe):
+        caseid = str(expe + 100)
+        caseid = caseid[1:]
+        file_in = home_dir + param.data_in + caseid
+        file_out = home_dir + param.data_out + caseid
 
-    if path.exists(file_out + "-varproj-hurst.pickle") is False:
-        optim = "varproj"
-    elif path.exists(file_out + "-varprox-hurst.pickle") is False:
-        optim = "varprox"
-    else:
-        optim = None
-
-    if optim is not None:
-        print('Running experiments = {:3d} / {:3d}.'.format(expe,
-                                                            param.Nbexpe - 1))
-
-        # Semivariogram to be fitted (theoretical / empirical, noise / no noise)
-        if param.Tvario:
-            # Load the groundtruth model.
-            model = LoadTBField(file_in)
-            # Compute the theoretical semi-variogram
-            model.ComputeApproximateSemiVariogram(lags)
-            w = np.zeros(model.svario.values.size)
-            w[:] = model.svario.values[:, 0]
-
-            if param.noise == 1:
-                s0 = np.random.rand() * np.min(w)
-                w = w + s0
-            else:
-                s0 = 0
+        if path.exists(file_out + "-varproj-hurst.pickle") is False:
+            optim = "varproj"
+        elif path.exists(file_out + "-varprox-hurst.pickle") is False:
+            optim = "varprox"
         else:
-            # Load a field realization
-            z = LoadSdata(file_in + "-imag")
-            if param.crop is not None:
-                z.values.reshape(z.M)[0:param.crop, 0:param.crop]
-                z.M = np.array([param.crop, param.crop])
-                z.values = np.reshape(z.values, (np.prod(z.M), 1))
-            if param.noise == 1:
+            optim = None
+
+        if optim is not None:
+            print('Running experiments = {:3d} / {:3d}.'.format(expe,
+                                                                param.Nbexpe - 1))
+
+            # Semivariogram to be fitted (theoretical / empirical, noise / no noise)
+            if param.Tvario:
                 # Load the groundtruth model.
                 model = LoadTBField(file_in)
                 # Compute the theoretical semi-variogram
                 model.ComputeApproximateSemiVariogram(lags)
                 w = np.zeros(model.svario.values.size)
                 w[:] = model.svario.values[:, 0]
-                s0 = np.random.rand() * np.min(w)  # Noise variance.
-                z.values = z.values +\
-                    np.sqrt(s0) * rng.standard_normal(z.values.shape)
+
+                if param.noise == 1:
+                    s0 = np.random.rand() * np.min(w)
+                    w = w + s0
+                else:
+                    s0 = 0
             else:
-                s0 = 0
+                # Load a field realization
+                z = LoadSdata(file_in + "-imag")
+                if param.crop is not None:
+                    z.values.reshape(z.M)[0:param.crop, 0:param.crop]
+                    z.M = np.array([param.crop, param.crop])
+                    z.values = np.reshape(z.values, (np.prod(z.M), 1))
+                if param.noise == 1:
+                    # Load the groundtruth model.
+                    model = LoadTBField(file_in)
+                    # Compute the theoretical semi-variogram
+                    model.ComputeApproximateSemiVariogram(lags)
+                    w = np.zeros(model.svario.values.size)
+                    w[:] = model.svario.values[:, 0]
+                    s0 = np.random.rand() * np.min(w)  # Noise variance.
+                    z.values = z.values +\
+                        np.sqrt(s0) * rng.standard_normal(z.values.shape)
+                else:
+                    s0 = 0
 
-            # Compute the empirical semi-variogram
-            evario = z.ComputeEmpiricalSemiVariogram(lags)
-            w = evario.values[:, 0]
+                # Compute the empirical semi-variogram
+                evario = z.ComputeEmpiricalSemiVariogram(lags)
+                w = evario.values[:, 0]
 
-        # Initialize the estimation model.
-        topo0 = perfunction('step', param.topo_dim)
-        hurst0 = perfunction('step', param.hurst_dim)
-        model0 = tbfield('Estimation model', topo0, hurst0)
-        param_opti.alpha = 1e-4 * np.mean(np.power(w, 2))
-        if optim == "varproj":
-            # Variogram fitting with varpro.
-            param_opti.reg.name = None
-        elif optim == "varprox":
-            # model0 = LoadTBField(file_out + "-varproj")
-            # Variogram fitting with varprox.
-            param_opti.threshold_reg = 64
-            param_opti.reg.name = "tv-1d"
-            param_opti.reg.weight = 1e-1 * np.mean(np.power(w, 2))
-            param_opti.multigrid = True
+            # Initialize the estimation model.
+            topo0 = perfunction('step', param.topo_dim)
+            hurst0 = perfunction('step', param.hurst_dim)
+            model0 = tbfield('Estimation model', topo0, hurst0)
+            param_opti.alpha = 1e-1 * np.mean(np.power(w, 2))
+            if optim == "varproj":
+                # Variogram fitting with varpro.
+                param_opti.reg.name = None
+            elif optim == "varprox":
+                # model0 = LoadTBField(file_out + "-varproj")
+                # Variogram fitting with varprox.
+                param_opti.threshold_reg = 64
+                param_opti.reg.name = "tv-1d"
+                param_opti.reg.weight = 1e-1 * np.mean(np.power(w, 2))
+                param_opti.multigrid = True
 
-        t0 = time.perf_counter()
-        emodel, wt = FitVariogram(model0, lags, w, param_opti)
-        t1 = time.perf_counter()
+            t0 = time.perf_counter()
+            emodel, wt = FitVariogram(model0, lags, w, param_opti)
+            t1 = time.perf_counter()
 
-        emodel.Save(file_out + "-" + optim)
+            emodel.Save(file_out + "-" + optim)

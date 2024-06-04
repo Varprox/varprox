@@ -182,7 +182,7 @@ class Minimize:
             self.Ffun =\
                 lambda x: np.concatenate((
                     Ffun_old(x),
-                    np.sqrt(self.param.alpha) * np.eye(self.J)),
+                    np.sqrt(self.param.alpha / self.J) * np.eye(self.J)),
                     axis=0)
 
             DFfun_old = self.DFfun
