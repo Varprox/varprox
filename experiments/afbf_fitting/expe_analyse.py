@@ -32,7 +32,7 @@ param = params()
 
 RMSE_varproj = 0
 RMSE_varprox = 0
-for expe in range(param.Nbexpe):
+for expe in range(0, 1):  # param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     file_simu = home_dir + param.data_in + caseid

@@ -170,6 +170,8 @@ class Minimize:
         self.update_Ffun()
         # Update TV if needed
         self.update_tv()
+        # update y.
+        self.y = self.argmin_h_y(self.x)
 
     def update_Ffun(self):
         r"""Redefine Ffun and DFfun if the scalar parameter alpha is strictly
@@ -284,7 +286,7 @@ class Minimize:
 
         :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
-        h = self.h_value()
+        h = self.h_value()  # np.finfo('float').max
         xtmp = np.zeros(self.x.shape)
         ytmp = np.zeros(self.y.shape)
         for it in range(self.param.maxit):

@@ -136,22 +136,23 @@ def FitVariogram(model, lags, w, param):
         beta = beta2
         tau = tau2
 
+        # Cancel the tv regularization if only one parameter is involved.
+        if reg_name == "tv-1d":
+            if beta.size < param.threshold_reg:
+                param.reg.name = None
+            else:
+                param.reg.name = reg_name
+                param.reg.weight = reg_weight
+
         pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B, param.noise)
         pb.params = param
+        print(pb.h_value())
 
         if param.verbose:
             print("Nb param: Hurst={:d}, Topo={:d}".format(
                 hurst.fparam.size, topo.fparam.size))
             print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol_h,
                                                         param.maxit))
-
-        # Cancel the tv regularization if only one parameter is involved.
-        if reg_name == "tv-1d":
-            if beta.size < pb.param.threshold_reg:
-                pb.param.reg.name = None
-            else:
-                pb.param.reg.name = reg_name
-                pb.param.reg.weight = reg_weight
 
         beta, tau = pb.argmin_h()
 

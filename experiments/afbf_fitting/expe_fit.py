@@ -100,7 +100,7 @@ for expe in range(param.Nbexpe):
         topo0 = perfunction('step', param.topo_dim)
         hurst0 = perfunction('step', param.hurst_dim)
         model0 = tbfield('Estimation model', topo0, hurst0)
-        param_opti.alpha = 1e-4 * w[0]
+        param_opti.alpha = 1e-4 * np.mean(np.power(w, 2))
         if optim == "varproj":
             # Variogram fitting with varpro.
             param_opti.reg.name = None
@@ -109,7 +109,7 @@ for expe in range(param.Nbexpe):
             # Variogram fitting with varprox.
             param_opti.threshold_reg = 64
             param_opti.reg.name = "tv-1d"
-            param_opti.reg.weight = 1e-8 * w[0]
+            param_opti.reg.weight = 1e-1 * np.mean(np.power(w, 2))
             param_opti.multigrid = True
 
         t0 = time.perf_counter()
