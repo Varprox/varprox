@@ -48,8 +48,6 @@ def FitVariogram(model, lags, w, param):
     """
     # Regularization parameters.
     reg_name = param.reg.name
-    if reg_name is not None:
-        reg_weight = np.mean(np.power(w, 2)) * param.reg.weight
 
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         raise ValueError("FitVariogram: only runs for step functions.")
@@ -101,11 +99,9 @@ def FitVariogram(model, lags, w, param):
                 param.reg.name = None
             else:
                 param.reg.name = reg_name
-                param.reg.weight = reg_weight
 
         pb = Minimize(beta, w, Ffun, DFfun, f, lf, T, B, param.noise)
         pb.params = param
-        print(pb.h_value())
 
         if param.verbose:
             print("Nb param: Hurst={:d}, Topo={:d}".format(
