@@ -13,7 +13,7 @@ class params:
     # Enhancement factor for semi-variogram values.
     enhan_factor: float = 10
     # True if the the theoretical semi-variogram is fitted
-    Tvario: bool = True
+    Tvario: bool = False
     # Size of the grid for the definition of the semi-variogram
     grid_dim: int = 40
     # Step for grid definition
@@ -32,3 +32,5 @@ class params:
     data_in = "data/afbf-8/"
     # Directory for results (estimated fields)
     data_out = "experiments/afbf_fitting/results-8-evario/"
+    # Crop
+    crop: int = 256

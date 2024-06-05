@@ -73,10 +73,9 @@ for _ in range(2):
             else:
                 # Load a field realization
                 z = LoadSdata(file_in + "-imag")
-                if param.crop is not None:
-                    z.values.reshape(z.M)[0:param.crop, 0:param.crop]
-                    z.M = np.array([param.crop, param.crop])
-                    z.values = np.reshape(z.values, (np.prod(z.M), 1))
+                z.values = z.values.reshape(z.M)[0:param.crop, 0:param.crop]
+                z.M = np.array([param.crop, param.crop])
+                z.values = np.reshape(z.values, (np.prod(z.M), 1))
                 if param.noise == 1:
                     # Load the groundtruth model.
                     model = LoadTBField(file_in)
