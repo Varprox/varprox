@@ -48,6 +48,9 @@ def FitVariogram(model, lags, w, param):
     """
     # Regularization parameters.
     reg_name = param.reg.name
+    mw = np.mean(np.power(w, 2))
+    reg_weight = param.reg.weight * mw
+    reg_alpha = param.alpha * mw
 
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         raise ValueError("FitVariogram: only runs for step functions.")
@@ -77,13 +80,12 @@ def FitVariogram(model, lags, w, param):
     if param.multigrid:
         hurst = perfunction(model.hurst.ftype, param=1)
         topo = perfunction(model.topo.ftype, param=1)
+        hurst.ChangeParameters(np.array([0.5]))
     else:
         hurst = perfunction(model.hurst.ftype, param=npar0_beta)
         topo = perfunction(model.topo.ftype, param=npar0_tau)
-        hurst.fparam[:] = model.hurst.fparam[:]
-        hurst.finter[:] = model.hurst.finter[:]
-        topo.fparam[:] = model.topo.fparam[:]
-        topo.finter[:] = model.topo.finter[:]
+        hurst.ChangeParameters(model.hurst.fparam[:], model.hurst.finter[:])
+        topo.ChangeParameters(model.topo.fparam[:], model.topo.finter[:])
 
     beta = np.zeros((hurst.fparam.size,))
     beta[:] = hurst.fparam[0, :]
@@ -96,13 +98,15 @@ def FitVariogram(model, lags, w, param):
 
         # Cancel the tv regularization when less than threshold_reg parameters
         # are involved.
+        pb = Minimize(beta, w, Ffun, DFfun, f, lf, T, B, param.noise)
+        hval = pb.h_value()
         if reg_name == "tv-1d":
             if beta.size < param.threshold_reg:
                 param.reg.name = None
+                param.reg.weight = reg_weight * hval
             else:
                 param.reg.name = reg_name
-
-        pb = Minimize(beta, w, Ffun, DFfun, f, lf, T, B, param.noise)
+        param.alpha = reg_alpha
         pb.params = param
 
         if param.verbose:

@@ -25,15 +25,6 @@ param = params()
 # Initialization a new random generator
 rng = default_rng()
 
-# Setting parameters for model and optimisation.
-param_opti = Parameters()
-param_opti.load("param_optim.ini")
-param_opti.multigrid = param.multigrid
-param_opti.noise = param.noise
-param_opti.threshold_reg = np.Inf
-param_opti.reg.name = None
-param_opti.verbose = True
-
 # Lags where to compute the semi-variogram
 lags = coordinates()
 lags.DefineSparseSemiBall(param.grid_dim)
@@ -58,6 +49,12 @@ for _ in range(2):
         if optim is not None:
             print('Running experiments = {:3d} / {:3d}.'.format(expe,
                                                                 param.Nbexpe - 1))
+
+            # Setting parameters for model and optimisation.
+            param_opti = Parameters()
+            param_opti.load("param_optim.ini")
+            param_opti.multigrid = param.multigrid
+            param_opti.noise = param.noise
 
             # Semivariogram to be fitted (theoretical / empirical, noise / no noise)
             if param.Tvario:
@@ -101,7 +98,6 @@ for _ in range(2):
             topo0 = perfunction('step', param.topo_dim)
             hurst0 = perfunction('step', param.hurst_dim)
             model0 = tbfield('Estimation model', topo0, hurst0)
-            param_opti.alpha = 1e-1 * np.mean(np.power(w, 2))
             if optim == "varproj":
                 # Variogram fitting with varpro.
                 param_opti.reg.name = None
@@ -110,7 +106,6 @@ for _ in range(2):
                 # Variogram fitting with varprox.
                 param_opti.threshold_reg = param.hurst_dim
                 param_opti.reg.name = "tv-1d"
-                param_opti.reg.weight = 1e-1 * np.mean(np.power(w, 2))
 
             t0 = time.perf_counter()
             emodel, wt = FitVariogram(model0, lags, w, param_opti)
