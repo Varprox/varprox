@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class params:
     # Number of experiments
-    Nbexpe: int = 100
+    Nbexpe: int = 10
     # Number of parameters for the Hurst and topothesy functions
     hurst_dim: int = 8
     topo_dim: int = 8

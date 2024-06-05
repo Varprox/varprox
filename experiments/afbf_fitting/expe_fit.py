@@ -10,7 +10,7 @@ from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng
 from varprox import Parameters
-from param_expe_64_evario import params
+from param_expe_8_evario import params
 from os import path
 
 
