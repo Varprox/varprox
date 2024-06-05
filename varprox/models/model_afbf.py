@@ -90,10 +90,12 @@ def FitVariogram(model, lags, w, param):
 
     stop = False
     while stop is False:
+        # Update the basis function for hurst and topothesy.
         B = BasisFunctions(hurst, phi)
         T = BasisFunctions(topo, phi) * dphi
 
-        # Cancel the tv regularization if only one parameter is involved.
+        # Cancel the tv regularization when less than threshold_reg parameters
+        # are involved.
         if reg_name == "tv-1d":
             if beta.size < param.threshold_reg:
                 param.reg.name = None
@@ -110,29 +112,32 @@ def FitVariogram(model, lags, w, param):
                                                         param.maxit))
 
         beta, tau = pb.argmin_h()
-        topo.fparam[0, :] = tau[param.noise:]
-        hurst.fparam[0, :] = beta[:]
+        topo.ChangeParameters(tau[param.noise:], topo.finter)
+        hurst.ChangeParameters(beta[:], hurst.finter)
 
         stop = True
         if param.multigrid:
+            # Increase the number of parameters for the topothesy.
             npar = (tau.size - param.noise) * 2
             if npar <= npar0_tau:
                 stop = False
                 topo0 = topo
                 topo = perfunction(model.topo.ftype, param=npar)
-                Iv = np.linspace(-np.pi / 2, np.pi / 2, npar + 1, True)[1:]
-                topo0.Evaluate(Iv)
-                topo.fparam[0, :] = topo0.values[0, :]
+                Iv = np.linspace(-np.pi / 2, np.pi / 2, npar + 1, True)
+                centers = (Iv[0:-1] + Iv[1:]) * 0.5
+                topo0.Evaluate(centers)
+                topo.ChangeParameters(topo0.values[0, :], Iv[1:])
 
+            # Increase the number of parameters for the Hurst function.
             npar = beta.size * 2
             if npar <= npar0_beta:
                 stop = False
-                npar_beta = npar
                 hurst0 = hurst
-                hurst = perfunction(model.hurst.ftype, param=npar_beta)
-                Iv = np.linspace(-np.pi / 2, np.pi / 2, npar_beta + 1, True)[1:]
-                hurst0.Evaluate(Iv)
-                hurst.fparam[0, :] = hurst0.values[0, :]
+                hurst = perfunction(model.hurst.ftype, param=npar)
+                Iv = np.linspace(-np.pi / 2, np.pi / 2, npar + 1, True)
+                centers = (Iv[0:-1] + Iv[1:]) * 0.5
+                hurst0.Evaluate(centers)
+                hurst.ChangeParameters(hurst0.values[0, :], Iv[1:])
                 beta = np.zeros((hurst.fparam.size,))
                 beta[:] = hurst.fparam[0, :]
 

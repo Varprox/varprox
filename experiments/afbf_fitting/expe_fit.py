@@ -108,10 +108,9 @@ for _ in range(2):
             elif optim == "varprox":
                 # model0 = LoadTBField(file_out + "-varproj")
                 # Variogram fitting with varprox.
-                param_opti.threshold_reg = 16
+                param_opti.threshold_reg = param.hurst_dim
                 param_opti.reg.name = "tv-1d"
                 param_opti.reg.weight = 1e-1 * np.mean(np.power(w, 2))
-                param_opti.multigrid = True
 
             t0 = time.perf_counter()
             emodel, wt = FitVariogram(model0, lags, w, param_opti)

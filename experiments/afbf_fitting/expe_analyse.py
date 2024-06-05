@@ -4,7 +4,7 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 """
 import numpy as np
 from afbf.Simulation.TurningBands import LoadTBField
-from param_expe_64_evario import params
+from param_expe_8_evario import params
 from matplotlib import pyplot as plt
 
 # Repetory for data
