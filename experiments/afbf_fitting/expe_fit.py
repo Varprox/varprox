@@ -10,7 +10,7 @@ from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng
 from varprox import Parameters
-from param_expe_8_evario import params
+from param_expe_64_evario import params
 from os import path
 
 
@@ -103,7 +103,7 @@ for _ in range(2):
             elif optim == "varprox":
                 # model0 = LoadTBField(file_out + "-varproj")
                 # Variogram fitting with varprox.
-                param_opti.threshold_reg = param.hurst_dim
+                param_opti.threshold_reg = 8  # param.hurst_dim
                 param_opti.reg.name = "tv-1d"
 
             t0 = time.perf_counter()
