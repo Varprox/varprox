@@ -178,7 +178,7 @@ class Minimize:
         r"""Redefine Ffun and DFfun if the scalar parameter alpha is strictly
         greater than 0 (i.e. there is a quadratic regularization on y).
         """
-        if self.param.alpha > 0:
+        if self.param.alpha > 0 and self.J > 1:
             # solution provisoire.
             d = np.zeros(self.J)
             d[0] = 1
