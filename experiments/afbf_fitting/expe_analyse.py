@@ -65,7 +65,7 @@ for expe in range(param.Nbexpe):
 
     model_ref = LoadTBField(file_simu)
     model_varproj = LoadTBField(file_res + "-varproj")
-    model_varprox = LoadTBField(file_res + "-varprox")
+    model_varprox = model_varproj  # LoadTBField(file_res + "-varprox")
 
     bias_varproj, bias_varprox, rmse_varproj, rmse_varprox,\
         l1err_varproj, l1err_varprox =\

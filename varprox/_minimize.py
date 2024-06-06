@@ -10,6 +10,8 @@ from scipy.optimize import lsq_linear, least_squares
 from numpy import linalg as LA
 from varprox._parameters import Parameters
 from copy import deepcopy
+from scipy.linalg import circulant
+
 # ============================================================================ #
 
 
@@ -177,11 +179,16 @@ class Minimize:
         greater than 0 (i.e. there is a quadratic regularization on y).
         """
         if self.param.alpha > 0:
+            # solution provisoire.
+            d = np.zeros(self.J)
+            d[0] = 1
+            d[1] = -1
+            D = circulant(d)
             Ffun_old = self.Ffun
             self.Ffun =\
                 lambda x: np.concatenate((
                     Ffun_old(x),
-                    np.sqrt(self.param.alpha / self.J) * np.eye(self.J)),
+                    np.sqrt(self.param.alpha / self.J) * D),  # np.eye(self.J)),
                     axis=0)
 
             DFfun_old = self.DFfun
@@ -193,12 +200,6 @@ class Minimize:
 
     def update_tv(self):
         self.tv = TV(self.K, self.param.reg.order)
-
-    # def Ffun_v(self, x, y):
-    #     return self.Ffun(x) @ y
-
-    # def DFfun_v(self, x, y, *args, **kwargs):
-    #     return np.swapaxes(self.DFfun(x, *args, **kwargs), 1, 2) @ y
 
     def val_res(self, x):
         r"""Compute the residuals :math:`\epsilon_n` in :eq:`residuals`.

@@ -10,7 +10,7 @@ from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng
 from varprox import Parameters
-from param_expe_64_evario import params
+from param_expe_8_evario import params
 from os import path
 
 
@@ -90,7 +90,8 @@ for _ in range(2):
                     s0 = 0
 
                 # Compute the empirical semi-variogram
-                evario = z.ComputeEmpiricalSemiVariogram(lags)
+                evario = z.ComputeQuadraticVariations(lags, order=1)
+                # evario = z.ComputeEmpiricalSemiVariogram(lags)
                 w = evario.values[:, 0]
 
             # Initialize the estimation model.

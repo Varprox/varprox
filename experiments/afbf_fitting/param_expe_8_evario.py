@@ -33,4 +33,4 @@ class params:
     # Directory for results (estimated fields)
     data_out = "experiments/afbf_fitting/results-8-evario/"
     # Crop
-    crop: int = 128
+    crop: int = 512
