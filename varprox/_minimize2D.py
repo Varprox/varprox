@@ -115,8 +115,6 @@ class Minimize2D:
         self.DFfun = lambda x, y: DFfun(x, y, *args, **kwargs)
         self.Ffun_v = lambda x, y: self.Ffun(x) @ y
 
-        self.Dx, self.Dy, self.DtD = self.compute_findif_2d()
-
         # Test the variable types.
         if not isinstance(w, np.ndarray)\
                 or not isinstance(x0, np.ndarray):
@@ -147,6 +145,8 @@ class Minimize2D:
 
         # Update Ffun, DFfun, and TV if needed
         self.update_tv()
+        # Compute finite differences matrices
+        self.Dx, self.Dy, self.DtD = self.compute_findif_2d()
         # Initialize y.
         self.y = self.argmin_h_y(x0)
 
@@ -171,7 +171,7 @@ class Minimize2D:
         # Update TV if needed
         self.update_tv()
 
-    def format_linpb(self,x):
+    def format_linpb(self, x):
         Fx = self.Ffun(x)
         Fsolve = Fx.T*Fx + (self.param.alpha / self.J) * self.DtD
         wsolve = Fx.T @ self.w
@@ -179,16 +179,17 @@ class Minimize2D:
 
     def compute_findif_2d(self):
         # Finite difference in x-axis
-        Dx = circulant([-1,1] + (self.J**2-2)*[0])
+        sqrtJ = int(np.sqrt(self.J))
+        Dx = circulant([-1,1] + (self.J-2)*[0])
         k = 0
-        for i in range(self.J):
-            Dx[k,:] = np.zeros((1,self.J**2))
-            k += self.J
+        for i in range(sqrtJ):
+            Dx[k,:] = np.zeros((1,self.J))
+            k += sqrtJ
         Dx = Dx[~np.all(Dx == 0, axis=1)]
         # Finite difference in y-axis
-        Dy = circulant([-1] + (self.J-1)*[0] + [1] + (self.J**2-(self.J+1))*[0])
+        Dy = circulant([-1] + (sqrtJ-1)*[0] + [1] + (self.J-(sqrtJ+1))*[0])
         Dy = Dy.T
-        Dy = Dy[0:-self.J,:]
+        Dy = Dy[0:-sqrtJ,:]
         # Return the different finite difference terms
         return (Dx, Dy, Dx.T @ Dx + Dy.T @ Dy)
 
@@ -233,8 +234,8 @@ class Minimize2D:
             h = h + self.param.reg.weight * self.tv.value(self.x) / self.K
         if self.param.alpha > 0:
             h = h + (self.param.alpha / self.J) * (
-                np.mean(np.power(self.Dx@self.y),2)/2 +\
-                np.mean(np.power(self.Dy@self.y),2)/2)
+                np.mean(np.power(self.Dx@self.y, 2))/2 +\
+                np.mean(np.power(self.Dy@self.y, 2))/2)
         return h
 
     def argmin_h_x(self, param):
@@ -281,7 +282,7 @@ class Minimize2D:
             self.y = res.x
             return res.x
         else:
-            Fsolve, wsolve = format_linpb(self, x)
+            Fsolve, wsolve = self.format_linpb(x)
             res = np.linalg.solve(Fsolve, wsolve)
             self.y = res
             return res

@@ -9,7 +9,7 @@ License: undefined
 Project-URL: Documentation, 
 Project-URL: Source, 
 Project-URL: Tracker, 
-Keywords: data fitting,optimization,separable non linear least square
+Keywords: optimization,separable non linear least square,data fitting
 Platform: Linux
 Platform: MacOSX
 Platform: Windows
