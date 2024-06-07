@@ -154,7 +154,7 @@ A0 = Ffun(x0, s, theta, N)
 tmp = lsq_linear(A0, d, bounds=param.bounds_y)
 y0 = tmp.x
 # Estimate a solution using Varprox
-pb = Minimize(x0, d, Ffun, DFfun, s, theta, N)
+pb = Minimize2D(x0, d, Ffun, DFfun, s, theta, N)
 param.solver_param = SolverParam(1e-4, 5000)
 param.alpha = 10
 param.reg.order = 2
