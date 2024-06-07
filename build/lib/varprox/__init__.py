@@ -14,5 +14,6 @@ __status__ = "Development"
 Import the main class of the package.
 """
 from varprox._minimize import Minimize
+from varprox._minimize2D import Minimize2D
 from varprox._parameters import Parameters
 

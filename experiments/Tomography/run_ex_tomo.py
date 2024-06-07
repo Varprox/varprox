@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import lsq_linear
 from dataclasses import dataclass
 from numpy import linalg as LA
-from varprox._minimize import Minimize
+from varprox._minimize2D import Minimize2D
 from varprox._parameters import Parameters, SolverParam, RegParam
 # ============================================================================ #
 

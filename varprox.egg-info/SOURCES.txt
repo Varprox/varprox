@@ -13,6 +13,7 @@ experiments/Expe-TPMS-2022/expe_afbf.py
 experiments/Expe-TPMS-2022/expe_afbf_report.py
 varprox/__init__.py
 varprox/_minimize.py
+varprox/_minimize2D.py
 varprox/_parameters.py
 varprox/main.old.py
 varprox.egg-info/PKG-INFO
