@@ -188,7 +188,7 @@ class Minimize2D:
         # Finite difference in y-axis
         Dy = circulant([-1] + (self.J-1)*[0] + [1] + (self.J**2-(self.J+1))*[0])
         Dy = Dy.T
-        Dy = Dy[0:-J,:]
+        Dy = Dy[0:-self.J,:]
         # Return the different finite difference terms
         return (Dx, Dy, Dx.T @ Dx + Dy.T @ Dy)
 
