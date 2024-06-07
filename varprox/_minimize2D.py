@@ -276,7 +276,7 @@ class Minimize2D:
             This operation corresponds to eq:`varpro`, which is the
             variable projection.
         """
-        if self.param.alpha > 0:
+        if self.param.alpha == 0:
             res = lsq_linear(self.Ffun(x), self.w,
                              bounds=self.param.bounds_y)
             self.y = res.x
