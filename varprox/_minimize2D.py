@@ -115,6 +115,8 @@ class Minimize2D:
         self.DFfun = lambda x, y: DFfun(x, y, *args, **kwargs)
         self.Ffun_v = lambda x, y: self.Ffun(x) @ y
 
+        self.Dx, self.Dy, self.DtD = self.compute_findif_2d()
+
         # Test the variable types.
         if not isinstance(w, np.ndarray)\
                 or not isinstance(x0, np.ndarray):
@@ -144,7 +146,6 @@ class Minimize2D:
             raise ValueError("Problem with the definition of DF.")
 
         # Update Ffun, DFfun, and TV if needed
-        self.update_Ffun()
         self.update_tv()
         # Initialize y.
         self.y = self.argmin_h_y(x0)
@@ -157,8 +158,6 @@ class Minimize2D:
         """
         # Load parameters from a configuration file
         self.param.load(filename)
-        # Update Ffun and DFfun if needed
-        self.update_Ffun()
         # Update TV if needed
         self.update_tv()
 
@@ -169,22 +168,14 @@ class Minimize2D:
     @params.setter
     def params(self, myparam):
         self.param = deepcopy(myparam)
-        # Update Ffun and DFfun if needed
-        self.update_Ffun()
         # Update TV if needed
         self.update_tv()
 
-    def update_Ffun(self):
-        r"""Redefine Ffun and DFfun if the scalar parameter alpha is strictly
-        greater than 0 (i.e. there is a quadratic regularization on y).
-        """
-        if self.param.alpha > 0 and self.J > 1:
-            _, _, D = self.compute_findif_2d()
-            self.Fsolve =\
-                    lambda x: Ffun(x) + (self.param.alpha / self.J) * D
-            self.param.bounds_y = (-np.inf, np.inf)
-            self.wsolve = Ffun(x).T @ self.w
-            self.y = self.argmin_h_y(self.x)
+    def format_linpb(self,x):
+        Fx = self.Ffun(x)
+        Fsolve = Fx.T*Fx + (self.param.alpha / self.J) * self.DtD
+        wsolve = Fx.T @ self.w
+        return (Fsolve,wsolve)
 
     def compute_findif_2d(self):
         # Finite difference in x-axis
@@ -240,6 +231,10 @@ class Minimize2D:
 
         if self.param.reg.name == 'tv-1d':
             h = h + self.param.reg.weight * self.tv.value(self.x) / self.K
+        if self.param.alpha > 0:
+            h = h + (self.param.alpha / self.J) * (
+                np.mean(np.power(self.Dx@self.y),2)/2 +\
+                np.mean(np.power(self.Dy@self.y),2)/2)
         return h
 
     def argmin_h_x(self, param):
@@ -286,7 +281,8 @@ class Minimize2D:
             self.y = res.x
             return res.x
         else:
-            res = np.linalg.solve(self.Fsolve(x), self.wsolve)
+            Fsolve, wsolve = format_linpb(self, x)
+            res = np.linalg.solve(Fsolve, wsolve)
             self.y = res
             return res
 

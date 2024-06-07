@@ -156,7 +156,7 @@ y0 = tmp.x
 # Estimate a solution using Varprox
 pb = Minimize2D(x0, d, Ffun, DFfun, s, theta, N)
 param.solver_param = SolverParam(1e-4, 5000)
-param.alpha = 10
+param.alpha = 1
 param.reg.order = 2
 pb.params = param
 x, y = pb.argmin_h()
