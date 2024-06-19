@@ -15,8 +15,6 @@ from varprox._parameters import Parameters, SolverParam, RegParam
 import time
 from datetime import datetime
 from os.path import isfile
-import sys
-import logging
 # ============================================================================ #
 
 
@@ -90,12 +88,14 @@ def plot_results(results, n, labels=[]):
     if N > 1:
         for i in range(N):
             x,y = results[i]
-            ax[i].imshow(y.reshape((n,n)), extent=(0,1,0,1), vmin=0, vmax=1)
+            ax[i].imshow(y.reshape((n,n)), extent=(0,1,0,1), cmap='gray',
+                         vmin=0, vmax=1)
             if labels:
                 ax[i].set_title(labels[i])
     else:
         x,y = results[0]
-        ax.imshow(y.reshape((n,n)), extent=(0,1,0,1), cmap='gray', vmin=0, vmax=1)
+        ax.imshow(y.reshape((n,n)), extent=(0,1,0,1), cmap='gray',
+                  vmin=0, vmax=1)
     #plt.savefig('reconstruction.png', bbox_inches='tight')
     plt.show()
     return fig, ax
@@ -105,6 +105,7 @@ def convert_time(time):
     minu, sec = divmod(round(time), 60)
     h, minu = divmod(minu, 60)
     return (h, minu, sec)
+
 
 def print_time(time):
     (h, minu, sec) = convert_time(time)
@@ -123,7 +124,7 @@ M = 50  # Offsets sampled regularly in [-1.5 ; 1.5] (number of data points)
 K = 50  # Angles sampled regularly in [0 ; 2 Pi]
 NOISE_STD = 1  # Standard deviation for the Gaussian noise on the data vector
 # Iterative algorithm parameters
-MAXIT = 1  # Maximum number of iterations
+MAXIT = 100  # Maximum number of iterations
 GTOL = 5E-3  # Tolerance for the stopping criterion
 VERBOSE = True  # Is the algorithm verbose?
 REG_WEIGHT = 0.01  # Regularization weight for x
@@ -216,19 +217,8 @@ with open(fname, 'wb') as f:
 # ============================================================================ #
 #                                  Show results                                #
 # ============================================================================ #
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-rootLogger = logging.getLogger()
-
-fileHandler = logging.FileHandler("{0}/{1}.log".format(".", "testlog.txt"))
-fileHandler.setFormatter(logFormatter)
-rootLogger.addHandler(fileHandler)
-
-consoleHandler = logging.StreamHandler()
-consoleHandler.setFormatter(logFormatter)
-rootLogger.addHandler(consoleHandler)
-
-logging.info("Error y (Varproj): ", LA.norm(y_proj-yt)**2)
-logging.info("Error x (Varproj): ", LA.norm(x_proj-xt)**2)
+print("Error y (Varproj): ", LA.norm(y_proj-yt)**2)
+print("Error x (Varproj): ", LA.norm(x_proj-xt)**2)
 print("Error y (Varprox): ", LA.norm(y_prox-yt)**2)
 print("Error x (Varprox): ", LA.norm(x_prox-xt)**2)
 print("Running time (Varproj): ", print_time(time_proj))
