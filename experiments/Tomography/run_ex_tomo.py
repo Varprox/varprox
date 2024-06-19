@@ -128,7 +128,7 @@ MAXIT = 100  # Maximum number of iterations
 GTOL = 5E-3  # Tolerance for the stopping criterion
 VERBOSE = True  # Is the algorithm verbose?
 REG_WEIGHT = 0.01  # Regularization weight for x
-# --- Read parameters from the configuration file
+ALPHA = 5  # Regularization weight for y
 
 # Number of experiments
 Nbexpe = 1
@@ -173,7 +173,7 @@ y0 = tmp.x
 # Estimate a solution using Varproj
 pb_proj = Minimize2D(x0, d, Ffun, DFfun, s, theta, N)
 param.solver_param = SolverParam(1e-4, 5000)
-param.alpha = 0.
+param.alpha = ALPHA
 param.reg.name = None
 pb_proj.params = param
 time_proj_1 = 0
@@ -184,7 +184,7 @@ time_proj = t2_proj - t1_proj
 # Estimate a solution using Varprox
 pb_prox = Minimize2D(x0, d, Ffun, DFfun, s, theta, N)
 param.solver_param = SolverParam(1e-4, 5000)
-param.alpha = 0.
+param.alpha = ALPHA
 param.reg.name = "tv-1d"
 param.reg.order = 2
 pb_prox.params = param
@@ -217,12 +217,18 @@ with open(fname, 'wb') as f:
 # ============================================================================ #
 #                                  Show results                                #
 # ============================================================================ #
-print("Error y (Varproj): ", LA.norm(y_proj-yt)**2)
-print("Error x (Varproj): ", LA.norm(x_proj-xt)**2)
-print("Error y (Varprox): ", LA.norm(y_prox-yt)**2)
-print("Error x (Varprox): ", LA.norm(x_prox-xt)**2)
-print("Running time (Varproj): ", print_time(time_proj))
-print("Running time (Varprox): ", print_time(time_prox))
+print("Parameters:")
+print("  - Nb of iter         = ", MAXIT)
+print("  - Alpha  (reg. in y) = ", ALPHA)
+print("  - Lambda (reg. in x) = ", REG_WEIGHT)
+print("Errors:")
+print("  - y (Varproj) = ", LA.norm(y_proj-yt)/LA.norm(yt))
+print("  - x (Varproj) = ", LA.norm(x_proj-xt)/LA.norm(xt))
+print("  - y (Varprox) = ", LA.norm(y_prox-yt)/LA.norm(yt))
+print("  - x (Varprox) = ", LA.norm(x_prox-xt)/LA.norm(xt))
+print("Running times:")
+print("  - Varproj = ", print_time(time_proj))
+print("  - Varprox = ", print_time(time_prox))
 plot_data(d, theta, s, K, M)
 plot_results([(xt,yt),(x0,y0),(x_prox,y_prox),(x_proj,y_proj)], N,
              ['ground truth','initial reconstruction','Varproj reconstruction',
