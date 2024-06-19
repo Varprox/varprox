@@ -12,6 +12,11 @@ from dataclasses import dataclass
 from numpy import linalg as LA
 from varprox._minimize2D import Minimize2D
 from varprox._parameters import Parameters, SolverParam, RegParam
+import time
+from datetime import datetime
+from os.path import isfile
+import sys
+import logging
 # ============================================================================ #
 
 
@@ -74,6 +79,7 @@ def plot_data(data, theta, s, k, m):
     ax.set_xlabel(r'$\theta$')
     ax.set_ylabel(r'$s$')
     ax.set_aspect(2)
+    #plt.savefig('observations.png', bbox_inches='tight')
     plt.show()
     return fig, ax
 
@@ -81,6 +87,9 @@ def plot_data(data, theta, s, k, m):
 def plot_results(results, n, labels=[]):
     N = len(results)
     fig, ax = plt.subplots(1, N, sharey=True)
+    print(N)
+    print(len(results))
+    print(len(labels))
     if N > 1:
         for i in range(N):
             x,y = results[i]
@@ -89,9 +98,20 @@ def plot_results(results, n, labels=[]):
                 ax[i].set_title(labels[i])
     else:
         x,y = results[0]
-        ax.imshow(y.reshape((n,n)), extent=(0,1,0,1), vmin=0, vmax=1)
+        ax.imshow(y.reshape((n,n)), extent=(0,1,0,1), cmap='gray', vmin=0, vmax=1)
+    #plt.savefig('reconstruction.png', bbox_inches='tight')
     plt.show()
     return fig, ax
+
+
+def convert_time(time):
+    minu, sec = divmod(round(time), 60)
+    h, minu = divmod(minu, 60)
+    return (h, minu, sec)
+
+def print_time(time):
+    (h, minu, sec) = convert_time(time)
+    return "{:e} (sec) / {:d}h {:d}min {:d}s".format(time, h, minu, sec)
 # ============================================================================ #
 
 
@@ -104,12 +124,12 @@ def plot_results(results, n, labels=[]):
 N = 50  # Dimension of the discretization grid
 M = 50  # Offsets sampled regularly in [-1.5 ; 1.5] (number of data points)
 K = 50  # Angles sampled regularly in [0 ; 2 Pi]
-NOISE_STD = 0  # Standard deviation for the Gaussian noise on the data vector
+NOISE_STD = 1  # Standard deviation for the Gaussian noise on the data vector
 # Iterative algorithm parameters
-MAXIT = 5  # Maximum number of iterations
+MAXIT = 1  # Maximum number of iterations
 GTOL = 5E-3  # Tolerance for the stopping criterion
 VERBOSE = True  # Is the algorithm verbose?
-REG_WEIGHT = 0.1  # Regularization weight for x
+REG_WEIGHT = 0.01  # Regularization weight for x
 # --- Read parameters from the configuration file
 
 # Number of experiments
@@ -118,7 +138,6 @@ Nbexpe = 1
 display = False
 # Save the results
 save = True
-
 
 param = Parameters(gtol=GTOL, maxit=MAXIT, verbose=VERBOSE,
                    reg=RegParam("tv-1d", REG_WEIGHT))
@@ -153,22 +172,72 @@ x0 = np.zeros(xt.shape)
 A0 = Ffun(x0, s, theta, N)
 tmp = lsq_linear(A0, d, bounds=param.bounds_y)
 y0 = tmp.x
-# Estimate a solution using Varprox
-pb = Minimize2D(x0, d, Ffun, DFfun, s, theta, N)
+# Estimate a solution using Varproj
+pb_proj = Minimize2D(x0, d, Ffun, DFfun, s, theta, N)
 param.solver_param = SolverParam(1e-4, 5000)
-param.alpha = 1
+param.alpha = 0.
+param.reg.name = None
+pb_proj.params = param
+time_proj_1 = 0
+t1_proj = time.perf_counter()
+x_proj, y_proj = pb_proj.argmin_h()
+t2_proj = time.perf_counter()
+time_proj = t2_proj - t1_proj
+# Estimate a solution using Varprox
+pb_prox = Minimize2D(x0, d, Ffun, DFfun, s, theta, N)
+param.solver_param = SolverParam(1e-4, 5000)
+param.alpha = 0.
+param.reg.name = "tv-1d"
 param.reg.order = 2
-pb.params = param
-x, y = pb.argmin_h()
+pb_prox.params = param
+time_prox_1 = 0
+t1_prox = time.perf_counter()
+x_prox, y_prox = pb_prox.argmin_h()
+t2_prox = time.perf_counter()
+time_prox = t2_prox - t1_prox
+# ============================================================================ #
+
+
+# ============================================================================ #
+#                                   Save data                                  #
+# ============================================================================ #
+date = datetime.today().strftime('%Y-%m-%d')
+fname = "data_tomo_" + date
+if isfile(fname):
+    fname = fname + "_bis"
+with open(fname, 'wb') as f:
+    np.save(f, param)
+    np.save(f, d)
+    np.save(f, xt)
+    np.save(f, x_proj)
+    np.save(f, y_proj)
+    np.save(f, x_prox)
+    np.save(f, y_prox)
 # ============================================================================ #
 
 
 # ============================================================================ #
 #                                  Show results                                #
 # ============================================================================ #
-print("Error y: ", LA.norm(y-yt)**2)
-print("Error x: ", LA.norm(x-xt)**2)
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+rootLogger = logging.getLogger()
+
+fileHandler = logging.FileHandler("{0}/{1}.log".format(".", "testlog.txt"))
+fileHandler.setFormatter(logFormatter)
+rootLogger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(logFormatter)
+rootLogger.addHandler(consoleHandler)
+
+logging.info("Error y (Varproj): ", LA.norm(y_proj-yt)**2)
+logging.info("Error x (Varproj): ", LA.norm(x_proj-xt)**2)
+print("Error y (Varprox): ", LA.norm(y_prox-yt)**2)
+print("Error x (Varprox): ", LA.norm(x_prox-xt)**2)
+print("Running time (Varproj): ", print_time(time_proj))
+print("Running time (Varprox): ", print_time(time_prox))
 plot_data(d, theta, s, K, M)
-plot_results([(xt,yt),(x0,y0)], N, ['ground truth','initial reconstruction'])
-plot_results([(xt,yt),(x,y)], N, ['ground truth','Varprox reconstruction'])
+plot_results([(xt,yt),(x0,y0),(x_prox,y_prox),(x_proj,y_proj)], N,
+             ['ground truth','initial reconstruction','Varproj reconstruction',
+              'Varprox reconstruction'])
 # ============================================================================ #

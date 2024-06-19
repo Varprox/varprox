@@ -174,7 +174,7 @@ class Minimize2D:
     def format_linpb(self, x):
         Fx = self.Ffun(x)
         Fsolve = Fx.T*Fx + (self.param.alpha / self.J) * self.DtD
-        wsolve = Fx.T @ self.w
+        wsolve = Fx.T @ self.wm
         return (Fsolve,wsolve)
 
     def compute_findif_2d(self):
@@ -280,12 +280,23 @@ class Minimize2D:
             res = lsq_linear(self.Ffun(x), self.w,
                              bounds=self.param.bounds_y)
             self.y = res.x
-            return res.x
         else:
-            Fsolve, wsolve = self.format_linpb(x)
-            res = np.linalg.solve(Fsolve, wsolve)
-            self.y = res
-            return res
+            Ffun_old = self.Ffun
+            self.Ffun =\
+                lambda x: np.concatenate((
+                    Ffun_old(x),
+                    np.sqrt(self.param.alpha / self.J) * self.DtD),  # np.eye(self.J)),
+                    axis=0)
+
+            DFfun_old = self.DFfun
+            self.DFfun =\
+                lambda x, y: np.concatenate((
+                    DFfun_old(x, y), np.zeros((self.J, self.K))), axis=0)
+            self.w = np.concatenate((self.w, np.zeros(self.J)))
+            res = lsq_linear(self.Ffun(x), self.w,
+                         bounds=self.param.bounds_y)
+            self.y = res.x
+        return self.y
 
     def argmin_h(self):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
@@ -315,9 +326,9 @@ class Minimize2D:
                 dh = 0
 
             if self.param.verbose:
-                print('varprox reg = {} | iter {:4d} / {}: cost = {:.6e} '
+                print('varprox reg = {:6s} | iter {:4d} / {}: cost = {:.6e} '
                       'improved by {:3.4f} percent.'
-                      .format(self.param.reg.name, it,
+                      .format(str(self.param.reg.name), it,
                               self.param.maxit, h, sdh * dh))
 
             if dh < self.param.gtol_h:

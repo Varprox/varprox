@@ -310,9 +310,9 @@ class Minimize:
                 dh = 0
 
             if self.param.verbose:
-                print('varprox reg = {} | iter {:4d} / {}: cost = {:.6e} '
+                print('varprox reg = {:6s} | iter {:4d} / {}: cost = {:.6e} '
                       'improved by {:3.4f} percent.'
-                      .format(self.param.reg.name, it,
+                      .format(str(self.param.reg.name), it,
                               self.param.maxit, h, sdh * dh))
 
             if dh < self.param.gtol_h:
