@@ -87,9 +87,6 @@ def plot_data(data, theta, s, k, m):
 def plot_results(results, n, labels=[]):
     N = len(results)
     fig, ax = plt.subplots(1, N, sharey=True)
-    print(N)
-    print(len(results))
-    print(len(labels))
     if N > 1:
         for i in range(N):
             x,y = results[i]
