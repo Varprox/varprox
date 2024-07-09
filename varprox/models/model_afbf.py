@@ -4,7 +4,6 @@ Tools for computing the semi-variogram of an anisotropic fractional
 Brownian field and applying the fitting method.
 """
 import numpy as np
-from scipy.linalg import circulant
 from afbf import perfunction, tbfield
 from varprox import Minimize
 
@@ -49,8 +48,9 @@ def FitVariogram(model, lags, w, param):
     # Regularization parameters.
     reg_name = param.reg.name
     mw = np.mean(np.power(w, 2))
-    reg_weight = param.reg.weight * mw
+    reg_weight = param.reg.weight
     reg_alpha = param.alpha * mw
+    val_ref = -1
 
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         raise ValueError("FitVariogram: only runs for step functions.")
@@ -99,13 +99,15 @@ def FitVariogram(model, lags, w, param):
         # Cancel the tv regularization when less than threshold_reg parameters
         # are involved.
         pb = Minimize(beta, w, Ffun, DFfun, f, lf, T, B, param.noise)
-        hval = pb.h_value()
         if reg_name == "tv-1d":
             if beta.size < param.threshold_reg:
                 param.reg.name = None
-                param.reg.weight = reg_weight * hval
             else:
-                param.reg.name = reg_name
+                if val_ref == -1:
+                    val_ref = pb.h_value()
+                    param.reg.weight = reg_weight * val_ref
+                    param.reg.name = reg_name
+
         param.alpha = reg_alpha
         pb.params = param
 

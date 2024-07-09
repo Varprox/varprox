@@ -4,95 +4,132 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 """
 import numpy as np
 from afbf.Simulation.TurningBands import LoadTBField
-from param_expe_8_evario import params
+from param_expe_64_evario_512 import params
 from matplotlib import pyplot as plt
+from os import path
 
 # Repetory for data
 home_dir = "/home/frichard/Recherche/Python/varprox/"
 # home_dir = "C:/Users/frede/Nextcloud/Synchro/Recherche/Python/varprox/"
 
 
-def CompareModels(model_ref, model_varproj, model_varprox, display=True):
+def CompareModels(models, models_name, example, display=True):
     """Model Comparison.
     """
-
     t = np.linspace(- np.pi / 2, np.pi / 2, 10000)
-    hurst_ref = model_ref.hurst
-    hurst_varproj = model_varproj.hurst
-    hurst_varprox = model_varprox.hurst
-
-    hurst_ref.Evaluate(t)
-    hurst_varproj.Evaluate(t)
-    hurst_varprox.Evaluate(t)
-    ref = hurst_ref.values.reshape((t.size,))
-    varproj = hurst_varproj.values.reshape((t.size,))
-    varprox = hurst_varprox.values.reshape((t.size,))
-
-    bias_varproj = np.mean(ref - varproj)
-    bias_varprox = np.mean(ref - varprox)
-    rmse_varproj = np.sqrt(np.mean(np.power(ref - varproj, 2)))
-    rmse_varprox = np.sqrt(np.mean(np.power(ref - varprox, 2)))
-    l1err_varproj = np.mean(np.abs(ref - varproj))
-    l1err_varprox = np.mean(np.abs(ref - varprox))
-
+    models[0].hurst.Evaluate(t)
+    ref = models[0].hurst.values.reshape((t.size,))
     if display:
         plt.plot(t, ref, "k-", label="reference")
-        plt.plot(t, varproj, "g--", label="varproj estimate")
-        plt.plot(t, varprox, "r--", label="varprox estimate")
-        plt.ylim(0, 1)
-        plt.legend()
+        plt.title("Example " + example)
+
+    bias = []
+    rmse = []
+    l1er = []
+    for j in range(1, len(models)):
+        models[j].hurst.Evaluate(t)
+        val = models[j].hurst.values.reshape((t.size,))
+        bias.append(np.mean(ref - val))
+        rmse.append(np.sqrt(np.mean(np.power(ref - val, 2))))
+        l1er.append(np.mean(np.abs(ref - val)))
+        if display:
+            if models_name[j] == "vanilla":
+                style = "m:"
+            elif models_name[j] == "varproj":
+                style = "g--"
+            elif models_name[j] == "varprox":
+                style = "r-."
+            plt.plot(t, val, style, label=models_name[j])
+            plt.ylim(0, 1)
+            plt.legend()
+
+    if display:
         plt.show()
 
-    return bias_varproj, bias_varprox,\
-        rmse_varproj, rmse_varprox,\
-        l1err_varproj, l1err_varprox
+    return bias, rmse, l1er
 
 
 # Experience parameters.
 param = params()
 
-Bias_varproj = 0
-Bias_varprox = 0
-RMSE_varproj = 0
-RMSE_varprox = 0
-L1err_varproj = 0
-L1err_varprox = 0
+nexpe_vanilla = nexpe_varproj = nexpe_varprox = 0
+Bias_vanilla = Bias_varproj = Bias_varprox = 0
+RMSE_vanilla = RMSE_varproj = RMSE_varprox = 0
+L1er_vanilla = L1er_varproj = L1er_varprox = 0
+
 for expe in range(param.Nbexpe):
     caseid = str(expe + 100)
     caseid = caseid[1:]
     file_simu = home_dir + param.data_in + caseid
     file_res = home_dir + param.data_out + caseid
 
-    model_ref = LoadTBField(file_simu)
-    model_varproj = LoadTBField(file_res + "-varproj")
-    model_varprox = model_varproj  # LoadTBField(file_res + "-varprox")
+    models = [LoadTBField(file_simu)]
+    models_name = ["reference"]
 
-    bias_varproj, bias_varprox, rmse_varproj, rmse_varprox,\
-        l1err_varproj, l1err_varprox =\
-        CompareModels(model_ref, model_varproj, model_varprox)
+    if path.exists(file_res + "-varproj-noreg-hurst.pickle"):
+        models.append(LoadTBField(file_res + "-varproj-noreg"))
+        models_name.append("vanilla")
 
-    Bias_varproj += bias_varproj
-    Bias_varprox += bias_varprox
-    RMSE_varproj += rmse_varproj
-    RMSE_varprox += rmse_varprox
-    L1err_varproj += l1err_varproj
-    L1err_varprox += l1err_varprox
+    if path.exists(file_res + "-varproj-hurst.pickle"):
+        models.append(LoadTBField(file_res + "-varproj"))
+        models_name.append("varproj")
 
-    print('expe {:4d}: rmse varproj = {:.6e}, varprox = {:.6e}'
-          .format(expe, rmse_varproj, rmse_varprox))
-    print('L1 error varproj = {:.6e}, L1 error = {:.6e}'
-          .format(l1err_varproj, l1err_varprox))
+    if path.exists(file_res + "-varprox-hurst.pickle"):
+        models.append(LoadTBField(file_res + "-varprox"))
+        models_name.append("varprox")
 
-Bias_varproj = Bias_varproj / param.Nbexpe
-Bias_varprox = Bias_varprox / param.Nbexpe
-RMSE_varproj = RMSE_varproj / param.Nbexpe
-RMSE_varprox = RMSE_varprox / param.Nbexpe
-L1err_varproj = L1err_varproj / param.Nbexpe
-L1err_varprox = L1err_varprox / param.Nbexpe
 
-print('Average Bias varproj = {:.6e}, varprox = {:.6e}'
-      .format(Bias_varproj, Bias_varprox))
-print('Average RMSE varproj = {:.6e}, varprox = {:.6e}'
-      .format(RMSE_varproj, RMSE_varprox))
-print('Average L1 error varproj = {:.6e}, varprox = {:.6e}'
-      .format(L1err_varproj, L1err_varprox))
+    if len(models_name) > 1:
+        bias, rmse, l1er = CompareModels(models, models_name, caseid)
+        for j in range(1, len(models_name)):
+            j0 = j - 1
+            if models_name[j] == "vanilla":
+                Bias_vanilla += bias[j0]
+                RMSE_vanilla += rmse[j0]
+                L1er_vanilla += l1er[j0]
+                nexpe_vanilla += 1
+            elif models_name[j] == "varprox":
+                Bias_varprox += bias[j0]
+                RMSE_varprox += rmse[j0]
+                L1er_varprox += l1er[j0]
+                nexpe_varprox += 1
+            elif models_name[j] == "varproj":
+                Bias_varproj += bias[j0]
+                RMSE_varproj += rmse[j0]
+                L1er_varproj += l1er[j0]
+                nexpe_varproj += 1
+
+
+
+Names = []
+Nexpe = []
+Bias = []
+RMSE = []
+L1er = []
+if nexpe_vanilla > 0:
+    Names.append("Vanilla")
+    Nexpe.append(nexpe_vanilla)
+    Bias.append(Bias_vanilla / nexpe_vanilla * 100)
+    RMSE.append(RMSE_vanilla / nexpe_vanilla * 100)
+    L1er.append(L1er_vanilla / nexpe_vanilla * 100)
+
+if nexpe_varproj > 0:
+    Names.append("Varproj")
+    Nexpe.append(nexpe_varproj)
+    Bias.append(Bias_varproj / nexpe_varproj * 100)
+    RMSE.append(RMSE_varproj / nexpe_varproj * 100)
+    L1er.append(L1er_varproj / nexpe_varproj * 100)
+
+if nexpe_varprox > 0:
+    Names.append("Varprox")
+    Nexpe.append(nexpe_varprox)
+    Bias.append(Bias_varprox / nexpe_varprox * 100)
+    RMSE.append(RMSE_varprox / nexpe_varprox * 100)
+    L1er.append(L1er_varprox / nexpe_varprox * 100)
+
+for j in range(len(Names)):
+    print('{:s}: Nexpe =  {:4d}, Bias = {:4.2f}, RMSE = {:4.2f}, L1 err= {:4.2f}'.format(Names[j], 
+                                                                                      Nexpe[j],
+                                                                                      Bias[j],
+                                                                                      RMSE[j],
+                                                                                      L1er[j]))

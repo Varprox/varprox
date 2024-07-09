@@ -75,16 +75,16 @@ for expe in range(param.Nbexpe):
         model.NormalizeModel()
         model.topo.fparam = model.topo.fparam * param.enhan_factor
 
-        model.ComputeApproximateSemiVariogram(lags)
-        w = np.zeros(model.svario.values.size)
-        w[:] = model.svario.values[:, 0]
-        param_opti.threshold_reg = 4
-        param_opti.reg.name = "tv-1d"
-        param_opti.reg.weight = 1e-1 * w[0]
-        param_opti.multigrid = False
-        model.DisplayParameters()
-        model, wt = FitVariogram(model, lags, w, param_opti)
-        model.NormalizeModel()
+        # model.ComputeApproximateSemiVariogram(lags)
+        # w = np.zeros(model.svario.values.size)
+        # w[:] = model.svario.values[:, 0]
+        # param_opti.threshold_reg = 4
+        # param_opti.reg.name = "tv-1d"
+        # param_opti.reg.weight = 1e-1 * w[0]
+        # param_opti.multigrid = False
+        # model.DisplayParameters()
+        # model, wt = FitVariogram(model, lags, w, param_opti)
+        # model.NormalizeModel()
         model.DisplayParameters()
 
         # Simulate a field realization.
