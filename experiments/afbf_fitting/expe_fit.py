@@ -10,7 +10,7 @@ from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng
 from varprox import Parameters
-from param_expe_8_evario import params
+from param_expe_64_evario_512 import params
 from os import path
 
 
@@ -32,8 +32,8 @@ lags.N = param.grid_dim * 2
 
 time_c1 = 0
 time_c2 = 0
-for _ in range(2):
-    for expe in range(param.Nbexpe):
+for _ in range(1):
+    for expe in range(param.Nbexpe): 
         caseid = str(expe + 100)
         caseid = caseid[1:]
         file_in = home_dir + param.data_in + caseid
@@ -55,6 +55,8 @@ for _ in range(2):
             param_opti.load("param_optim.ini")
             param_opti.multigrid = param.multigrid
             param_opti.noise = param.noise
+            param_opti.alpha = param.alpha
+            param_opti.reg.order = param.order
 
             # Semivariogram to be fitted (theoretical / empirical, noise / no noise)
             if param.Tvario:
@@ -83,6 +85,7 @@ for _ in range(2):
                     model.ComputeApproximateSemiVariogram(lags)
                     w = np.zeros(model.svario.values.size)
                     w[:] = model.svario.values[:, 0]
+                    w = w / np.max(w)
                     s0 = np.random.rand() * np.min(w)  # Noise variance.
                     z.values = z.values +\
                         np.sqrt(s0) * rng.standard_normal(z.values.shape)
@@ -90,8 +93,8 @@ for _ in range(2):
                     s0 = 0
 
                 # Compute the empirical semi-variogram
-                evario = z.ComputeQuadraticVariations(lags, order=1)
-                # evario = z.ComputeEmpiricalSemiVariogram(lags)
+                # evario = z.ComputeQuadraticVariations(lags, order=1)
+                evario = z.ComputeEmpiricalSemiVariogram(lags)
                 w = evario.values[:, 0]
 
             # Initialize the estimation model.
@@ -101,11 +104,13 @@ for _ in range(2):
             if optim == "varproj":
                 # Variogram fitting with varpro.
                 param_opti.reg.name = None
+                # param_opti.alpha = 0
             elif optim == "varprox":
                 # model0 = LoadTBField(file_out + "-varproj")
                 # Variogram fitting with varprox.
-                param_opti.threshold_reg = 8  # param.hurst_dim
                 param_opti.reg.name = "tv-1d"
+                param_opti.threshold_reg = param.threshold_reg
+                param_opti.reg.weight = param.reg_param
 
             t0 = time.perf_counter()
             emodel, wt = FitVariogram(model0, lags, w, param_opti)

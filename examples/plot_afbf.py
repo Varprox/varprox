@@ -11,15 +11,13 @@ from varprox.models.model_afbf import FitVariogram
 import time
 
 # Size of the grid for the definition of the semi-variogram
-grid_dim = 40
+grid_dim: int = 40
 # Step for grid definition
-grid_step = 2
+grid_step: int = 2
 # Number of parameters for the Hurst and topothesy function
-hurst_dim = topo_dim = 16
+hurst_dim = topo_dim = 64
 # 1 if model with noise and 0 otherwise
 noise = 1
-# Scale at which regularization is applied.
-threshold_reg = np.Inf
 
 
 # ============================ Plotting Functions =========================== #
@@ -101,10 +99,10 @@ if __name__ == "__main__":
     # Name of the configuration file containing the parameters
     param = Parameters()
     param.load('plot_afbf.ini')
-    param.reg.name = None
-    param.multigrid = True
-    param.threshold_reg = threshold_reg
+    param.reg.name = "tv-1d"
     param.noise = 1
+    param.multigrid = True
+    param.threshold_reg = 32
  
     # Parameters to set the lags where to compute the semi-variogram.
     scalemin = 0  # Minimal scale for grid definition of the semi-variogram.
@@ -117,14 +115,12 @@ if __name__ == "__main__":
     # Lags for the computation of the semi-variogram.
     lags = coordinates()
     lags.DefineSparseSemiBall(grid_dim, grid_step)
-    sc = np.sqrt(np.power(lags.xy[:, 0], 2) + np.power(lags.xy[:, 1], 2))
-    ind = np.nonzero(sc > scalemin)
-    lags.xy = lags.xy[ind[0], :]
-    sc = sc[ind[0]]
     lags.N = grid_dim * 2
+    sc = np.sqrt(np.power(lags.xy[:, 0], 2) + np.power(lags.xy[:, 1], 2))
 
     # Empirical semi-variogram of the image.
     w0 = im.ComputeEmpiricalSemiVariogram(lags).values[:, 0]
+    w0 = w0 / np.max(w0)
 
     # Definition of the reference model.
     print('Fitting a model with %d + %d parameters' % (topo_dim, hurst_dim))
@@ -137,7 +133,6 @@ if __name__ == "__main__":
     end_time = time.perf_counter()
     print("CPU Execution time: {} seconds".format(end_time - start_time))
 
-    model.DisplayParameters(1)
 
     # Sampling from the estimated field.
     # Coordinates where to simulate an image.
@@ -176,3 +171,6 @@ if __name__ == "__main__":
     # Plot variogram comparison.
     plot_comp_vario(3, w0, w1, w11)
     plot_comp_vario_2(4, w0, w1, w11)
+    
+    # Parameters of the estimated model.
+    model.DisplayParameters(1)

@@ -183,13 +183,14 @@ class Minimize:
             d = np.zeros(self.J)
             d[0] = 1
             d[1] = -1
-            D = circulant(d)
+            M = circulant(d)
+            D = np.eye(self.J)
+            for j in range(self.param.reg.order):
+                D = D * M
+            D = np.sqrt(self.param.alpha / self.J) * D
+
             Ffun_old = self.Ffun
-            self.Ffun =\
-                lambda x: np.concatenate((
-                    Ffun_old(x),
-                    np.sqrt(self.param.alpha / self.J) * D),  # np.eye(self.J)),
-                    axis=0)
+            self.Ffun = lambda x: np.concatenate((Ffun_old(x), D), axis=0)
 
             DFfun_old = self.DFfun
             self.DFfun =\
@@ -288,24 +289,29 @@ class Minimize:
         :return: Couple :math:`(x, y)` that minimize :math:`h`
         """
         h = self.h_value()  # np.finfo('float').max
-        xtmp = np.zeros(self.x.shape)
-        ytmp = np.zeros(self.y.shape)
+        xmin = np.zeros(self.x.shape)
+        ymin = np.zeros(self.y.shape)
+        xmin[:] = self.x[:]
+        ymin[:] = self.y[:]
+        hmin = h
         for it in range(self.param.maxit):
-            xtmp[:] = self.x[:]
-            ytmp[:] = self.y[:]
             self.x = self.argmin_h_x(self.param.solver_param)
             self.y = self.argmin_h_y(self.x)
 
             h0 = h
             h = self.h_value()
-            if h0 != 0:
+            if h0 > 0:
                 if self.param.reg.name is None:
                     dh = (h0 - h) / h0 * 100
                     sdh = 1
                 else:
-                    dh = h0 - h
+                    dh = hmin - h
                     sdh = np.sign(dh)
                     dh = abs(dh) / h0 * 100
+                if h < hmin:
+                    hmin = h
+                    xmin[:] = self.x[:]
+                    ymin[:] = self.y[:]
             else:
                 dh = 0
 
@@ -316,10 +322,11 @@ class Minimize:
                               self.param.maxit, h, sdh * dh))
 
             if dh < self.param.gtol_h:
-                if dh < 0:
-                    self.x[:] = xtmp[:]
-                    self.y[:] = ytmp[:]
                 break
+
+        self.x[:] = xmin[:]
+        self.y[:] = ymin[:]
+
         return self.x, self.y
 
     def rfbpd(self):
@@ -374,13 +381,14 @@ class Minimize:
         L = self.tv.L          # Linear operator
         crit = np.Inf          # Initial value of the objective function
 
-        jac_res_x = self.jac_res_x(x)
-        tau = self.K / LA.norm(jac_res_x.transpose() @ jac_res_x)
-        sigma = 0.99 / (tau * LA.norm(L)**2)
-        sigmarw = self.param.reg.weight / (sigma * self.K)
-
         # Main loop
         for n in range(self.param.solver_param.maxit):
+            if np.mod(n, self.param.solver_param.maxit) == 0:
+                jac_res_x = self.jac_res_x(x)
+                tau = self.K / LA.norm(jac_res_x.transpose() @ jac_res_x)
+                sigma = 0.99 / (tau * LA.norm(L)**2)
+                sigmarw = self.param.reg.weight / (sigma * self.K)
+
             # 1) Primal update
             p = x - tau * self.gradient_g(x) - sigma * L.transpose() @ v
             # Projection on [bounds_x[0] + EPS, bounds_x[1] - EPS]
