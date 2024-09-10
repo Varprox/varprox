@@ -127,8 +127,8 @@ NOISE_STD = 1  # Standard deviation for the Gaussian noise on the data vector
 MAXIT = 100  # Maximum number of iterations
 GTOL = 5E-3  # Tolerance for the stopping criterion
 VERBOSE = True  # Is the algorithm verbose?
-REG_WEIGHT = 0.01  # Regularization weight for x
-ALPHA = 5  # Regularization weight for y
+REG_WEIGHT = 0.5  # Regularization weight for x
+ALPHA = 100  # Regularization weight for y
 
 # Number of experiments
 Nbexpe = 1
@@ -202,7 +202,11 @@ time_prox = t2_prox - t1_prox
 date = datetime.today().strftime('%Y-%m-%d')
 fname = "data_tomo_" + date
 if isfile(fname):
-    fname = fname + "_bis"
+    fname += "_bis"
+    counter = 1
+    while isfile(fname):
+        fname = "data_tomo_" + date + "_bis" + str(counter)
+        counter += 1
 with open(fname, 'wb') as f:
     np.save(f, param)
     np.save(f, d)
