@@ -33,7 +33,7 @@ lags.N = param.grid_dim * 2
 time_c1 = 0
 time_c2 = 0
 for _ in range(1):
-    for expe in range(param.Nbexpe): 
+    for expe in range(param.Nbexpe):
         caseid = str(expe + 100)
         caseid = caseid[1:]
         file_in = home_dir + param.data_in + caseid
@@ -47,7 +47,8 @@ for _ in range(1):
             optim = None
 
         if optim is not None:
-            print('Running experiments = {:3d} / {:3d}.'.format(expe,
+            head = 'Running experiments = {:3d} / {:3d}.'
+            print(head.format(expe,
                                                                 param.Nbexpe - 1))
 
             # Setting parameters for model and optimisation.
@@ -58,7 +59,8 @@ for _ in range(1):
             param_opti.alpha = param.alpha
             param_opti.reg.order = param.order
 
-            # Semivariogram to be fitted (theoretical / empirical, noise / no noise)
+            # Semivariogram to be fitted 
+            # (theoretical / empirical, noise / no noise)
             if param.Tvario:
                 # Load the groundtruth model.
                 model = LoadTBField(file_in)
@@ -86,7 +88,7 @@ for _ in range(1):
                     w = np.zeros(model.svario.values.size)
                     w[:] = model.svario.values[:, 0]
                     w = w / np.max(w)
-                    s0 = np.random.rand() * np.min(w)  # Noise variance.
+                    s0 = rng.uniform() * np.min(w)  # Noise variance.
                     z.values = z.values +\
                         np.sqrt(s0) * rng.standard_normal(z.values.shape)
                 else:

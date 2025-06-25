@@ -11,23 +11,23 @@ from numpy.random import seed
 from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
 from numpy import concatenate, ones, infty, sqrt
 from scipy.optimize import lsq_linear
-from varprox.main_2 import Minimize, tv, GOptim_Param
 from varprox.models.model_mfbm import Ffun_v, DFfun_v
 from matplotlib import pyplot as plt
-
+from varprox import Parameters, Minimize
 
 # Optimisation parameters
 maxit = 5000
 gtol_h = 10e-4
 
-
 # Experiment parameters
-N = 1000  # Size of the observed process.
+N = 400  # Size of the observed process.
 
 order = 0
 scales = arange(1, 5)
-w_size = 40  # 990  # 40
+w_size = 100  # 990  # 40
 w_step = 1  # 990  # 1
+
+H1, H2 = 0.2, 0.2
 
 
 def Simulate_MFBM(H, seed_n=1):
@@ -145,8 +145,6 @@ def Estimate_HurstFunction(scales, v):
 
 
 # Simulate a Hurst function.
-H1 = 0.1
-H2 = 0.9
 T = arange(stop=N, step=2)
 N = N - 1
 T = sqrt(T / N)
@@ -172,22 +170,36 @@ scales = scales / (2 * max(scales))
 scales2 = power(scales, 2)
 logscales = log(scales2)
 
-Hest2 = 0.5 * ones(H.shape)
-Hest2[:] = Hest1[:]
-Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
-w = v.reshape((v.size,), order="F")
-param = GOptim_Param(gtol_h=gtol_h, maxit=maxit, vectorized=True)
-pb = Minimize(Hest2, w, Ffun_v, DFfun_v, param, scales2, logscales, 0)
 
-pb.param.bounds_x = (0.0001, 0.9999)
-pb.param.bounds_y = (0, infty)
+param_opti = Parameters()
+param_opti.load("param_optim.ini")
+
+param_opti.reg.name = None
+param_opti.itermax_neg = 500
+param_opti.reg.order = 2
+param_opti.reg.name = None
+
+x0 = 0.5 * ones(H.shape)
+# x0[:] = Hest1[:]
+
+eps = 10e-8
+x0 = minimum(maximum(param_opti.bounds_x[0] + eps, x0),
+             param_opti.bounds_x[1] - eps)
+w = v.reshape((v.size,), order="F")
+
+pb = Minimize(x0, w, Ffun_v, DFfun_v, scales2, logscales, 0)
+# param_opti.alpha = pb.h_value() * 1
+pb.params = param_opti
+
+
 Hest2, c2 = pb.argmin_h()
 
 
 # Regularization parameter x
-pb.param.reg_weight = pb.h_value() / tv(pb.x) * pb.K * 10e20
+pb.x[:] = x0[:]
 # Weight for y regularization
-pb.param.reg_type = 'tv-1d'
+pb.param.reg.name = 'tv-1d'
+pb.param.reg_weight = pb.h_value() * 1
 Hest3, c3 = pb.argmin_h()
 
 
@@ -195,6 +207,6 @@ plt.figure(1)
 plt.plot(H, label="Ground truth")
 plt.plot(Hest1, label="Linear regression")
 plt.plot(Hest2, label="Varpro")
-plt.plot(Hest3, label="Varprox")
+# plt.plot(Hest3, label="Varprox")
 plt.legend()
 plt.show()

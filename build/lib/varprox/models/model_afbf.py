@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-r"""
-Tools for computing the semi-variogram of an anisotropic fractional
+r"""Tools for computing the semi-variogram of an anisotropic fractional
 Brownian field and applying the fitting method.
 """
 import numpy as np
-from scipy.linalg import circulant
 from afbf import perfunction, tbfield
 from varprox import Minimize
 
@@ -48,15 +46,13 @@ def FitVariogram(model, lags, w, param):
     """
     # Regularization parameters.
     reg_name = param.reg.name
-    if reg_name is not None:
-        reg_weight = np.mean(np.power(w, 2)) * param.reg.weight
+    mw = np.mean(np.power(w, 2))
+    reg_weight = param.reg.weight
+    reg_alpha = param.alpha * mw
+    val_ref = -1
 
     if model.hurst.ftype != "step" or model.topo.ftype != "step":
         raise ValueError("FitVariogram: only runs for step functions.")
-
-    # Number of model parameters
-    npar0_tau = model.topo.fparam.size
-    npar0_beta = model.hurst.fparam.size
 
     # Ffun and Dfun parameters
     # Turning-band angles
@@ -76,64 +72,43 @@ def FitVariogram(model, lags, w, param):
     ind = np.nonzero(f > 0)
     lf[ind] = np.log(f[ind])
 
-    w1 = w
+    # Number of model parameters
+    npar0_tau = model.topo.fparam.size
+    npar0_beta = model.hurst.fparam.size
+
     if param.multigrid:
-        # Initialization
         hurst = perfunction(model.hurst.ftype, param=1)
         topo = perfunction(model.topo.ftype, param=1)
-        B = BasisFunctions(hurst, phi)
-        T = BasisFunctions(topo, phi) * dphi
-        h = np.inf
-        beta = np.array([0.5])
-        tau = np.ones((param.noise + 1,))
-        pb = Minimize(beta, w1, Ffun, DFfun,
-                      f, lf, T, B, param.noise)
-        pb.param = param
-
-        for i in range(1, 9):
-            beta = np.array([i / 10])
-            tau = pb.argmin_h_y(beta)
-            h0 = pb.h_value()
-            if h0 < h:
-                h = h0
-                beta2 = beta
-                tau2 = tau
-            npar_tau = 1
-            npar_beta = 1
+        hurst.ChangeParameters(np.array([0.5]))
     else:
-        npar_tau = npar0_tau
-        npar_beta = npar0_beta
-        beta2 = np.zeros((model.hurst.fparam.size,))
-        beta2[:] = model.hurst.fparam[0, :]
-        tau2 = np.zeros((model.topo.fparam.size,))
-        tau2[:] = model.topo.fparam[0, :]
-        if param.noise == 1:
-            tau2 = np.insert(tau2, 0, 0)
+        hurst = perfunction(model.hurst.ftype, param=npar0_beta)
+        topo = perfunction(model.topo.ftype, param=npar0_tau)
+        hurst.ChangeParameters(model.hurst.fparam[:], model.hurst.finter[:])
+        topo.ChangeParameters(model.topo.fparam[:], model.topo.finter[:])
+
+    beta = np.zeros((hurst.fparam.size,))
+    beta[:] = hurst.fparam[0, :]
 
     stop = False
     while stop is False:
-        hurst = perfunction(model.hurst.ftype, param=npar_beta)
-        topo = perfunction(model.topo.ftype, param=npar_tau)
-        if param.multigrid:
-            # Definition of the interval bounds for a step function (Hurst)
-            ninter = hurst.finter.size
-            Iv = np.linspace(-np.pi / 2, np.pi / 2, ninter + 1, True)[1:]
-            hurst.ChangeParameters(hurst.fparam, Iv)
-            # Definition of the interval bounds for a step function (topothesy)
-            ninter = topo.finter.size
-            Iv = np.linspace(-np.pi / 2, np.pi / 2, ninter + 1, True)[1:]
-            topo.ChangeParameters(topo.fparam, Iv)
-        else:
-            hurst.fparam[:] = model.hurst.fparam[:]
-            hurst.finter[:] = model.hurst.finter[:]
-            topo.fparam[:] = model.topo.fparam[:]
-            topo.finter[:] = model.topo.finter[:]
-
+        # Update the basis function for hurst and topothesy.
         B = BasisFunctions(hurst, phi)
         T = BasisFunctions(topo, phi) * dphi
 
-        beta = beta2
-        tau = tau2
+        # Cancel the tv regularization when less than threshold_reg parameters
+        # are involved.
+        pb = Minimize(beta, w, Ffun, DFfun, f, lf, T, B, param.noise)
+        if reg_name == "tv-1d":
+            if beta.size < param.threshold_reg:
+                param.reg.name = None
+            else:
+                if val_ref == -1:
+                    val_ref = pb.h_value()
+                    param.reg.weight = reg_weight * val_ref
+                    param.reg.name = reg_name
+
+        param.alpha = reg_alpha
+        pb.params = param
 
         if param.verbose:
             print("Nb param: Hurst={:d}, Topo={:d}".format(
@@ -141,49 +116,40 @@ def FitVariogram(model, lags, w, param):
             print("Tol = {:.5e}, Nepochs = {:d}".format(param.gtol_h,
                                                         param.maxit))
 
-        pb = Minimize(beta, w1, Ffun, DFfun, f, lf, T, B, param.noise)
-        pb.param = param
-
-        # Cancel the tv regularization if only one parameter is involved.
-        if reg_name == "tv-1d":
-            if beta.size < pb.param.threshold_reg:
-                pb.param.reg.name = None
-            else:
-                pb.param.reg.name = reg_name
-                pb.param.reg.weight = reg_weight
-
         beta, tau = pb.argmin_h()
+        topo.ChangeParameters(tau[param.noise:], topo.finter)
+        hurst.ChangeParameters(beta[:], hurst.finter)
 
         stop = True
         if param.multigrid:
-            npar0 = npar_tau
-            npar = npar_tau * 2
+            # Increase the number of parameters for the topothesy.
+            npar = (tau.size - param.noise) * 2
             if npar <= npar0_tau:
                 stop = False
-                npar_tau = npar
-                tau2 = np.zeros(npar)
-                for k in range(npar0):
-                    k2 = 2 * k
-                    tau2[k2:k2 + 2] = tau[param.noise + k]
-                if param.noise == 1:
-                    tau2 = np.insert(tau2, 0, tau[0])
+                topo0 = topo
+                topo = perfunction(model.topo.ftype, param=npar)
+                Iv = np.linspace(-np.pi / 2, np.pi / 2, npar + 1, True)
+                centers = (Iv[0:-1] + Iv[1:]) * 0.5
+                topo0.Evaluate(centers)
+                topo.ChangeParameters(topo0.values[0, :], Iv[1:])
 
-            npar0 = npar_beta
-            npar = npar_beta * 2
+            # Increase the number of parameters for the Hurst function.
+            npar = beta.size * 2
             if npar <= npar0_beta:
                 stop = False
-                npar_beta = npar
-                beta2 = np.zeros(npar)
-                for k in range(npar0):
-                    k2 = 2 * k
-                    beta2[k2: k2 + 2] = beta[k]
+                hurst0 = hurst
+                hurst = perfunction(model.hurst.ftype, param=npar)
+                Iv = np.linspace(-np.pi / 2, np.pi / 2, npar + 1, True)
+                centers = (Iv[0:-1] + Iv[1:]) * 0.5
+                hurst0.Evaluate(centers)
+                hurst.ChangeParameters(hurst0.values[0, :], Iv[1:])
+                beta = np.zeros((hurst.fparam.size,))
+                beta[:] = hurst.fparam[0, :]
 
-        hurst.fparam[0, :] = beta[:]
-        topo.fparam[0, :] = tau[param.noise:]
-        emodel = tbfield("Estimated model", topo, hurst, model.tb)
-        if param.noise == 1:
-            emodel.noise = tau[0]
-        else:
-            emodel.noise = 0
+    emodel = tbfield("Estimated model", topo, hurst, model.tb)
+    if param.noise == 1:
+        emodel.noise = tau[0]
+    else:
+        emodel.noise = 0
 
     return (emodel, SemiVariogram(tau, beta, f, lf, T, B, param.noise))

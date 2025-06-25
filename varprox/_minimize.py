@@ -294,6 +294,7 @@ class Minimize:
         xmin[:] = self.x[:]
         ymin[:] = self.y[:]
         hmin = h
+        cnt_inc = 0
         for it in range(self.param.maxit):
             self.x = self.argmin_h_x(self.param.solver_param)
             self.y = self.argmin_h_y(self.x)
@@ -308,6 +309,10 @@ class Minimize:
                     dh = hmin - h
                     sdh = np.sign(dh)
                     dh = abs(dh) / h0 * 100
+                    if sdh < 0:
+                        cnt_inc += 1
+                    else:
+                        cnt_inc = 0
                 if h < hmin:
                     hmin = h
                     xmin[:] = self.x[:]
@@ -321,13 +326,13 @@ class Minimize:
                       .format(self.param.reg.name, it,
                               self.param.maxit, h, sdh * dh))
 
-            if dh < self.param.gtol_h:
+            if dh < self.param.gtol_h or cnt_inc > self.param.itermax_neg:
                 break
 
         self.x[:] = xmin[:]
         self.y[:] = ymin[:]
 
-        return self.x, self.y
+        return xmin[:], ymin[:]
 
     def rfbpd(self):
         r"""Implementation of the rescaled Primal-dual Forward-backward

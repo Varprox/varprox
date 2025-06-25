@@ -6,51 +6,49 @@ Brownian field and applying the fitting method.
 from numpy import diag, concatenate, zeros, ones, power
 
 
-def Ffun(H, scales, logscales, noise=1):
+# def Ffun(H, scales, logscales, noise=1):
 
-    F = diag(power(scales[0], H))
-    for p in range(1, scales.size):
-        F = concatenate((F, diag(power(scales[p], H))), axis=0)
-    F = 0.5 * F
+#     F = diag(power(scales[0], H))
+#     for p in range(1, scales.size):
+#         F = concatenate((F, diag(power(scales[p], H))), axis=0)
+#     F = 0.5 * F
 
-    if noise == 1:
-        F = concatenate((ones((F.shape[0], 1)), F), axis=1)
+#     if noise == 1:
+#         F = concatenate((ones((F.shape[0], 1)), F), axis=1)
 
-    return F
-
-
-def DFfun(H, scales, logscales, noise=1):
-
-    N = scales.size * H.size
-    DF = zeros((N, H.size, H.size))
-
-    cnt = 0
-    for s in range(scales.size):
-        D = logscales[s] * power(scales[s], H)
-        for j in range(H.size):
-            DF[cnt, j, j] = D[j]
-            cnt += 1
-
-    if noise == 1:
-        DF = concatenate((zeros((DF.shape[0], 1)), DF), axis=1)
+#     return F
 
 
-def Ffun_v_block(H, c, scale, noise):
+# def DFfun(H, scales, logscales, noise=1):
+
+#     N = scales.size * H.size
+#     DF = zeros((N, H.size, H.size))
+
+#     cnt = 0
+#     for s in range(scales.size):
+#         D = logscales[s] * power(scales[s], H)
+#         for j in range(H.size):
+#             DF[cnt, j, j] = D[j]
+#             cnt += 1
+
+#     if noise == 1:
+#         DF = concatenate((zeros((DF.shape[0], 1)), DF), axis=1)
+
+
+def Ffun_v_block(H, scale, noise):
 
     F = diag(power(scale, H))
     if noise == 1:
         F = concatenate((ones((F.shape[0], 1)), F), axis=1)
-    if c is not None:
-        F = F @ c
 
     return F
 
 
-def Ffun_v(H, c, scales, logscales, noise=1):
+def Ffun_v(H, scales, logscales, noise=1):
 
-    F = Ffun_v_block(H, c, scales[0], noise)
+    F = Ffun_v_block(H, scales[0], noise)
     for s in range(1, scales.size):
-        F0 = Ffun_v_block(H, c, scales[s], noise)
+        F0 = Ffun_v_block(H, scales[s], noise)
         F = concatenate((F, F0), axis=0)
 
     return F
