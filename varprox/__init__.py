@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Arthur Marmin and Frédéric Richard."
-__copyright__ = "2024."
+__copyright__ = "2025."
 __credits__ = ["Arthur Marmin and Frédéric Richard"]
 __license__ = ""
 __version__ = "1.0.1"
@@ -14,6 +14,4 @@ __status__ = "Development"
 Import the main class of the package.
 """
 from varprox._minimize import Minimize
-from varprox._minimize2D import Minimize2D
 from varprox._parameters import Parameters
-
