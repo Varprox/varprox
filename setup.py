@@ -27,36 +27,36 @@ setup(
     long_description=(read('README.rst') + '\n\n' +
                       read('AUTHORS.rst') + '\n\n'),
     # Project home page:
-    url='undefined',
+    url='https://github.com/Varprox/varprox',
     # license, author and author email
-    license='undefined',
-    author='Paul Escande and Frederic Richard',
+    license='GPLv3',
+    author='Arthur Marmin and Frederic Richard',
     author_email='frederic.richard@univ-amu.fr',
     # If any packages contains data which are not python files, include them
     # package_data={'myapp': 'data'},
-    install_requires=['numpy>=1.19.2', 'matplotlib>=3.3.2', 'scipy>=1.5.2',
-                      'pyafbf>=0.2.0'],
+    install_requires=['numpy>=1.16.1', 'scipy>=1.16.1'],
+    extras_require={'examples': ['pyafbf>=0.2.9', 'matplotlib>=3.10.0']},
     # classifiers is needed for uploading package on pypi.
     # The list of classifiers elements can be found at :
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.8',
-        'Topic :: Scientific/Engineering :: Image Processing',
+        'Programming Language :: Python :: 3.11',
+        'Topic :: Scientific/Engineering :: Mathematics',
     ],
     project_urls={
-        'Documentation': '',
-        'Source': '',
-        'Tracker': '',
+      'Documentation': 'https://Varprox.github.io/varprox/',
+      'Source': 'https://github.com/Varprox/varprox/',
+      'Tracker': 'https://github.com/Varprox/varprox/issues',
     },
     # What does your project relate to?
-    keywords={'optimization', 'separable non linear least square',
+    keywords={'optimization', 'separable non linear least squares',
               'data fitting'},
     # Platforms on which the package can be installed:
     platforms='Linux, MacOSX, Windows',
