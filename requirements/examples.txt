@@ -1,0 +1,5 @@
+-index-url https://pypi.python.org/simple/
+
+matplotlib>=3.10.0
+pyafbf>=0.2.9
+pickle
