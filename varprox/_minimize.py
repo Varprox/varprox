@@ -219,7 +219,7 @@ class Minimize:
         :type x: :class:`numpy.ndarray` of size (N,)
 
         :return: Value of the Jacobian of residuals
-        at the current point :math:`x`.
+            at the current point :math:`x`.
         """
         return self.DFfun(x, self.y)
 

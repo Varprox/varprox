@@ -12,14 +12,16 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../code/'))
+from pathlib import Path
+
+sys.path.insert(0, os.path.abspath('../../'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'varprox'
-copyright = '2021, Paul Escande and Frédéric Richard'
-author = 'Paul Escande and Frédéric Richard'
+copyright = '2025, Arthur Marmin and Frédéric Richard'
+author = 'Arthur Marmin and Frédéric Richard'
 
 # The full version, including alpha/beta/rc tags
 release = '0.0'
@@ -31,6 +33,7 @@ release = '0.0'
 # ones.
 extensions = ["sphinx.ext.autodoc"]
 autodoc_member_order = 'bysource'
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
