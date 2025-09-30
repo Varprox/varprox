@@ -326,7 +326,7 @@ class Minimize:
                       .format(self.param.reg.name, it,
                               self.param.maxit, h, sdh * dh))
 
-            if dh < self.param.gtol_h or cnt_inc > self.param.itermax_neg:
+            if dh < self.param.gtol_h:  # or cnt_inc > self.param.itermax_neg:
                 break
 
         self.x[:] = xmin[:]
@@ -384,7 +384,7 @@ class Minimize:
         x = self.x             # Primal variable
         v = np.zeros(x.shape)  # Dual variable
         L = self.tv.L          # Linear operator
-        crit = np.Inf          # Initial value of the objective function
+        crit = np.inf          # Initial value of the objective function
 
         # Main loop
         for n in range(self.param.solver_param.maxit):

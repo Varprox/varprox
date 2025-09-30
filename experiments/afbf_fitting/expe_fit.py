@@ -21,6 +21,7 @@ home_dir = "/home/frichard/Recherche/Python/varprox/"
 
 # Experience parameters.
 param = params()
+reg_weight = str(param.reg_param)
 
 # Initialization a new random generator
 rng = default_rng()
@@ -39,17 +40,21 @@ for _ in range(1):
         file_in = home_dir + param.data_in + caseid
         file_out = home_dir + param.data_out + caseid
 
-        if path.exists(file_out + "-varproj-hurst.pickle") is False:
+        if path.exists(file_out + "-vanilla-hurst.pickle") is False:
             optim = "varproj"
-        elif path.exists(file_out + "-varprox-hurst.pickle") is False:
+            resname = "vanilla"
+        elif path.exists(file_out + "-varproj-hurst.pickle") is False:
+            optim = "varproj"
+            resname = "varproj"
+        elif path.exists(file_out + "-varprox-hurst-" + reg_weight + ".pickle") is False:
             optim = "varprox"
+            resname = "varprox"
         else:
             optim = None
 
         if optim is not None:
             head = 'Running experiments = {:3d} / {:3d}.'
-            print(head.format(expe,
-                                                                param.Nbexpe - 1))
+            print(head.format(expe, param.Nbexpe - 1))
 
             # Setting parameters for model and optimisation.
             param_opti = Parameters()
@@ -59,7 +64,7 @@ for _ in range(1):
             param_opti.alpha = param.alpha
             param_opti.reg.order = param.order
 
-            # Semivariogram to be fitted 
+            # Semivariogram to be fitted
             # (theoretical / empirical, noise / no noise)
             if param.Tvario:
                 # Load the groundtruth model.
@@ -103,9 +108,11 @@ for _ in range(1):
             topo0 = perfunction('step', param.topo_dim)
             hurst0 = perfunction('step', param.hurst_dim)
             model0 = tbfield('Estimation model', topo0, hurst0)
-            if optim == "varproj":
+            if optim == "varproj" or optim == "vanilla":
                 # Variogram fitting with varpro.
                 param_opti.reg.name = None
+                if resname == "vanilla":
+                    param.alpha = 0
                 # param_opti.alpha = 0
             elif optim == "varprox":
                 # model0 = LoadTBField(file_out + "-varproj")
@@ -118,4 +125,4 @@ for _ in range(1):
             emodel, wt = FitVariogram(model0, lags, w, param_opti)
             t1 = time.perf_counter()
 
-            emodel.Save(file_out + "-" + optim)
+            emodel.Save(file_out + "-" + resname + "-" + reg_weight)

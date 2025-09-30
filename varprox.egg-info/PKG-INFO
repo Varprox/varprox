@@ -1,4 +1,4 @@
-Metadata-Version: 2.2
+Metadata-Version: 2.1
 Name: varprox
 Version: 0.0.2
 Home-page: undefined
@@ -8,7 +8,7 @@ License: undefined
 Project-URL: Documentation, 
 Project-URL: Source, 
 Project-URL: Tracker, 
-Keywords: separable non linear least square,data fitting,optimization
+Keywords: optimization,separable non linear least square,data fitting
 Platform: Linux
 Platform: MacOSX
 Platform: Windows
@@ -26,16 +26,6 @@ Requires-Dist: numpy>=1.19.2
 Requires-Dist: matplotlib>=3.3.2
 Requires-Dist: scipy>=1.5.2
 Requires-Dist: pyafbf>=0.2.0
-Dynamic: author
-Dynamic: author-email
-Dynamic: classifier
-Dynamic: description
-Dynamic: home-page
-Dynamic: keywords
-Dynamic: license
-Dynamic: platform
-Dynamic: project-url
-Dynamic: requires-dist
 
 Requirements
 ------------

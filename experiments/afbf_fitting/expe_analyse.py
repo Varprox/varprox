@@ -51,6 +51,7 @@ def CompareModels(models, models_name, example, display=True):
 
 # Experience parameters.
 param = params()
+reg_weight = str(param.reg_param)
 
 nexpe_vanilla = nexpe_varproj = nexpe_varprox = 0
 Bias_vanilla = Bias_varproj = Bias_varprox = 0
@@ -74,10 +75,9 @@ for expe in range(param.Nbexpe):
         models.append(LoadTBField(file_res + "-varproj"))
         models_name.append("varproj")
 
-    if path.exists(file_res + "-varprox-hurst.pickle"):
-        models.append(LoadTBField(file_res + "-varprox"))
+    if path.exists(file_res + "-varprox-" + reg_weight + "-hurst"  + ".pickle"):
+        models.append(LoadTBField(file_res + "-varprox" + "-" + reg_weight))
         models_name.append("varprox")
-
 
     if len(models_name) > 1:
         bias, rmse, l1er = CompareModels(models, models_name, caseid)
@@ -100,36 +100,45 @@ for expe in range(param.Nbexpe):
                 nexpe_varproj += 1
 
 
-
 Names = []
 Nexpe = []
 Bias = []
+STD = []
 RMSE = []
 L1er = []
 if nexpe_vanilla > 0:
     Names.append("Vanilla")
     Nexpe.append(nexpe_vanilla)
-    Bias.append(Bias_vanilla / nexpe_vanilla * 100)
-    RMSE.append(RMSE_vanilla / nexpe_vanilla * 100)
+    bias = Bias_vanilla / nexpe_vanilla
+    rmse = RMSE_vanilla / nexpe_vanilla
+    std = np.sqrt((rmse)**2 - (bias)**2)
+    Bias.append(bias * 100)
+    STD.append(std * 100)
+    RMSE.append(rmse * 100)
     L1er.append(L1er_vanilla / nexpe_vanilla * 100)
 
 if nexpe_varproj > 0:
     Names.append("Varproj")
     Nexpe.append(nexpe_varproj)
-    Bias.append(Bias_varproj / nexpe_varproj * 100)
-    RMSE.append(RMSE_varproj / nexpe_varproj * 100)
+    bias = Bias_varproj / nexpe_varproj
+    rmse = RMSE_varproj / nexpe_varproj
+    std = np.sqrt((rmse)**2 - (bias)**2)
+    Bias.append(bias * 100)
+    STD.append(std * 100)
+    RMSE.append(rmse * 100)
     L1er.append(L1er_varproj / nexpe_varproj * 100)
 
 if nexpe_varprox > 0:
     Names.append("Varprox")
     Nexpe.append(nexpe_varprox)
-    Bias.append(Bias_varprox / nexpe_varprox * 100)
-    RMSE.append(RMSE_varprox / nexpe_varprox * 100)
+    bias = Bias_varprox / nexpe_varprox
+    rmse = RMSE_varprox / nexpe_varprox
+    std = np.sqrt((rmse)**2 - (bias)**2)
+    Bias.append(bias * 100)
+    STD.append(std * 100)
+    RMSE.append(rmse * 100)
     L1er.append(L1er_varprox / nexpe_varprox * 100)
 
+head = '{:s}: Nexpe =  {:4d}, Bias = {:4.2f}, std = {:4.2f}, RMSE = {:4.2f}, L1 err= {:4.2f}'
 for j in range(len(Names)):
-    print('{:s}: Nexpe =  {:4d}, Bias = {:4.2f}, RMSE = {:4.2f}, L1 err= {:4.2f}'.format(Names[j], 
-                                                                                      Nexpe[j],
-                                                                                      Bias[j],
-                                                                                      RMSE[j],
-                                                                                      L1er[j]))
+    print(head.format(Names[j], Nexpe[j], Bias[j], STD[j], RMSE[j], L1er[j]))
