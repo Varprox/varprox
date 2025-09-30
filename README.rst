@@ -3,13 +3,11 @@ Requirements
 
 #. In order to run `varprox` package, the following libraries are required:
     * Numpy
-    * Matplotlib
-    * PyAFBF
-    * imagio
+    * Scipy
    They can be installed for instance with the following command
 
    ```
-   $ pip3 install numpy matplotlib PyAFBF imageio
+   $ pip3 install numpy scipy
    ```
 
 #. The documentation generator relies on Sphinx. It can be installed as follows:
@@ -17,6 +15,10 @@ Requirements
    ```
    $ pip3 install sphinx pydata-sphinx-theme
    ```
+   
+#. The experiments require the following Python packages:
+    * Matplotlib
+    * PyAFBF
 
 Setup
 -----
