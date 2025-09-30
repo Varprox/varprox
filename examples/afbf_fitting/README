@@ -1,0 +1,14 @@
+results-K-evario_M
+
+Experiments with topothesy and Hurst functions with K parameters, estimated from images of size MxM
+
+results-64-evario_512-varq-ordre-2
+
+Experiments with topothesy and Hurst functions with 64 parameters, estimated from images of size 512x512. The fitting was done on quadratic variations of order 2 instead of the semi-variogram.
+
+results-64-evario_512
+Experiments for the paper.
+
+results-64-evario_512-v2
+Experiments for the revised version of the paper for 
+
