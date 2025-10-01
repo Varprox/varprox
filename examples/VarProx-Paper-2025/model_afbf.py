@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""
-Tools for computing the semi-variogram of an anisotropic fractional
+r"""Tools for computing the semi-variogram of an anisotropic fractional
 Brownian field and applying the fitting method.
 """
 import numpy as np

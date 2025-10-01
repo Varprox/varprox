@@ -107,7 +107,7 @@ for _ in range(3):
             topo0 = perfunction('step', param.topo_dim)
             hurst0 = perfunction('step', param.hurst_dim)
             model0 = tbfield('Estimation model', topo0, hurst0)
-            if optim == "varproj" or optim == "vanilla":
+            if optim == "varproj":
                 # Variogram fitting with varpro.
                 param_opti.reg.name = None
                 if resname == "vanilla":
