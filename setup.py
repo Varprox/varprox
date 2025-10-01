@@ -22,7 +22,7 @@ setup(
     # See PEP440 for defining a proper version number
     version=__version__,
     # Small description of the package
-    description='',
+    description='Optimization algorithms for solving penalized non-linear least squares problems',
     # Long description
     long_description=(read('README.rst') + '\n\n' +
                       read('AUTHORS.rst') + '\n\n'),
