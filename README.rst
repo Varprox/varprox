@@ -1,38 +1,44 @@
-Requirements
-------------
+.. .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.17154040.svg
+..   :target: https://doi.org/10.5281/zenodo.17154040
 
-#. In order to run `varprox` package, the following libraries are required:
-    * Numpy
-    * Matplotlib
-    * PyAFBF
-    * imagio
-   They can be installed for instance with the following command
 
-   ```
-   $ pip3 install numpy matplotlib PyAFBF imageio
-   ```
 
-#. The documentation generator relies on Sphinx. It can be installed as follows:
+The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable. More details can be found on the `documentation <https://Varprox.github.io/varprox/>`_.
 
-   ```
-   $ pip3 install sphinx pydata-sphinx-theme
-   ```
 
-Setup
------
-To run this project, install the `varprox` package locally.
-For instance, you can use the following command:
 
-```
-$ python3 setup.py install --user
-```
+Installation from sources
+=========================
 
-Examples
---------
-The folder `examples/` contains examples of application of `varprox` module.
-For example, you can run the example that estimates semivariograms:
+The package source can be downloaded from the `repository <https://github.com/Varprox/varprox>`_. 
 
-```
-$ cd examples/ 
-$ python3 ./plot_afbf.py
-```
+The package can be installed through PYPI with
+ 
+ pip install varprox
+
+Communication to the author
+===========================
+
+varprox is developed and maintained by Arthur Marmin and Frédéric Richard. For feed-back, contributions, bug reports, contact directly the `author <https://github.com/Varprox>`_, or use the `discussion <https://github.com/Varprox/varprox/discussions>`_ facility.
+
+
+Licence
+=======
+
+varprox is under licence GNU GPL, version 3.
+
+
+Citation
+========
+
+When using varprox, please cite the original paper
+
+to be completed.
+
+.. .. image:: https://joss.theoj.org/papers/10.21105/joss.03821/status.svg
+..   :target: https://doi.org/10.21105/joss.03821
+
+
+
+
+

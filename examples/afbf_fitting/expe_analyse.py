@@ -78,7 +78,6 @@ for expe in range(param.Nbexpe):
         models.append(LoadTBField(file_res + "-varprox"))
         models_name.append("varprox")
 
-
     if len(models_name) > 1:
         bias, rmse, l1er = CompareModels(models, models_name, caseid)
         for j in range(1, len(models_name)):
@@ -98,7 +97,6 @@ for expe in range(param.Nbexpe):
                 RMSE_varproj += rmse[j0]
                 L1er_varproj += l1er[j0]
                 nexpe_varproj += 1
-
 
 
 Names = []
@@ -132,4 +130,4 @@ for j in range(len(Names)):
                                                                                       Nexpe[j],
                                                                                       Bias[j],
                                                                                       RMSE[j],
-                                                                                      L1er[j]))
+                                                                                     L1er[j]))
