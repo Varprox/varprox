@@ -112,8 +112,8 @@ for expe in range(param.Nbexpe):
         models.append(LoadTBField(file_res + "-varproj"))
         models_name.append("varproj")
 
-    if path.exists(file_res + "-varprox-" + reg_weight + "-hurst"  + ".pickle"):
-        models.append(LoadTBField(file_res + "-varprox" + "-" + reg_weight))
+    if path.exists(file_res + "-varprox-hurst.pickle"):
+        models.append(LoadTBField(file_res + "-varprox"))
         models_name.append("varprox")
 
     if len(models_name) > 1:
