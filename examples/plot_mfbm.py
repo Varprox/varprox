@@ -125,7 +125,7 @@ N = 1000  # Size of the observed process.
 order = 1  # Order of the quadratic variations to analyze the process.
 scales = array([1, 5, 10])  # scales at which analyze the process.
 w_size = 400  # Size of the local window where the process is analyzed.
-w_step = 20  # Displacement step of the window.
+w_step = 1  # Displacement step of the window.
 H1 = 0.2  # Minimal Hurst value.
 H2 = 0.3  # Maximal Hurst value.
 mfbm = True  # Set to True for experiment on multifractional Brownian field.
@@ -183,9 +183,17 @@ Hest3, c3 = pb.argmin_h()
 # 3. Plot results.
 plt.figure(1)
 w_size2 = w_size // 2
+plt.plot(y)
+plt.title("A realization of a multifractional Brownian field")
+plt.show()
+
+
+plt.figure(2)
+w_size2 = w_size // 2
 plt.plot(H[w_size2:-w_size2:w_step], label="Ground truth")
 plt.plot(Hest1, label="Linear regression")
 plt.plot(Hest2, label="Varpro")
 plt.plot(Hest3, label="Varprox")
+plt.title("Estimation of the Hurst function.")
 plt.legend()
 plt.show()
