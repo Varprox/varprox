@@ -163,7 +163,7 @@ class Parameters:
                              "supported.")
 
     def save(self, filename, filetype):
-        """Save the parameters a YAML file.
+        """Save the parameters.
 
         :param filename: Name of the output file
         :type filename: str
@@ -187,6 +187,8 @@ class Parameters:
 
         :param filename: Name of the file containing the parameters
         :type filename: str
+
+        :meta private:
         """
         parser = ConfigParser()
         try:
@@ -236,6 +238,8 @@ class Parameters:
 
         :param filename: Name of the file containing the parameters
         :type filename: str
+
+        :meta private:
         """
         with open(filename, 'r') as f:
             try:
@@ -314,7 +318,7 @@ class Parameters:
             if lower_bd_y >= upper_bd_y:
                 raise ValueError("Upper bound on linear variables must be "
                                  "higher than its lower bound.")
-            
+
             self.bounds_x = (lower_bd_x, upper_bd_x)
             self.bounds_y = (lower_bd_y, upper_bd_y)
 
@@ -340,6 +344,8 @@ class Parameters:
 
         :param filename: Name of the output file
         :type filename: str
+
+        :meta private:
         """
         config = ConfigParser()
 
@@ -381,6 +387,8 @@ class Parameters:
 
         :param filename: Name of the output file
         :type filename: str
+
+        :meta private:
         """
         mydata = {'general-param': {
                     'maxit': self.maxit,
