@@ -33,7 +33,7 @@ extensions = ['sphinx.ext.githubpages',
               'sphinx.ext.autodoc',
               'nbsphinx',
               'sphinx.ext.intersphinx',
-              'sphinx_gallery.gen_gallery',
+              # 'sphinx_gallery.gen_gallery',
               'sphinxcontrib.bibtex']
 autodoc_member_order = 'bysource'
 
@@ -65,10 +65,10 @@ show_authors = True
 # html_static_path = ['_static']
 html_static_path = []
 
-sphinx_gallery_conf = {
-     'examples_dirs': ['../../examples/'],  # path to your example scripts
-     'gallery_dirs': ['auto_examples/'], # path to where to save gallery
-}
+# sphinx_gallery_conf = {
+#      'examples_dirs': ['../../examples/'],  # path to your example scripts
+#      'gallery_dirs': ['auto_examples/'], # path to where to save gallery
+# }
 
 # Configuration for cross-references
 intersphinx_mapping = {'python': ('http://docs.python.org/3', None),
