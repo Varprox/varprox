@@ -14,3 +14,4 @@ varprox.egg-info/entry_points.txt
 varprox.egg-info/requires.txt
 varprox.egg-info/top_level.txt
 varprox/models/__init__.py
+varprox/models/model_mfbm.py

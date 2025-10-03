@@ -1,0 +1,5 @@
+/usr/local/bin/f2py
+/usr/local/bin/f2py3
+/usr/local/bin/f2py3.12
+/usr/local/bin/varprox
+/usr/local/lib/python3.12/dist-packages/varprox-1.0.1-py3.12.egg
