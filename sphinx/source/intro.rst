@@ -81,3 +81,25 @@ for some function :math:`\varphi_j(\cdot; x)` depending on parameters :math:`x`.
 	F_n(x)_j = \varphi_j(t_n; x), j=1,\cdots,J.
 
 Such a modeling is generic and occurs in many fields of mathematical engineering. In the gallery of examples, we present some of its applications to the statistical inference of parameters for stochastic processes.
+
+Variable projection method
+--------------------------
+
+When there is no penalization (:math:`\lambda_1 = \lambda_2 = 0`), the optimization problem
+amounts to minimizing over :math:`y` the function 
+
+.. math::
+    :label: criterionb
+
+    g(x) = h(x, y^\ast(x))
+
+where :math:`x^{\ast}(y)` given by
+
+.. math::
+    :label: varpro
+
+    y^{\ast}(x) \in \arg \min_{y} h(x, y).
+    
+This is the so-called variable projection methode which was introduced in :cite:`Golub_1973` to reduce the minimization problem to the single variable :math:`x`.
+
+This package includes an extension of the variable projection to deal with cases when there are penalization and constraints on :math:`x`. The implemented methods are precisely described in :cite:`Richard-2023-TPMS` and :cite:`Marmin-2025-InvProb`. It is based on a proximal dual approach, called varprox !

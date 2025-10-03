@@ -47,7 +47,8 @@ varprox is under licence GNU GPL, version 3.
 Citation
 ========
 
-When using varprox, please cite the original paper
+When using varprox, please cite the papers 
+:cite:p:`Richard-2023-TPMS` and :cite:p:`Marmin-2025-InvProb`
 
 to be completed.
 
