@@ -5,6 +5,12 @@
 
 The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable. More details can be found on the `documentation <https://Varprox.github.io/varprox/>`_.
 
+Package features
+================
+
+- Methods for minimizing separable non-linear least squares problems with penalizations and box constraints on variables.
+
+- Applications to the inference for stochastic processes. 
 
 
 Installation from sources

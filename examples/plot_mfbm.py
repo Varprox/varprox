@@ -199,15 +199,23 @@ Hest3, c3 = pb.argmin_h()
 plt.figure(1)
 w_size2 = w_size // 2
 plt.plot(y)
-plt.title("A realization of a multifractional Brownian field")
+plt.title("Multifractional Brownian field")
+plt.xlabel('Time')
 plt.show()
 
 plt.figure(2)
 w_size2 = w_size // 2
-plt.plot(H[w_size2:-w_size2:w_step], label="Ground truth")
-plt.plot(Hest1, label="Linear regression")
-plt.plot(Hest2, label="Varpro")
-plt.plot(Hest3, label="Varprox")
+t = arange(H.size)
+t = t[w_size2:-w_size2:w_step]
+t = t[0:Hest1.size]
+Htrue = H[w_size2:-w_size2:w_step]
+Htrue = Htrue[0:Hest1.size]
+plt.plot(t, Htrue, label="Ground truth")
+plt.plot(t, Hest1, label="Estimation by linear regression")
+plt.plot(t, Hest2, label="Optimization without regularization")
+plt.plot(t, Hest3, label="Optimization with TV regulariation")
 plt.title("Estimation of the Hurst function.")
 plt.legend()
+plt.xlabel('Time')
+plt.ylabel('Hurst value')
 plt.show()
