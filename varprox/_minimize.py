@@ -192,6 +192,8 @@ class Minimize:
 
         :param filename: Name of the configuration file
         :type filename: str
+
+        :meta private:
         """
         # Load parameters from a configuration file
         self.param.load(filename)
@@ -215,6 +217,8 @@ class Minimize:
     def update_Ffun(self):
         r"""Redefine Ffun and DFfun if the scalar parameter alpha is strictly
         greater than 0 (i.e. there is a quadratic regularization on y).
+
+        :meta private:
         """
         if self.param.alpha > 0 and self.J > 1:
             # solution provisoire.
@@ -238,6 +242,10 @@ class Minimize:
             self.y = self.argmin_h_y(self.x)
 
     def update_tv(self):
+        r"""Update the TV.
+
+        :meta private:
+        """
         self.tv = TV(self.K, self.param.reg.order)
 
     def val_res(self, x):
@@ -281,13 +289,13 @@ class Minimize:
     def argmin_h_x(self, param):
         r"""Minimize :math:`h` with respect to :math:`x`.
 
-        :param param: Parameter for the algorithm
-        :type param: :class:Varprox_Param
+        :param param: Parameters for the algorithm
+        :type param: Parameters
 
         :return: Minimizer of :math:`h` with respect to :math:`x`
         """
         ret_x = None
-        # Minimizing h over x
+        # Minimizing h over x.
         if self.param.reg.name is None:
             res = least_squares(fun=self.val_res, x0=self.x,
                                 jac=self.jac_res_x,
@@ -313,8 +321,7 @@ class Minimize:
         :return: Minimizer of :math:`h` with respect to :math:`y`
 
         .. note::
-            This operation corresponds to eq:`varpro`, which is the
-            variable projection.
+            This operation corresponds to the variable projection.
         """
         res = lsq_linear(self.Ffun(x), self.w,
                          bounds=self.param.bounds_y)
@@ -324,7 +331,7 @@ class Minimize:
     def argmin_h(self):
         r"""Minimize :math:`h` with respect to :math:`(x, y)`.
 
-        :return: Couple :math:`(x, y)` that minimize :math:`h`
+        :return: A couple :math:`(x, y)` that minimizes :math:`h`
         """
         h = self.h_value()  # np.finfo('float').max
         xmin = np.zeros(self.x.shape)

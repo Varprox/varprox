@@ -1,14 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Estimation of the Hurst function of an multifractional Brownian motion.
+r"""
+===================================================================
+Estimation of the Hurst function of multifractional Brownian motion
+===================================================================
 
-@author: Frédéric Richard, 2024.
+.. codeauthor:: Frédéric Richard <frederic.richard_at_univ-amu.fr>
+
+The multifractional Brownian motion is a random process whose regularity
+varies in time. For this process, this regularity is determined by a
+functional parameter called the Hurst function. This function maps time
+position into the interval (0, 1). The larger the value, the smoother
+the process at a position. In this example, we use varprox
+to estimate the Hurst function.
+
+To define the objective function, we use a least square criterion which
+compares the local quadratic variations of an observed process to
+the theoretical ones of a multifractional Brownian motion. We use a TV
+regularization to stabilize the estimation and evaluate its effect.
 """
 
 from afbf import process
 from numpy.random import seed
 from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
-from numpy import concatenate, ones, infty, sqrt
+from numpy import concatenate, ones, infty
 from scipy.optimize import lsq_linear
 from varprox import Minimize, Parameters
 from varprox.models.model_mfbm import Ffun, DFfun
@@ -125,7 +140,7 @@ N = 1000  # Size of the observed process.
 order = 1  # Order of the quadratic variations to analyze the process.
 scales = array([1, 5, 10])  # scales at which analyze the process.
 w_size = 400  # Size of the local window where the process is analyzed.
-w_step = 1  # Displacement step of the window.
+w_step = 20  # Displacement step of the window.
 H1 = 0.2  # Minimal Hurst value.
 H2 = 0.3  # Maximal Hurst value.
 mfbm = True  # Set to True for experiment on multifractional Brownian field.
@@ -160,7 +175,7 @@ Hest2[:] = Hest1[:]
 Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
 pb = Minimize(Hest2, w, Ffun, DFfun, scales2, logscales, 0)
 param = Parameters()
-param.load("plot_mfbm.ini")
+param.load("./plot_mfbm.ini")
 param.reg.name = None
 pb.params = param
 print("Optimization without regularization:")
@@ -174,7 +189,7 @@ Hest3 = ones(Hest2.shape)
 Hest3[:] = Hest1[:]
 Hest3 = minimum(maximum(0.0001, Hest3), 0.9999)
 pb = Minimize(Hest3, w, Ffun, DFfun, scales2, logscales, 0)
-param.load("plot_mfbm.ini")
+param.load("./plot_mfbm.ini")
 param.reg.name = 'tv-1d'
 pb.params = param
 print("Optimization with TV regularization:")
@@ -184,16 +199,23 @@ Hest3, c3 = pb.argmin_h()
 plt.figure(1)
 w_size2 = w_size // 2
 plt.plot(y)
-plt.title("A realization of a multifractional Brownian field")
+plt.title("Multifractional Brownian field")
+plt.xlabel('Time')
 plt.show()
-
 
 plt.figure(2)
 w_size2 = w_size // 2
-plt.plot(H[w_size2:-w_size2:w_step], label="Ground truth")
-plt.plot(Hest1, label="Linear regression")
-plt.plot(Hest2, label="Varpro")
-plt.plot(Hest3, label="Varprox")
+t = arange(H.size)
+t = t[w_size2:-w_size2:w_step]
+t = t[0:Hest1.size]
+Htrue = H[w_size2:-w_size2:w_step]
+Htrue = Htrue[0:Hest1.size]
+plt.plot(t, Htrue, label="Ground truth")
+plt.plot(t, Hest1, label="Estimation by linear regression")
+plt.plot(t, Hest2, label="Optimization without regularization")
+plt.plot(t, Hest3, label="Optimization with TV regulariation")
 plt.title("Estimation of the Hurst function.")
 plt.legend()
+plt.xlabel('Time')
+plt.ylabel('Hurst value')
 plt.show()
