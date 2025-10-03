@@ -18,7 +18,9 @@ Package features
 
 - Methods for minimizing separable non-linear least squares problems with penalizations and box constraints on variables.
 
-- Applications to the inference for stochastic processes. 
+- Non linear model fitting in engineering.
+
+- Applications to the statistical inference for stochastic processes. 
 
 
 Installation from sources
@@ -57,9 +59,11 @@ to be completed.
    :maxdepth: 2
    :caption: Contents:
 
-   intro
-   varpro
-   api
+   ./intro.rst
+   ./varpro.rst
+   ./auto_examples/index.rst
+   ./api.rst
+   ./biblio.rst
 
 Indices and tables
 ==================

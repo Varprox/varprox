@@ -43,7 +43,7 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 import time
 import numpy as np
 from afbf import coordinates, perfunction, tbfield
-from model_afbf import FitVariogram
+from afbfest.model_afbf import FitVariogram
 from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng

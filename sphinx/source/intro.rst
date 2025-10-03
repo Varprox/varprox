@@ -62,11 +62,8 @@ where :math:`\vert \cdot \vert` is the Euclidean norm in :math:`\mathbb{R}^n`
 and :math:`\epsilon(x, y)` is the vector formed by terms
 :math:`\epsilon_n(x, y)`.
 
-Examples.
----------
-
-Signal fitting.
-~~~~~~~~~~~~~~~
+Model fitting
+-------------
 
 The NSLS problem may arise when the data is to be fitted by a model mixing linear and non linear parts. For instance, consider a situation where the data :math:`w = (w_n)_{n=1}^N` comes from the observation of a unidimensional signal at some time points :math:`(t_n)_{n=1}^N` of :math:`\mathbb{R}`. Assume that the data observation can be described by an additive model 
 
@@ -82,3 +79,5 @@ for some function :math:`\varphi_j(\cdot; x)` depending on parameters :math:`x`.
 
 .. math::
 	F_n(x)_j = \varphi_j(t_n; x), j=1,\cdots,J.
+
+Such a modeling is generic and occurs in many fields of mathematical engineering. In the gallery of examples, we present some of its applications to the statistical inference of parameters for stochastic processes.

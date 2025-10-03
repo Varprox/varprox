@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 r"""
-===================================================================
-Estimation of the Hurst function of multifractional Brownian motion
-===================================================================
+=====================================================================
+Estimation of the Hurst function of a multifractional Brownian motion
+=====================================================================
 
 .. codeauthor:: Frédéric Richard <frederic.richard_at_univ-amu.fr>
 
@@ -18,10 +18,15 @@ To define the objective function, we use a least square criterion which
 compares the local quadratic variations of an observed process to
 the theoretical ones of a multifractional Brownian motion. We use a TV
 regularization to stabilize the estimation and evaluate its effect.
+
+.. note::
+    This example requires the installation of the
+    `PyAFBF <https://github.com/fjprichard/PyAFBF>`__.
+
 """
 
 from afbf import process
-from numpy.random import seed
+from numpy.random import default_rng, seed
 from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
 from numpy import concatenate, ones, infty
 from scipy.optimize import lsq_linear
@@ -135,6 +140,9 @@ def Estimate_HurstFunction(scales, v):
     return H, c
 
 
+rng = default_rng()
+seed(15)
+
 # Experiment parameters
 N = 1000  # Size of the observed process.
 order = 1  # Order of the quadratic variations to analyze the process.
@@ -145,8 +153,8 @@ H1 = 0.2  # Minimal Hurst value.
 H2 = 0.3  # Maximal Hurst value.
 mfbm = True  # Set to True for experiment on multifractional Brownian field.
 
-# 1. Simulation.
-# Create the Hurst function.
+#: 1. Simulation.
+#: Create the Hurst function.
 if mfbm:
     T = arange(stop=N, step=2)
     N = N - 1
@@ -155,17 +163,17 @@ if mfbm:
     H = concatenate((H[::-1], H[1:]))
 else:
     H = 0.3 * ones(H.shape)
-# Simulate a mfbm of Hurst function H.
+#: Simulate a mfbm of Hurst function H.
 seed_n = 1
 y = Simulate_MFBM(H, seed_n)
 # Estimate the local semi-variogram of y.
 v = Estimate_LocalSemiVariograms(y, scales, w_size, w_step, order)
 
-# 2. Estimations.
-# 2.1. Estimate the Hurst function by linear regression.
+#: 2. Estimations.
+#: 2.1. Estimate the Hurst function by linear regression.
 Hest1, c1 = Estimate_HurstFunction(scales, v)
 
-# 2.2. Estimate the Hurst function by minimisation without regularization.
+#: 2.2. Estimate the Hurst function by minimisation without regularization.
 scales2 = power(scales, 2)
 logscales = log(scales2)
 w = v.reshape((v.size,), order="F")
@@ -175,7 +183,7 @@ Hest2[:] = Hest1[:]
 Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
 pb = Minimize(Hest2, w, Ffun, DFfun, scales2, logscales, 0)
 param = Parameters()
-param.load("./plot_mfbm.ini")
+param.load("plot_mfbm.ini")
 param.reg.name = None
 pb.params = param
 print("Optimization without regularization:")
@@ -183,8 +191,8 @@ Hest2, c2 = pb.argmin_h()
 h2value = pb.h_value()
 
 
-# 2.3. Estimate of the Hurst function by minimisation with a regularization.
-# Regularization parameter x.
+#: 2.3. Estimate of the Hurst function by minimisation with a regularization.
+#: Regularization parameter x.
 Hest3 = ones(Hest2.shape)
 Hest3[:] = Hest1[:]
 Hest3 = minimum(maximum(0.0001, Hest3), 0.9999)
@@ -195,7 +203,7 @@ pb.params = param
 print("Optimization with TV regularization:")
 Hest3, c3 = pb.argmin_h()
 
-# 3. Plot results.
+#: 3. Plot results.
 plt.figure(1)
 w_size2 = w_size // 2
 plt.plot(y)
