@@ -1,14 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Estimation of the Hurst function of an multifractional Brownian motion.
+r"""
+===================================================================
+Estimation of the Hurst function of multifractional Brownian motion
+===================================================================
 
-@author: Frédéric Richard, 2024.
+.. codeauthor:: Frédéric Richard <frederic.richard_at_univ-amu.fr>
+
+The multifractional Brownian motion is a random process whose regularity
+varies in time. For this process, this regularity is determined by a
+functional parameter called the Hurst function. This function maps time
+position into the interval (0, 1). The larger the value, the smoother
+the process at a position. In this example, we use varprox
+to estimate the Hurst function.
+
+To define the objective function, we use a least square criterion which
+compares the local quadratic variations of an observed process to
+the theoretical ones of a multifractional Brownian motion. We use a TV
+regularization to stabilize the estimation and evaluate its effect.
 """
 
 from afbf import process
 from numpy.random import seed
 from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
-from numpy import concatenate, ones, infty, sqrt
+from numpy import concatenate, ones, infty
 from scipy.optimize import lsq_linear
 from varprox import Minimize, Parameters
 from varprox.models.model_mfbm import Ffun, DFfun
@@ -160,7 +175,7 @@ Hest2[:] = Hest1[:]
 Hest2 = minimum(maximum(0.0001, Hest2), 0.9999)
 pb = Minimize(Hest2, w, Ffun, DFfun, scales2, logscales, 0)
 param = Parameters()
-param.load("plot_mfbm.ini")
+param.load("./plot_mfbm.ini")
 param.reg.name = None
 pb.params = param
 print("Optimization without regularization:")
@@ -174,7 +189,7 @@ Hest3 = ones(Hest2.shape)
 Hest3[:] = Hest1[:]
 Hest3 = minimum(maximum(0.0001, Hest3), 0.9999)
 pb = Minimize(Hest3, w, Ffun, DFfun, scales2, logscales, 0)
-param.load("plot_mfbm.ini")
+param.load("./plot_mfbm.ini")
 param.reg.name = 'tv-1d'
 pb.params = param
 print("Optimization with TV regularization:")
