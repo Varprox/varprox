@@ -111,8 +111,14 @@ class Parameters:
         self.gtol_h = parser.getfloat('general-param', 'gtol')
         self.maxit = parser.getint('general-param', 'maxit')
         self.verbose = parser.getboolean('general-param', 'verbose')
-        self.reg = RegParam(parser.get('regul-param', 'reg_name'),
+
+        regname = parser.get('regul-param', 'reg_name')
+        if regname == "None":
+            self.reg = RegParam(None,
                             parser.getfloat('regul-param', 'reg_param'))
+        else:
+            self.reg = RegParam(regname,
+                                parser.getfloat('regul-param', 'reg_param'))
         self.alpha = parser.getfloat('general-param', 'alpha')
 
         if parser.get('general-param', 'lbound_x') == '-inf':
@@ -182,8 +188,13 @@ class Parameters:
                                  "variables has to be a float.")
             if myconfig['regul-param']['reg_param'] < 0:
                 raise ValueError("Regularization parameter must be positive.")
-            self.reg = RegParam(myconfig['regul-param']['reg_name'],
-                                myconfig['regul-param']['reg_param'])
+            regname = myconfig['regul-param']['reg_name']
+            if regname == "None":
+                RegParam(None,
+                         myconfig['regul-param']['reg_param'])
+            else:
+                self.reg = RegParam(regname,
+                                    myconfig['regul-param']['reg_param'])
 
             if not isinstance(myconfig['general-param']['alpha'], float) \
                and not isinstance(myconfig['general-param']['alpha'], int):

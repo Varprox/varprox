@@ -15,7 +15,7 @@
 # ------------
 #
 # * `Arthur Marmin <mailto:arthur.marmin@univ-amu.fr>`_
-# * `Frédéric Richard <mailto:frederic.richard@univ-amu.fr>`_
+# * `Frédéric Richard <mailto:frederic.richard@univ-amu.fr>`
 #
 #
 # * This module is part of the package Varprox.
@@ -43,7 +43,7 @@ r"""Fitting variogram of an anisotropic fractional Brownian field:
 import time
 import numpy as np
 from afbf import coordinates, perfunction, tbfield
-from afbfest.model_afbf import FitVariogram
+from model_afbf import FitVariogram
 from afbf.Simulation.TurningBands import LoadTBField
 from afbf.Classes.SpatialData import LoadSdata
 from numpy.random import default_rng
@@ -71,7 +71,7 @@ lags.N = param.grid_dim * 2
 time_c1 = 0
 time_c2 = 0
 for _ in range(3):
-    for expe in range(8, param.Nbexpe):
+    for expe in range(7, param.Nbexpe):
         caseid = str(expe + 100)
         caseid = caseid[1:]
         file_in = home_dir + param.data_in + caseid
