@@ -1,4 +1,42 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# ######### COPYRIGHT #########
+# Credits
+# #######
+#
+# Copyright(c) 2025-2025
+# ----------------------
+#
+# * Institut de Mathématiques de Marseille <https://www.i2m.univ-amu.fr/>
+# * Université d'Aix-Marseille <http://www.univ-amu.fr/>
+# * Centre National de la Recherche Scientifique <http://www.cnrs.fr/>
+#
+# Contributors
+# ------------
+#
+# * `Arthur Marmin <mailto:arthur.marmin@univ-amu.fr>`_
+# * `Frédéric Richard <mailto:frederic.richard@univ-amu.fr>`_
+#
+#
+# * This module is part of the package Varprox.
+#
+# Licence
+# -------
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# ######### COPYRIGHT #########
 r"""
 Implementation of the classes handling the parameters for the class Minimize
 """
@@ -34,6 +72,54 @@ class RegParam:
 #                                CLASS PARAMETERS                              #
 # ============================================================================ #
 class Parameters:
+    r"""This class enables to handle parameters for the optimization.
+
+    :param maxit: Maximum number of iterations.
+    :type maxit: int. Default = 1000.
+
+    :param gtol: Tolerance for the stopping critetion.
+    :type gtol: float. Default = 1e-4.
+
+    :param lbound_x: Lower bound for the non linear variable x.
+    :type lbound_x: float. Default = -infty.
+
+    :param ubound_x: Upper bound for the non linear variable x.
+    :type ubound_x: float. Default = +infty.
+
+    :param lbound_y: Lower bound for the linear variable y.
+    :type lbound_y: float. Default = -infty.
+
+    :param ubound_y: Lower bound for the linear variable y.
+    :type ubound_y: float. Default = infty.
+
+    :param verbose: Verbose if True.
+    :type verbose: boolean.
+
+    :param alpha: Regularization weight on the linear variable x.
+    :type alpha: float.
+
+    :param itermax_neg:
+    :type itermax_neg: int
+
+    :param reg_name:
+        Type of regularization on the non linear variable x.
+        (None = no regularization, "tv-1d" = TV regularization).
+    :type reg_name: str.
+
+    :param reg_param: Regularization weight on the non linear variable x.
+    :type reg_param: float.
+
+    :param order: order of the derivatives to be penalized.
+    :type order: int.
+
+    :param tol: Tolerance for the sub-optimization on the linear variable y.
+    :type tol: float.
+
+    :param maxit:
+        Maximal number for the sub-optimization on the linear variable y.
+    :type maxit: float.
+    """
+
     def __init__(self, gtol=1e-4, maxit=1000, verbose=True, reg=RegParam(),
                  bounds_x=(-np.inf, np.inf), bounds_y=(-np.inf, np.inf),
                  solver_param=SolverParam()):
@@ -82,7 +168,8 @@ class Parameters:
         :param filename: Name of the output file
         :type: str
 
-        :param filetype: NameFormat of the output file. Must be 'yaml' or 'init'.
+        :param filetype:
+            NameFormat of the output file. Must be 'yaml' or 'init'.
         :type: str
         """
         if filetype == 'yaml':
@@ -106,7 +193,6 @@ class Parameters:
             parser.read(filename)
         except:
             print("Fail to load " + filename + ".")
-        
 
         self.gtol_h = parser.getfloat('general-param', 'gtol')
         self.maxit = parser.getint('general-param', 'maxit')
@@ -296,7 +382,7 @@ class Parameters:
         :param filename: Name of the output file
         :type: str
         """
-        mydata = {'general-param':{
+        mydata = {'general-param': {
                     'maxit': self.maxit,
                     'gtol': self.gtol_h,
                     'verbose': self.verbose,
@@ -306,15 +392,15 @@ class Parameters:
                     'ubound_y': self.bounds_y[1],
                     'alpha': self.alpha
                   },
-                  'regul-param':{
+                  'regul-param': {
                       'reg_name': self.reg.name,
                       'reg_param': self.reg.weight
                   },
-                  'solver-param':{
+                  'solver-param': {
                       'tol': self.solver_param.gtol,
                       'maxit': self.solver_param.maxit
                    }
-                 }
+                  }
 
         with open(filename, 'w') as f:
             yaml.dump(mydata, f, default_flow_style=False)
