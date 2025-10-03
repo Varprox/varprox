@@ -150,7 +150,7 @@ class Parameters:
         """Load the parameters from a file.
 
         :param filename: Name of the file containing the parameters
-        :type: str
+        :type filename: str
         """
         file_ext = pathlib.Path(filename).suffix
         if file_ext == '.yml':
@@ -166,11 +166,11 @@ class Parameters:
         """Save the parameters a YAML file.
 
         :param filename: Name of the output file
-        :type: str
+        :type filename: str
 
         :param filetype:
             NameFormat of the output file. Must be 'yaml' or 'init'.
-        :type: str
+        :type filetype: str
         """
         if filetype == 'yaml':
             self.save_yaml(filename)
@@ -186,7 +186,7 @@ class Parameters:
         file.
 
         :param filename: Name of the file containing the parameters
-        :type: str
+        :type filename: str
         """
         parser = ConfigParser()
         try:
@@ -235,7 +235,7 @@ class Parameters:
         """Load the parameters from a YAML file.
 
         :param filename: Name of the file containing the parameters
-        :type: str
+        :type filename: str
         """
         with open(filename, 'r') as f:
             try:
@@ -339,7 +339,7 @@ class Parameters:
         file.
 
         :param filename: Name of the output file
-        :type: str
+        :type filename: str
         """
         config = ConfigParser()
 
@@ -380,7 +380,7 @@ class Parameters:
         """Save the parameters to a YAML file.
 
         :param filename: Name of the output file
-        :type: str
+        :type filename: str
         """
         mydata = {'general-param': {
                     'maxit': self.maxit,
