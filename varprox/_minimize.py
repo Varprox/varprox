@@ -424,7 +424,7 @@ class Minimize:
         x = self.x             # Primal variable
         v = np.zeros(x.shape)  # Dual variable
         L = self.tv.L          # Linear operator
-        crit = np.Inf          # Initial value of the objective function
+        crit = np.inf          # Initial value of the objective function
 
         # Main loop
         for n in range(self.param.solver_param.maxit):
