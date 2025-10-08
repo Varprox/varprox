@@ -1,0 +1,43 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "\n# Estimation of parameters of an anisotropic fractional Brownian field\n\nAnisotropic fractional Brownian fields are random fields whose properties\nare characterized by two functional parameters, namely the Hurst function\nand the topothesy functions. These two functions determined the anisotropy\nand regularity of the field;\nsee [PyAFBF](https://github.com/fjprichard/PyAFBF)_.\nfor more explanations. In this example, we use varprox\nto estimate the two functional parameters of the field.\n\n. note::\n    This example requires the installation of the\n    [PyAFBFest](https://github.com/fjprichard/PyAFBFest)_.\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "collapsed": false
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\nfrom afbf import coordinates, perfunction, tbfield, process\nfrom numpy.random import default_rng, seed\nfrom varprox import Parameters\nfrom afbfest.model_afbf import FitVariogram\n\n\ndef Field_Definition(param):\n    \"\"\"Definition of the reference model.\n    \"\"\"\n    topo = perfunction('step', param.topo_dim)\n    hurst = perfunction('step', param.hurst_dim)\n    finter = np.linspace(- np.pi / 2, np.pi / 2, hurst.finter.size + 1, True)\n    finter = finter[1:]\n    model = tbfield('Reference model', topo, hurst)\n\n    # Define model parameters.\n    fbm = process()\n    fbm.param = 0.9\n    fbm.Simulate(param.hurst_dim)\n    fparam = fbm.y[:, 0]\n\n    fparam = fparam + np.flip(fparam)\n    fmin = np.min(fparam)\n    fmax = np.max(fparam)\n    fext = np.random.rand() * 0.9\n    flow = 0.05 + np.random.rand() * (0.9 - fext)\n\n    if fmin != fmax:\n        fparam = flow + fext * (fparam - fmin) / (fmax - fmin)\n    else:\n        fparam = flow * np.ones(fparam.shape)\n\n    # Update the model.\n    model.hurst.ChangeParameters(fparam, finter)\n    model.NormalizeModel()\n    model.topo.fparam = model.topo.fparam * 10\n    model.hurst.fname = \"Original Hurst function\"\n    model.topo.fname = \"Original topothesy\"\n\n    return model\n\n\n# Initialization a new random generator\nrng = default_rng()\nseed(88)\n\n# Set some parameters.\nparam = Parameters()\nparam.load(\"plot_afbf.ini\")\nparam.noise = 0\nparam.hurst_dim = 64  # Dimension of the function parametrization.\nparam.topo_dim = 64\nparam.N = 512  # Image size.\nparam.grid_dim = 20  # Size of the grid to compute quadratic variations.\nparam.multigrid = True  # To use a multigrid optimization approach.\nparam.threshold_reg = 32  # Grid scale at which the penalization is used.\n\n#: Define the field model.\nmodel = Field_Definition(param)\n\n#: Simulate a field realization.\nlags = coordinates()\nlags.DefineSparseSemiBall(param.grid_dim)\nlags.N = param.grid_dim * 2\ncoord = coordinates(param.N)\ncoord.N = param.grid_dim * 2\nz = model.Simulate(coord)\nz.Display()\nmodel.DisplayParameters()\n\n#: Compute the empirical semi-variogram.\nevario = z.ComputeEmpiricalSemiVariogram(lags)\nw = evario.values[:, 0]\n\n#: Estimate model parameters.\ntopo0 = perfunction('step', param.topo_dim)\n\nhurst0 = perfunction('step', param.hurst_dim)\n\nmodel0 = tbfield('Estimation model', topo0, hurst0)\nemodel, wt = FitVariogram(model0, lags, w, param)\nemodel.name = \"Estimated model\"\nemodel.hurst.fname = 'Estimated Hurst function'\nemodel.topo.fname = 'Estimated topothesy'\nemodel.DisplayParameters()"
+      ]
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.11.13"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}

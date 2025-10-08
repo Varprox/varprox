@@ -1,0 +1,43 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "\n# Estimation of the Hurst function of a multifractional Brownian motion\n\n.. codeauthor:: Fr\u00e9d\u00e9ric Richard <frederic.richard_at_univ-amu.fr>\n\nThe multifractional Brownian motion is a random process whose regularity\nvaries in time. For this process, this regularity is determined by a\nfunctional parameter called the Hurst function. This function maps time\nposition into the interval (0, 1). The larger the value, the smoother\nthe process at a position. In this example, we use varprox\nto estimate the Hurst function.\n\nTo define the objective function, we use a least square criterion which\ncompares the local quadratic variations of an observed process to\nthe theoretical ones of a multifractional Brownian motion. We use a TV\nregularization to stabilize the estimation and evaluate its effect.\n\n<div class=\"alert alert-info\"><h4>Note</h4><p>This example requires the installation of the\n    [PyAFBF](https://github.com/fjprichard/PyAFBF)_.</p></div>\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "collapsed": false
+      },
+      "outputs": [],
+      "source": [
+        "from afbf import process\nfrom numpy.random import default_rng, seed\nfrom numpy import zeros, std, arange, power, mean, maximum, minimum, log, array\nfrom numpy import concatenate, ones, inf\nfrom scipy.optimize import lsq_linear\nfrom varprox import Minimize, Parameters\nfrom varprox.models.model_mfbm import Ffun, DFfun\nfrom matplotlib import pyplot as plt\n\n\ndef Simulate_MFBM(H, seed_n=1):\n    \"\"\"Simulate the multi-fractional Brownian motion of Hurst function H.\n\n    :param ndarray H: The hurst function of the process.\n    :type H: :ref:`ndarray`\n\n    :param seed_n: A seed number.\n    :type seed_n: int.\n\n    :returns: a simulation of the process.\n    \"\"\"\n    N = H.size\n\n    fbm = process()\n    y = zeros((N,))\n    if min(H) != max(H):\n        # Simulation of a multifractional Brownian motion.\n        for j in range(N):\n            seed(seed_n)\n            fbm.param = H[j]\n            fbm.Simulate(N)\n            y[j] = 10 * fbm.y[j, 0] / std(fbm.y)\n    else:\n        # Simulation of a fractional Brownian motion.\n        seed(seed_n)\n        fbm.param = H[0]\n        fbm.Simulate(N)\n        y = fbm.y\n\n    return y\n\n\ndef Estimate_LocalSemiVariograms(y, scales, w_size, w_step, order=0):\n    \"\"\"Compute the local semi-variogram of the process.\n\n    :param y: A process\n    :type H: :ref:`ndarray`\n    :param scales: Scales at which the semi-variogram is to be computed.\n    :type H: :ref:`ndarray`\n    :param w_size: Size of the window where the semi-variogram is computed.\n    :type w_size: int\n    :param w_step: Step between two successive positions of computations.\n    :type w_step: int\n    :param order: Order of the increments. The default is 0.\n    :type order: int\n\n    :returns: Semi-variograms at each position (row) and scale (column).\n    \"\"\"\n\n    N = y.size\n    order += 1\n    Nr = N - order * max(scales) - w_size\n\n    if Nr < 0:\n        raise Exception(\"Decrease max of scales or w_size.\")\n\n    v = zeros((Nr // w_step + 1, scales.size))\n    for j in range(scales.size):\n        # Increments\n        scale = scales[j]\n        increm = zeros(y.shape)\n        increm[:] = y[:]\n        for o in range(order):\n            increm = increm[:-scale] - increm[scale:]\n        increm = power(increm[:-scale] - increm[scale:], 2)\n        # Local semi-variogram.\n        w_ind = 0\n        for w in range(0, Nr, w_step):\n            v[w_ind, j] = 0.5 * mean(increm[w:w + w_size])\n            w_ind += 1\n\n    return v\n\n\ndef Estimate_HurstFunction(scales, v):\n    \"\"\"Estimate the Hurst function using linear regressions.\n\n    :param scales: Scales at which the semi-variogram was computed.\n    :type H: :ref:`ndarray`\n    :param v: Empirical semi-variogram.\n    :type v: :ref:`ndarray`\n\n    :return: Variance factors, Hurst function.\n    :rtype: :ref:`ndarray`\n\n    \"\"\"\n    N = v.shape[0]  # Number of positions.\n    P = v.shape[1]  # Number of scales.\n    v = log(maximum(v, 1e-310))\n    scales = 2 * log(scales).reshape((P, 1))\n    X = concatenate((scales, ones((P, 1))), axis=1)\n    lb = array([0, - inf])\n    ub = array([1, inf])\n\n    H = zeros((N,))\n    c = zeros((N,))\n    for j in range(N):\n        # Estimate the Hurst index at the nth position.\n        pb = lsq_linear(X, v[j, :], bounds=(lb, ub))\n        H[j] = pb.x[0]\n        c[j] = pb.x[1]\n\n    return H, c\n\n\nrng = default_rng()\nseed(15)\n\n# Experiment parameters\nN = 1000  # Size of the observed process.\norder = 1  # Order of the quadratic variations to analyze the process.\nscales = array([1, 5, 10])  # scales at which analyze the process.\nw_size = 400  # Size of the local window where the process is analyzed.\nw_step = 20  # Displacement step of the window.\nH1 = 0.2  # Minimal Hurst value.\nH2 = 0.3  # Maximal Hurst value.\nmfbm = True  # Set to True for experiment on multifractional Brownian field.\n\n#: 1. Simulation.\n#: Create the Hurst function.\nif mfbm:\n    T = arange(stop=N, step=2)\n    N = N - 1\n    T = power(T / N, 2)\n    H = (1 - T) * H1 + T * H2\n    H = concatenate((H[::-1], H[1:]))\nelse:\n    H = 0.3 * ones(H.shape)\n#: Simulate a mfbm of Hurst function H.\nseed_n = 1\ny = Simulate_MFBM(H, seed_n)\n# Estimate the local semi-variogram of y.\nv = Estimate_LocalSemiVariograms(y, scales, w_size, w_step, order)\n\n#: 2. Estimations.\n#: 2.1. Estimate the Hurst function by linear regression.\nHest1, c1 = Estimate_HurstFunction(scales, v)\n\n#: 2.2. Estimate the Hurst function by minimisation without regularization.\nscales2 = power(scales, 2)\nlogscales = log(scales2)\nw = v.reshape((v.size,), order=\"F\")\n\nHest2 = ones(Hest1.shape)\nHest2[:] = Hest1[:]\nHest2 = minimum(maximum(0.0001, Hest2), 0.9999)\npb = Minimize(Hest2, w, Ffun, DFfun, scales2, logscales, 0)\nparam = Parameters()\nparam.load(\"plot_mfbm.ini\")\nparam.reg.name = None\npb.params = param\nprint(\"Optimization without regularization:\")\nHest2, c2 = pb.argmin_h()\nh2value = pb.h_value()\n\n\n#: 2.3. Estimate of the Hurst function by minimisation with a regularization.\n#: Regularization parameter x.\nHest3 = ones(Hest2.shape)\nHest3[:] = Hest1[:]\nHest3 = minimum(maximum(0.0001, Hest3), 0.9999)\npb = Minimize(Hest3, w, Ffun, DFfun, scales2, logscales, 0)\nparam.load(\"./plot_mfbm.ini\")\nparam.reg.name = 'tv-1d'\npb.params = param\nprint(\"Optimization with TV regularization:\")\nHest3, c3 = pb.argmin_h()\n\n#: 3. Plot results.\nplt.figure(1)\nw_size2 = w_size // 2\nplt.plot(y)\nplt.title(\"Multifractional Brownian field\")\nplt.xlabel('Time')\nplt.show()\n\nplt.figure(2)\nw_size2 = w_size // 2\nt = arange(H.size)\nt = t[w_size2:-w_size2:w_step]\nt = t[0:Hest1.size]\nHtrue = H[w_size2:-w_size2:w_step]\nHtrue = Htrue[0:Hest1.size]\nplt.plot(t, Htrue, label=\"Ground truth\")\nplt.plot(t, Hest1, label=\"Estimation by linear regression\")\nplt.plot(t, Hest2, label=\"Optimization without regularization\")\nplt.plot(t, Hest3, label=\"Optimization with TV regulariation\")\nplt.title(\"Estimation of the Hurst function.\")\nplt.legend()\nplt.xlabel('Time')\nplt.ylabel('Hurst value')\nplt.show()"
+      ]
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.11.13"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
