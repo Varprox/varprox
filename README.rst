@@ -39,9 +39,13 @@ varprox is under licence GNU GPL, version 3.
 Citation
 ========
 
-When using varprox, please cite the original paper
+When using varprox, please cite the papers
 
-to be completed.
+1. P. Escande and F. Richard. Full inference for the anisotropic fractional Brownian field. Journal of Probability Theory and Mathematical Statistics, 110:13–29, 2024. doi:10.1090/tpms/1204.
+
+
+2. A. Marmin and F. Richard. Varprox: a primal-dual variable projection method for the minimization of penalized separable non-linear least squares. Inverse Problems, 2025. doi:10.1088/1361-6420/ae0e48.
+
 
 .. .. image:: https://joss.theoj.org/papers/10.21105/joss.03821/status.svg
 ..   :target: https://doi.org/10.21105/joss.03821
