@@ -1,5 +1,5 @@
-.. .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.17154040.svg
-..   :target: https://doi.org/10.5281/zenodo.17154040
+.. image:: https://zenodo.org/badge/575338202.svg
+  :target: https://doi.org/10.5281/zenodo.17296527
 
 
 The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable. More details can be found in the `documentation <https://varprox.github.io/varprox/>`_.
@@ -46,9 +46,6 @@ When using varprox, please cite the papers
 
 2. Marmin, A. and Richard, F. Varprox: a primal-dual variable projection method for the minimization of penalized separable non-linear least squares. Inverse Problems, 2025. doi:10.1088/1361-6420/ae0e48.
 
-
-.. .. image:: https://joss.theoj.org/papers/10.21105/joss.03821/status.svg
-..   :target: https://doi.org/10.21105/joss.03821
 
 
 
