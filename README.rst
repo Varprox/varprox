@@ -2,7 +2,7 @@
 ..   :target: https://doi.org/10.5281/zenodo.17154040
 
 
-The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable.
+The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable. More details can be found in the `documentation <https://varprox.github.io/varprox/>`_.
 
 Package features
 ================
