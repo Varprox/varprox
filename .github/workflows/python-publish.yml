@@ -22,7 +22,7 @@ jobs:
         pip install build twine
 
     - name: Clean dist folder
-        run: rm -rf dist/*
+      run: rm -rf dist/*
 
     - name: Build package
       run: python -m build
@@ -30,6 +30,6 @@ jobs:
     - name: Publish to PyPI
       env:
         TWINE_USERNAME: "__token__"
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        TWINE_PASSWORD: ${{ secrets.VARPROX_TOKEN}}
       run: twine upload dist/*.tar.gz dist/*.whl
 
