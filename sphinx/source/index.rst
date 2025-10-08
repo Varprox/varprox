@@ -50,7 +50,6 @@ Citation
 When using varprox, please cite the papers 
 :cite:p:`Richard-2023-TPMS` and :cite:p:`Marmin-2025-InvProb`
 
-to be completed.
 
 .. .. image:: https://joss.theoj.org/papers/10.21105/joss.03821/status.svg
 ..   :target: https://doi.org/10.21105/joss.03821

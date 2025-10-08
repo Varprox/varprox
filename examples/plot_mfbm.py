@@ -28,7 +28,7 @@ regularization to stabilize the estimation and evaluate its effect.
 from afbf import process
 from numpy.random import default_rng, seed
 from numpy import zeros, std, arange, power, mean, maximum, minimum, log, array
-from numpy import concatenate, ones, infty
+from numpy import concatenate, ones, inf
 from scipy.optimize import lsq_linear
 from varprox import Minimize, Parameters
 from varprox.models.model_mfbm import Ffun, DFfun
@@ -126,8 +126,8 @@ def Estimate_HurstFunction(scales, v):
     v = log(maximum(v, 1e-310))
     scales = 2 * log(scales).reshape((P, 1))
     X = concatenate((scales, ones((P, 1))), axis=1)
-    lb = array([0, - infty])
-    ub = array([1, infty])
+    lb = array([0, - inf])
+    ub = array([1, inf])
 
     H = zeros((N,))
     c = zeros((N,))

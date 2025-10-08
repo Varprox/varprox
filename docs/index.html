@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Welcome to varprox’s documentation! &#8212; varprox 0.1 documentation</title>
+    <title>Welcome to varprox’s documentation! &#8212; varprox 1.0 documentation</title>
   
   
   
@@ -31,6 +31,10 @@
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -38,10 +42,12 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -110,7 +116,7 @@
   
   
   
-    <p class="title logo__title">varprox 0.1 documentation</p>
+    <p class="title logo__title">varprox 1.0 documentation</p>
   
 </a></div>
     
@@ -132,8 +138,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="varpro.html">
-    Variable projection method
+  <a class="nav-link nav-internal" href="auto_examples/index.html">
+    Example gallery
   </a>
 </li>
 
@@ -141,6 +147,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="api.html">
     API reference.
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="biblio.html">
+    References
   </a>
 </li>
 
@@ -227,8 +240,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="varpro.html">
-    Variable projection method
+  <a class="nav-link nav-internal" href="auto_examples/index.html">
+    Example gallery
   </a>
 </li>
 
@@ -236,6 +249,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="api.html">
     API reference.
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="biblio.html">
+    References
   </a>
 </li>
 
@@ -291,20 +311,53 @@
                   
   <section id="welcome-to-varprox-s-documentation">
 <h1>Welcome to varprox’s documentation!<a class="headerlink" href="#welcome-to-varprox-s-documentation" title="Link to this heading">#</a></h1>
+<p>The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable.</p>
+</section>
+<section id="package-features">
+<h1>Package features<a class="headerlink" href="#package-features" title="Link to this heading">#</a></h1>
+<ul class="simple">
+<li><p>Methods for minimizing separable non-linear least squares problems with penalizations and box constraints on variables.</p></li>
+<li><p>Non linear model fitting in engineering.</p></li>
+<li><p>Applications to the statistical inference for stochastic processes.</p></li>
+</ul>
+</section>
+<section id="installation-from-sources">
+<h1>Installation from sources<a class="headerlink" href="#installation-from-sources" title="Link to this heading">#</a></h1>
+<p>The package source can be downloaded from the <a class="reference external" href="https://github.com/Varprox/varprox">repository</a>.</p>
+<p>The package can be installed through PYPI with</p>
+<blockquote>
+<div><p>pip install varprox</p>
+</div></blockquote>
+</section>
+<section id="communication-to-the-author">
+<h1>Communication to the author<a class="headerlink" href="#communication-to-the-author" title="Link to this heading">#</a></h1>
+<p>varprox is developed and maintained by Arthur Marmin and Frédéric Richard. For feed-back, contributions, bug reports, contact directly the <a class="reference external" href="https://github.com/Varprox">author</a>, or use the <a class="reference external" href="https://github.com/Varprox/varprox/discussions">discussion</a> facility.</p>
+</section>
+<section id="licence">
+<h1>Licence<a class="headerlink" href="#licence" title="Link to this heading">#</a></h1>
+<p>varprox is under licence GNU GPL, version 3.</p>
+</section>
+<section id="citation">
+<h1>Citation<a class="headerlink" href="#citation" title="Link to this heading">#</a></h1>
+<p>When using varprox, please cite the papers
+<span id="id1">[<a class="reference internal" href="biblio.html#id2" title="P. Escande and F. Richard. Full inference for the anisotropic fractional Brownian field. Journal of Probability Theory and Mathematical Statistics, 110:13-29, 2024. doi:10.1090/tpms/1204.">1</a>]</span> and <span id="id2">[<a class="reference internal" href="biblio.html#id3" title="A. Marmin and F. Richard. Varprox: a primal-dual variable projection method for the minimization of penalized separable non-linear least squares. Inverse Problems, 2025. doi:10.1088/1361-6420/ae0e48.">2</a>]</span></p>
 <div class="toctree-wrapper compound">
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction.</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="intro.html#problem-statement">Problem statement.</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#examples">Examples.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#model-fitting">Model fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#variable-projection-method">Variable projection method</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="varpro.html">Variable projection method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">Example gallery</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API reference.</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api.html#the-minimize-class">The Minimize class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#parameters">Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#the-tv-class">The TV class</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="biblio.html">References</a></li>
 </ul>
 </div>
 </section>
@@ -356,6 +409,11 @@
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Welcome to varprox’s documentation!</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#package-features">Package features</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-from-sources">Installation from sources</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#communication-to-the-author">Communication to the author</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#licence">Licence</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">Citation</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>API reference. &#8212; varprox 0.1 documentation</title>
+    <title>API reference. &#8212; varprox 1.0 documentation</title>
   
   
   
@@ -31,6 +31,10 @@
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -38,14 +42,17 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Variable projection method" href="varpro.html" />
+    <link rel="next" title="References" href="biblio.html" />
+    <link rel="prev" title="Estimation of the Hurst function of a multifractional Brownian motion" href="auto_examples/plot_mfbm.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -110,7 +117,7 @@
   
   
   
-    <p class="title logo__title">varprox 0.1 documentation</p>
+    <p class="title logo__title">varprox 1.0 documentation</p>
   
 </a></div>
     
@@ -132,8 +139,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="varpro.html">
-    Variable projection method
+  <a class="nav-link nav-internal" href="auto_examples/index.html">
+    Example gallery
   </a>
 </li>
 
@@ -141,6 +148,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="#">
     API reference.
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="biblio.html">
+    References
   </a>
 </li>
 
@@ -225,8 +239,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="varpro.html">
-    Variable projection method
+  <a class="nav-link nav-internal" href="auto_examples/index.html">
+    Example gallery
   </a>
 </li>
 
@@ -234,6 +248,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="#">
     API reference.
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="biblio.html">
+    References
   </a>
 </li>
 
@@ -335,9 +356,9 @@ least square criterion, which is of the form:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (K,)) – first variable <span class="math notranslate nohighlight">\(x\)</span> of the criterion <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
-<li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (J,)) – second variable <span class="math notranslate nohighlight">\(y\)</span> of the criterion <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
-<li><p><strong>w</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N,)) – set of observations <span class="math notranslate nohighlight">\((w_n)_n\)</span>.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (K,)) – first variable <span class="math notranslate nohighlight">\(x\)</span> of the criterion <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (J,)) – second variable <span class="math notranslate nohighlight">\(y\)</span> of the criterion <span class="math notranslate nohighlight">\(h\)</span>.</p></li>
+<li><p><strong>w</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N,)) – set of observations <span class="math notranslate nohighlight">\((w_n)_n\)</span>.</p></li>
 <li><p><strong>Ffun</strong> (<em>callable</em>) – <p>function which computes the mappings <span class="math notranslate nohighlight">\(F_n\)</span> of
 the criterion, with the signature <code class="docutils literal notranslate"><span class="pre">Ffun(x,</span> <span class="pre">*args,</span> <span class="pre">**kwargs)</span></code>.</p>
 <p>The argument x passed to this function F is an array of
@@ -356,11 +377,11 @@ of <span class="math notranslate nohighlight">\(F_n(x)\)</span>. DF[n, j, k] is 
 of the jth component <span class="math notranslate nohighlight">\(F_n(x)_j\)</span> with respect to the
 kth variable <span class="math notranslate nohighlight">\(x_k\)</span>.</p>
 </p></li>
-<li><p><strong>F</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N, J)) – current values of <span class="math notranslate nohighlight">\(F_n\)</span>.</p></li>
-<li><p><strong>DF</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N, J, K)) – current jacobian matrices of <span class="math notranslate nohighlight">\(F_n\)</span>.</p></li>
-<li><p><strong>eps</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N, 1)) – residuals of Equation <a class="reference internal" href="intro.html#equation-residuals">(3)</a>.
+<li><p><strong>F</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N, J)) – current values of <span class="math notranslate nohighlight">\(F_n\)</span>.</p></li>
+<li><p><strong>DF</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N, J, K)) – current jacobian matrices of <span class="math notranslate nohighlight">\(F_n\)</span>.</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N, 1)) – residuals of Equation <a class="reference internal" href="intro.html#equation-residuals">(3)</a>.
 eps[n] correspond to <span class="math notranslate nohighlight">\(\epsilon_n(x, y)\)</span>.</p></li>
-<li><p><strong>eps_jac_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N, K)) – jacobian of residuals <span class="math notranslate nohighlight">\(\epsilon_n\)</span> with respect
+<li><p><strong>eps_jac_x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N, K)) – jacobian of residuals <span class="math notranslate nohighlight">\(\epsilon_n\)</span> with respect
 to <span class="math notranslate nohighlight">\(x\)</span>.
 eps_jac_x[n, k] is the partial derivative of <span class="math notranslate nohighlight">\(\epsilon_n\)</span>
 with respect to <span class="math notranslate nohighlight">\(x_k\)</span>.</p></li>
@@ -376,30 +397,12 @@ Empty by default.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="varprox._minimize.Minimize.set_parameters_fromfile">
-<span class="sig-name descname"><span class="pre">set_parameters_fromfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox._minimize.Minimize.set_parameters_fromfile" title="Link to this definition">#</a></dt>
-<dd><p>Load parameters from a configuration file in Linux format.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Name of the configuration file</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="varprox._minimize.Minimize.update_Ffun">
-<span class="sig-name descname"><span class="pre">update_Ffun</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#varprox._minimize.Minimize.update_Ffun" title="Link to this definition">#</a></dt>
-<dd><p>Redefine Ffun and DFfun if the scalar parameter alpha is strictly
-greater than 0 (i.e. there is a quadratic regularization on y).</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="varprox._minimize.Minimize.val_res">
 <span class="sig-name descname"><span class="pre">val_res</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox._minimize.Minimize.val_res" title="Link to this definition">#</a></dt>
 <dd><p>Compute the residuals <span class="math notranslate nohighlight">\(\epsilon_n\)</span> in <a class="reference internal" href="intro.html#equation-residuals">(3)</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N,)) – Point where to compute the residuals</p>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N,)) – Point where to compute the residuals</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Value of the residuals at the point given in argument</p>
@@ -413,7 +416,7 @@ greater than 0 (i.e. there is a quadratic regularization on y).</p>
 <dd><p>Compute the Jacobian of residuals with respect to <span class="math notranslate nohighlight">\(x\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N,)) – Point where to compute the Jacobian of the residuals</p>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N,)) – Point where to compute the Jacobian of the residuals</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Value of the Jacobian of residuals
@@ -446,7 +449,7 @@ using Equation <a class="reference internal" href="intro.html#equation-criterion
 <dd><p>Minimize <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\(x\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>param</strong> (<em>:class:Varprox_Param</em>) – Parameter for the algorithm</p>
+<dd class="field-odd"><p><strong>param</strong> (<a class="reference internal" href="#varprox._parameters.Parameters" title="varprox._parameters.Parameters"><em>Parameters</em></a>) – Parameters for the algorithm</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Minimizer of <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\(x\)</span></p>
@@ -460,7 +463,7 @@ using Equation <a class="reference internal" href="intro.html#equation-criterion
 <dd><p>Minimize <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\(y\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N,)) – Point where to evaluate <span class="math notranslate nohighlight">\(F\)</span></p>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N,)) – Point where to evaluate <span class="math notranslate nohighlight">\(F\)</span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Minimizer of <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\(y\)</span></p>
@@ -468,8 +471,7 @@ using Equation <a class="reference internal" href="intro.html#equation-criterion
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This operation corresponds to eq:<cite>varpro</cite>, which is the
-variable projection.</p>
+<p>This operation corresponds to the variable projection.</p>
 </div>
 </dd></dl>
 
@@ -479,7 +481,7 @@ variable projection.</p>
 <dd><p>Minimize <span class="math notranslate nohighlight">\(h\)</span> with respect to <span class="math notranslate nohighlight">\((x, y)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Couple <span class="math notranslate nohighlight">\((x, y)\)</span> that minimize <span class="math notranslate nohighlight">\(h\)</span></p>
+<dd class="field-odd"><p>A couple <span class="math notranslate nohighlight">\((x, y)\)</span> that minimizes <span class="math notranslate nohighlight">\(h\)</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -525,6 +527,61 @@ inequality in order to guarantee the convergence of the sequence
 </dd></dl>
 
 </section>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="varprox._parameters.Parameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">varprox._parameters.</span></span><span class="sig-name descname"><span class="pre">Parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">RegParam(name=None,</span> <span class="pre">weight=0,</span> <span class="pre">order=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">SolverParam(gtol=0.001,</span> <span class="pre">maxit=1000)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox._parameters.Parameters" title="Link to this definition">#</a></dt>
+<dd><p>This class enables to handle parameters for the optimization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>maxit</strong> (<em>float.</em>) – Maximum number of iterations.</p></li>
+<li><p><strong>gtol</strong> (<em>float. Default = 1e-4.</em>) – Tolerance for the stopping critetion.</p></li>
+<li><p><strong>lbound_x</strong> (<em>float. Default = -infty.</em>) – Lower bound for the non linear variable x.</p></li>
+<li><p><strong>ubound_x</strong> (<em>float. Default = +infty.</em>) – Upper bound for the non linear variable x.</p></li>
+<li><p><strong>lbound_y</strong> (<em>float. Default = -infty.</em>) – Lower bound for the linear variable y.</p></li>
+<li><p><strong>ubound_y</strong> (<em>float. Default = infty.</em>) – Lower bound for the linear variable y.</p></li>
+<li><p><strong>verbose</strong> (<em>boolean.</em>) – Verbose if True.</p></li>
+<li><p><strong>alpha</strong> (<em>float.</em>) – Regularization weight on the linear variable x.</p></li>
+<li><p><strong>itermax_neg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>reg_name</strong> (<em>str.</em>) – Type of regularization on the non linear variable x.
+(None = no regularization, “tv-1d” = TV regularization).</p></li>
+<li><p><strong>reg_param</strong> (<em>float.</em>) – Regularization weight on the non linear variable x.</p></li>
+<li><p><strong>order</strong> (<em>int.</em>) – order of the derivatives to be penalized.</p></li>
+<li><p><strong>tol</strong> (<em>float.</em>) – Tolerance for the sub-optimization on the linear variable y.</p></li>
+<li><p><strong>maxit</strong> – Maximal number for the sub-optimization on the linear variable y.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox._parameters.Parameters.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox._parameters.Parameters.load" title="Link to this definition">#</a></dt>
+<dd><p>Load the parameters from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the file containing the parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="varprox._parameters.Parameters.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filetype</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#varprox._parameters.Parameters.save" title="Link to this definition">#</a></dt>
+<dd><p>Save the parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the output file</p></li>
+<li><p><strong>filetype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – NameFormat of the output file. Must be ‘yaml’ or ‘init’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="the-tv-class">
 <h2>The TV class<a class="headerlink" href="#the-tv-class" title="Link to this heading">#</a></h2>
 <dl class="py class">
@@ -551,7 +608,7 @@ input vector</p>
 \[TV(x) = \sum_{n=1}^{N-1} x_{n+1} - x_{n}.\]</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N,)) – input vector of length <span class="math notranslate nohighlight">\(N\)</span>.</p>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N,)) – input vector of length <span class="math notranslate nohighlight">\(N\)</span>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>1-dimensional discrete total variation of the vector <span class="math notranslate nohighlight">\(x\)</span>.</p>
@@ -567,8 +624,8 @@ input vector</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> of size (N,)) – input vector of length <span class="math notranslate nohighlight">\(N\)</span>.</p></li>
-<li><p><strong>reg_param</strong> (<em>float</em>) – parameter of the operator (strictly positive).</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of size (N,)) – input vector of length <span class="math notranslate nohighlight">\(N\)</span>.</p></li>
+<li><p><strong>reg_param</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – parameter of the operator (strictly positive).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -593,13 +650,22 @@ input vector</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="varpro.html"
+       href="auto_examples/plot_mfbm.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Variable projection method</p>
+        <p class="prev-next-title">Estimation of the Hurst function of a multifractional Brownian motion</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="biblio.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">References</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -622,8 +688,6 @@ input vector</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-minimize-class">The Minimize class</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize"><code class="docutils literal notranslate"><span class="pre">Minimize</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.set_parameters_fromfile"><code class="docutils literal notranslate"><span class="pre">Minimize.set_parameters_fromfile()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.update_Ffun"><code class="docutils literal notranslate"><span class="pre">Minimize.update_Ffun()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.val_res"><code class="docutils literal notranslate"><span class="pre">Minimize.val_res()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.jac_res_x"><code class="docutils literal notranslate"><span class="pre">Minimize.jac_res_x()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.gradient_g"><code class="docutils literal notranslate"><span class="pre">Minimize.gradient_g()</span></code></a></li>
@@ -632,6 +696,14 @@ input vector</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.argmin_h_y"><code class="docutils literal notranslate"><span class="pre">Minimize.argmin_h_y()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.argmin_h"><code class="docutils literal notranslate"><span class="pre">Minimize.argmin_h()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._minimize.Minimize.rfbpd"><code class="docutils literal notranslate"><span class="pre">Minimize.rfbpd()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parameters">Parameters</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._parameters.Parameters"><code class="docutils literal notranslate"><span class="pre">Parameters</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._parameters.Parameters.load"><code class="docutils literal notranslate"><span class="pre">Parameters.load()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#varprox._parameters.Parameters.save"><code class="docutils literal notranslate"><span class="pre">Parameters.save()</span></code></a></li>
 </ul>
 </li>
 </ul>

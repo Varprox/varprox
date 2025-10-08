@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Introduction. &#8212; varprox 0.1 documentation</title>
+    <title>Introduction. &#8212; varprox 1.0 documentation</title>
   
   
   
@@ -31,6 +31,10 @@
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -38,14 +42,16 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'intro';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Variable projection method" href="varpro.html" />
+    <link rel="next" title="Example gallery" href="auto_examples/index.html" />
     <link rel="prev" title="Welcome to varprox’s documentation!" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -111,7 +117,7 @@
   
   
   
-    <p class="title logo__title">varprox 0.1 documentation</p>
+    <p class="title logo__title">varprox 1.0 documentation</p>
   
 </a></div>
     
@@ -133,8 +139,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="varpro.html">
-    Variable projection method
+  <a class="nav-link nav-internal" href="auto_examples/index.html">
+    Example gallery
   </a>
 </li>
 
@@ -142,6 +148,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="api.html">
     API reference.
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="biblio.html">
+    References
   </a>
 </li>
 
@@ -226,8 +239,8 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="varpro.html">
-    Variable projection method
+  <a class="nav-link nav-internal" href="auto_examples/index.html">
+    Example gallery
   </a>
 </li>
 
@@ -235,6 +248,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="api.html">
     API reference.
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="biblio.html">
+    References
   </a>
 </li>
 
@@ -361,10 +381,8 @@ and <span class="math notranslate nohighlight">\(\lambda_2\)</span>, respectivel
 and <span class="math notranslate nohighlight">\(\epsilon(x, y)\)</span> is the vector formed by terms
 <span class="math notranslate nohighlight">\(\epsilon_n(x, y)\)</span>.</p>
 </section>
-<section id="examples">
-<h2>Examples.<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
-<section id="signal-fitting">
-<h3>Signal fitting.<a class="headerlink" href="#signal-fitting" title="Link to this heading">#</a></h3>
+<section id="model-fitting">
+<h2>Model fitting<a class="headerlink" href="#model-fitting" title="Link to this heading">#</a></h2>
 <p>The NSLS problem may arise when the data is to be fitted by a model mixing linear and non linear parts. For instance, consider a situation where the data <span class="math notranslate nohighlight">\(w = (w_n)_{n=1}^N\)</span> comes from the observation of a unidimensional signal at some time points <span class="math notranslate nohighlight">\((t_n)_{n=1}^N\)</span> of <span class="math notranslate nohighlight">\(\mathbb{R}\)</span>. Assume that the data observation can be described by an additive model</p>
 <div class="math notranslate nohighlight">
 \[w_n = f(t_n; x, y) + \epsilon_n,\]</div>
@@ -374,7 +392,19 @@ and <span class="math notranslate nohighlight">\(\epsilon(x, y)\)</span> is the 
 <p>for some function <span class="math notranslate nohighlight">\(\varphi_j(\cdot; x)\)</span> depending on parameters <span class="math notranslate nohighlight">\(x\)</span>. Then, fitting the observed data <span class="math notranslate nohighlight">\(w\)</span> with the model <span class="math notranslate nohighlight">\(f\)</span> can be done by minimizing a SNLS of the form <a class="reference internal" href="#equation-criterion">(1)</a> for</p>
 <div class="math notranslate nohighlight">
 \[F_n(x)_j = \varphi_j(t_n; x), j=1,\cdots,J.\]</div>
+<p>Such a modeling is generic and occurs in many fields of mathematical engineering. In the gallery of examples, we present some of its applications to the statistical inference of parameters for stochastic processes.</p>
 </section>
+<section id="variable-projection-method">
+<h2>Variable projection method<a class="headerlink" href="#variable-projection-method" title="Link to this heading">#</a></h2>
+<p>When there is no penalization (<span class="math notranslate nohighlight">\(\lambda_1 = \lambda_2 = 0\)</span>), the optimization problem
+amounts to minimizing over <span class="math notranslate nohighlight">\(y\)</span> the function</p>
+<div class="math notranslate nohighlight" id="equation-criterionb">
+<span class="eqno">(6)<a class="headerlink" href="#equation-criterionb" title="Link to this equation">#</a></span>\[g(x) = h(x, y^\ast(x))\]</div>
+<p>where <span class="math notranslate nohighlight">\(x^{\ast}(y)\)</span> given by</p>
+<div class="math notranslate nohighlight" id="equation-varpro">
+<span class="eqno">(7)<a class="headerlink" href="#equation-varpro" title="Link to this equation">#</a></span>\[y^{\ast}(x) \in \arg \min_{y} h(x, y).\]</div>
+<p>This is the so-called variable projection methode which was introduced in <span id="id1">[<a class="reference internal" href="biblio.html#id4" title="H.G. Golub and V. Pereyra. The differentiation of pseudo-inverses and nonlinear least squares problems whose variables separate. SIAM Journal on Numerical Analysis, 10(2):413–432, April 1973. doi:10.1137/0710036.">3</a>]</span> to reduce the minimization problem to the single variable <span class="math notranslate nohighlight">\(x\)</span>.</p>
+<p>This package includes an extension of the variable projection to deal with cases when there are penalization and constraints on <span class="math notranslate nohighlight">\(x\)</span>. The implemented methods are precisely described in <span id="id2">[<a class="reference internal" href="biblio.html#id2" title="P. Escande and F. Richard. Full inference for the anisotropic fractional Brownian field. Journal of Probability Theory and Mathematical Statistics, 110:13-29, 2024. doi:10.1090/tpms/1204.">1</a>]</span> and <span id="id3">[<a class="reference internal" href="biblio.html#id3" title="A. Marmin and F. Richard. Varprox: a primal-dual variable projection method for the minimization of penalized separable non-linear least squares. Inverse Problems, 2025. doi:10.1088/1361-6420/ae0e48.">2</a>]</span>. It is based on a proximal dual approach, called varprox !</p>
 </section>
 </section>
 
@@ -398,11 +428,11 @@ and <span class="math notranslate nohighlight">\(\epsilon(x, y)\)</span> is the 
       </div>
     </a>
     <a class="right-next"
-       href="varpro.html"
+       href="auto_examples/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Variable projection method</p>
+        <p class="prev-next-title">Example gallery</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -426,10 +456,8 @@ and <span class="math notranslate nohighlight">\(\epsilon(x, y)\)</span> is the 
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-statement">Problem statement.</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples.</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#signal-fitting">Signal fitting.</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-fitting">Model fitting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variable-projection-method">Variable projection method</a></li>
 </ul>
   </nav></div>
 
