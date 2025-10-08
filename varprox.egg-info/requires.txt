@@ -2,5 +2,5 @@ numpy>=1.16.1
 scipy>=1.16.1
 
 [examples]
-matplotlib>=3.10.0
 pyafbf>=0.2.9
+matplotlib>=3.10.0

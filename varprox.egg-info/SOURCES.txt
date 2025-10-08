@@ -4,6 +4,9 @@ MANIFEST.in
 README.rst
 setup.cfg
 setup.py
+examples/__init__.py
+examples/plot_afbf.py
+examples/plot_mfbm.py
 varprox/__init__.py
 varprox/_minimize.py
 varprox/_parameters.py

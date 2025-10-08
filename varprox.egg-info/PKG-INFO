@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: varprox
 Version: 1.0.1
 Summary: Optimization algorithms for solving penalized non-linear least squares problems
@@ -9,7 +9,7 @@ License: GPLv3
 Project-URL: Documentation, https://Varprox.github.io/varprox/
 Project-URL: Source, https://github.com/Varprox/varprox/
 Project-URL: Tracker, https://github.com/Varprox/varprox/issues
-Keywords: separable non linear least squares,optimization,data fitting
+Keywords: optimization,data fitting,separable non linear least squares
 Platform: Linux
 Platform: MacOSX
 Platform: Windows
@@ -22,16 +22,41 @@ Classifier: Natural Language :: English
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Topic :: Scientific/Engineering :: Mathematics
-Provides-Extra: examples
 License-File: LICENSE.rst
 License-File: AUTHORS.rst
+Requires-Dist: numpy>=1.16.1
+Requires-Dist: scipy>=1.16.1
+Provides-Extra: examples
+Requires-Dist: pyafbf>=0.2.9; extra == "examples"
+Requires-Dist: matplotlib>=3.10.0; extra == "examples"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: platform
+Dynamic: project-url
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: summary
 
 .. .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.17154040.svg
 ..   :target: https://doi.org/10.5281/zenodo.17154040
 
 
+The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable.
 
-The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable. More details can be found on the `documentation <https://Varprox.github.io/varprox/>`_.
+Package features
+================
+
+- Methods for minimizing separable non-linear least squares problems with penalizations and box constraints on variables.
+
+- Non linear model fitting in engineering.
+
+- Applications to the statistical inference for stochastic processes. 
 
 
 
@@ -59,9 +84,13 @@ varprox is under licence GNU GPL, version 3.
 Citation
 ========
 
-When using varprox, please cite the original paper
+When using varprox, please cite the papers
 
-to be completed.
+1. Escande, P. and Richard, F. Full inference for the anisotropic fractional Brownian field. Journal of Probability Theory and Mathematical Statistics, 110:13–29, 2024. doi:10.1090/tpms/1204.
+
+
+2. Marmin, A. and Richard, F. Varprox: a primal-dual variable projection method for the minimization of penalized separable non-linear least squares. Inverse Problems, 2025. doi:10.1088/1361-6420/ae0e48.
+
 
 .. .. image:: https://joss.theoj.org/papers/10.21105/joss.03821/status.svg
 ..   :target: https://doi.org/10.21105/joss.03821
