@@ -51,7 +51,7 @@ setup(
         'Topic :: Scientific/Engineering :: Mathematics',
     ],
     project_urls={
-      'Documentation': 'https://Varprox.github.io/varprox/',
+      'Documentation': 'https://varprox.github.io/varprox/',
       'Source': 'https://github.com/Varprox/varprox/',
       'Tracker': 'https://github.com/Varprox/varprox/issues',
     },
