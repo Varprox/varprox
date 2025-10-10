@@ -11,7 +11,7 @@ Welcome to varprox's documentation!
 
 
 
-The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable. More details can be found in the `documentation <https://varprox.github.io/varprox/>`_.
+The Package varprox is designed for solving penalized separable non-linear least squares problems. It extends the standard variable projection method by adding regularization on the non-linear variable. More details can be found in the `documentation <https://varprox.github.io/varprox/>`_ et references :cite:p:`Richard-2023-TPMS`, :cite:p:`Marmin-2025-InvProb`
 
 Package features
 ================
@@ -48,7 +48,7 @@ Citation
 ========
 
 When using varprox, please cite the papers 
-:cite:p:`Richard-2023-TPMS` and :cite:p:`Marmin-2025-InvProb`
+:cite:p:`Richard-2023-TPMS` and :cite:p:`Marmin-2025-InvProb`.
 
 
 .. .. image:: https://joss.theoj.org/papers/10.21105/joss.03821/status.svg
